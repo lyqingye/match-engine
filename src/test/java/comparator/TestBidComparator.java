@@ -63,7 +63,6 @@ public class TestBidComparator {
                 BigDecimal.valueOf(10),BigDecimal.valueOf(1),
                 date1,date2,
                 "o1","o2"});
-
         rs.add(new Object[]{
                 "o1","o2",
                 OrderType.MARKET,OrderType.MARKET,
@@ -187,13 +186,12 @@ public class TestBidComparator {
         o1.setCreateDateTime(timeOfO2);
         o1.setType(typeOfO2);
 
-        List<Order> rs = Arrays.asList(o1, o2)
-                               .stream()
-                               .sorted(new BidComparator())
-                               .collect(Collectors.toList());
+        TreeSet<Order> set = new TreeSet<>(new BidComparator());
+        set.add(o2);
+        set.add(o1);
 
-        Assert.assertTrue(rs.get(0).getId().equals(exceptedFirstObjName));
-        Assert.assertTrue(rs.get(1).getId().equals(exceptedSecondObjName));
+        Assert.assertTrue(set.first().getId().equals(exceptedFirstObjName));
+        Assert.assertTrue(set.last().getId().equals(exceptedSecondObjName));
     }
 
 

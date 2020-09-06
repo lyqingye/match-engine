@@ -51,7 +51,7 @@ public class OrderBook {
              * 市价单和限价单
              */
             case MARKET:
-            case STOP: {
+            case LIMIT: {
                 if (o.isBuy()) {
                     bidOrders.add(o);
                 }else {
@@ -60,7 +60,7 @@ public class OrderBook {
                 break;
             }
 
-            case LIMIT: {
+            case STOP: {
                 /**
                  * 止盈止损单
                  */
@@ -76,6 +76,41 @@ public class OrderBook {
                 throw new IllegalArgumentException("invalid order type");
             }
         }
+    }
+
+    public void removeOrder (Order o) {
+        TreeSet<Order> orders = null;
+        switch (o.getType()) {
+            /**
+             * 市价单和限价单
+             */
+            case MARKET:
+            case LIMIT: {
+                if (o.isBuy()) {
+                    orders = bidOrders;
+                }else {
+                    orders = askOrders;
+                }
+                break;
+            }
+
+            case STOP: {
+                /**
+                 * 止盈止损单
+                 */
+                if (o.isBuy()) {
+                    orders = buyStopOrders;
+                }else {
+                    orders = sellStopOrders;
+                }
+                break;
+            }
+            default: {
+                throw new IllegalArgumentException("invalid order type");
+            }
+        }
+
+        orders.removeIf(v -> v.getId().equals(o.getId()));
     }
 
     public Order getBestBid () {

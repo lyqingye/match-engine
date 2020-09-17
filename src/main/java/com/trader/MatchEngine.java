@@ -4,10 +4,8 @@ import com.trader.entity.Order;
 import com.trader.entity.OrderBook;
 import com.trader.entity.Product;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.math.BigDecimal;
+import java.util.*;
 import java.util.function.Consumer;
 
 /**
@@ -31,6 +29,11 @@ public class MatchEngine {
     private List<Product> products;
 
     /**
+     * for lookup
+     */
+    private Map<String,Product> productMap;
+
+    /**
      * 委托账本列表
      * 不同的产品有不同的账本列表
      */
@@ -39,7 +42,7 @@ public class MatchEngine {
     /**
      * 同上, 为了快速检索
      */
-    private Map<String, List<OrderBook>> booksMap;
+    private Map<String, OrderBook> bookMap;
 
     /**
      * 订单映射集合
@@ -53,34 +56,79 @@ public class MatchEngine {
      */
     private List<MatchHandler> handlers = new ArrayList<>(16);
 
-
-    /**
-     * 执行撮合
-     */
-    public void match() {
-        new Thread(() -> {
-            while (true) {
-
-                // 如果引擎没有正在撮合, 则让位CPU, 线程仍处于就绪状态
-                if (!isMatching) {
-                    try {
-                        Thread.sleep(0);
-                    } catch (InterruptedException e) {
-                        Thread.interrupted();
-                    }
-                }
-
-                // 执行真正的撮合
-                this.doMatch();
-            }
-        }).start();
+    public void addProduct (Product product) {
+        if (this.productMap.containsKey(product.getId())) {
+            this.productMap.put(product.getId(),product);
+        }else {
+            OrderBook newBook = new OrderBook();
+            newBook.setProduct(product);
+            this.bookMap.put(product.getId(),newBook);
+        }
     }
 
-    /**
-     * 真正的撮合实现
-     */
-    private void doMatch() {
+    public void addMarketOrder (Order order) {
+        OrderBook book = bookMap.get(order.getProductId());
 
+        if (book == null) {
+            return;
+        }
+
+        Order newOrder = order.clone();
+        this.orderMap.put(newOrder.getId(),newOrder);
+        book.addOrder(newOrder);
+        this.executeHandler(h -> {
+            try {
+                h.onAddOrder(newOrder);
+            } catch (Exception e) {
+                this.orderMap.remove(newOrder.getId());
+                book.removeOrder(newOrder);
+            }
+        });
+    }
+
+    public void matchMarket (OrderBook book,Order order) {
+        if (order.isBuy()) {
+            Order bestAsk = book.getBestAsk();
+            if (bestAsk == null)
+                return;
+            order.setPrice(bestAsk.getPrice());
+        }else {
+            Order bestBid = book.getBestBid();
+            if (bestBid == null)
+                return;
+            order.setPrice(bestBid.getPrice());
+        }
+    }
+
+    public void matchOrder (OrderBook book, Order order) {
+        Iterator<Order> askIt = book.getAskOrders().iterator();
+        Iterator<Order> bidIt = book.getBidOrders().iterator();
+        while (true) {
+            Order best = null;
+            if (order.isBuy()) {
+                if (askIt.hasNext()) {
+                    best = askIt.next();
+                }
+            }else {
+                if (bidIt.hasNext()) {
+                    best = bidIt.next();
+                }
+            }
+            if (best == null)
+                return;
+            boolean arbitrage = false;
+            if (order.isBuy()) {
+                arbitrage = order.getPrice().compareTo(best.getPrice()) >= 0;
+            }else {
+                arbitrage = order.getPrice().compareTo(best.getPrice()) <= 0;
+            }
+            if (!arbitrage)
+                return;
+            if (order.isAON() || order.isFOK()) {
+
+            }
+
+        }
     }
 
 
@@ -130,7 +178,7 @@ public class MatchEngine {
      *
      * @throws Exception
      */
-    private void executeHandler(Consumer<MatchHandler> f) throws Exception {
+    private void executeHandler(Consumer<MatchHandler> f) {
         for (int i = 0; i < this.handlers.size(); i++) {
             MatchHandler h = this.handlers.get(i);
             f.accept(h);

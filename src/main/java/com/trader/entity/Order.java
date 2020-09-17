@@ -96,6 +96,14 @@ public class Order {
         return OrderSide.SELL.equals(side);
     }
 
+    public boolean isFOK () {
+        return OrderTimeInForce.FOK.equals(this.timeInForce);
+    }
+
+    public boolean isAON () {
+        return OrderTimeInForce.AON.equals(this.timeInForce);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -115,7 +123,7 @@ public class Order {
     }
 
     @Override
-    public Object clone() throws CloneNotSupportedException {
+    public Order clone() {
         Order order = new Order();
         order.id = id;
         order.uid = uid;
@@ -130,6 +138,10 @@ public class Order {
         order.timeInForce = timeInForce;
         order.version = version;
         return order;
+    }
+
+    public Order snap () {
+        return this.clone();
     }
 
     public void restore (Order o) {

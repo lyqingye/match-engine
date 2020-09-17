@@ -27,6 +27,12 @@ public class Order {
     private String id;
 
     /**
+     * 用户ID
+     */
+    private String uid;
+
+
+    /**
      * 产品ID
      */
     private String productId;
@@ -112,6 +118,7 @@ public class Order {
     public Object clone() throws CloneNotSupportedException {
         Order order = new Order();
         order.id = id;
+        order.uid = uid;
         order.productId = productId;
         order.price = price;
         order.createDateTime = createDateTime;
@@ -128,6 +135,7 @@ public class Order {
     public void restore (Order o) {
         Objects.requireNonNull(o);
         this.id = o.id;
+        this.uid = uid;
         this.productId = o.productId;
         this.price = o.price;
         this.createDateTime = o.createDateTime;
@@ -144,11 +152,17 @@ public class Order {
     public String toString() {
         return "Order{" +
                 "id='" + id + '\'' +
+                ", uid='" + uid + '\'' +
                 ", productId='" + productId + '\'' +
+                ", type=" + type +
                 ", side=" + side +
                 ", price=" + price +
+                ", quantity=" + quantity +
+                ", executedQuantity=" + executedQuantity +
                 ", leavesQuantity=" + leavesQuantity +
-                ", time=" + createDateTime.getTime() +
+                ", timeInForce=" + timeInForce +
+                ", createDateTime=" + createDateTime +
+                ", version=" + version +
                 '}';
     }
 }

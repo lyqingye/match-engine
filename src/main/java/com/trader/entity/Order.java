@@ -60,6 +60,16 @@ public class Order {
     private BigDecimal price;
 
     /**
+     * 上限
+     */
+    private BigDecimal priceUpperBound;
+
+    /**
+     * 下界
+     */
+    private BigDecimal priceLowerBound;
+
+    /**
      * 数量
      */
     private BigDecimal quantity;
@@ -86,6 +96,7 @@ public class Order {
      * 创建时间
      */
     private Date createDateTime;
+
 
     /**
      * 版本 (预留)
@@ -161,7 +172,7 @@ public class Order {
     public void rollback(Order o) {
         Objects.requireNonNull(o);
         this.id = o.id;
-        this.uid = uid;
+        this.uid = o.uid;
         this.productId = o.productId;
         this.price = o.price;
         this.createDateTime = o.createDateTime;
@@ -195,6 +206,4 @@ public class Order {
     public String getSymbol() {
         return productId + "-" +currencyId;
     }
-
-
 }

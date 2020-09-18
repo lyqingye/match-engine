@@ -6,4 +6,5 @@ package com.trader;
  */
 public final class OrderFactory {
 
+
 }

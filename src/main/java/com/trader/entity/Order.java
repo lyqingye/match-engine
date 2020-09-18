@@ -31,11 +31,15 @@ public class Order {
      */
     private String uid;
 
-
     /**
      * 产品ID
      */
     private String productId;
+
+    /**
+     * 货币ID
+     */
+    private String currencyId;
 
     /**
      * 订单类型:
@@ -63,12 +67,12 @@ public class Order {
     /**
      * 已经执行的数量 （买入/卖出）的数量
      */
-    private BigDecimal executedQuantity;
+    private BigDecimal executedQuantity = BigDecimal.ZERO;
 
     /**
      * 剩余数量
      */
-    private BigDecimal leavesQuantity;
+    private BigDecimal leavesQuantity = BigDecimal.ZERO;
 
     /**
      * 成交方式:
@@ -102,6 +106,16 @@ public class Order {
 
     public boolean isAON () {
         return OrderTimeInForce.AON.equals(this.timeInForce);
+    }
+
+    public BigDecimal decLeavesQuality (BigDecimal q) {
+        this.leavesQuantity = leavesQuantity.subtract(q);
+        return this.leavesQuantity;
+    }
+
+    public BigDecimal incExecutedQuality (BigDecimal q) {
+        this.executedQuantity = executedQuantity.add(q);
+        return this.executedQuantity;
     }
 
     @Override
@@ -144,7 +158,7 @@ public class Order {
         return this.clone();
     }
 
-    public void restore (Order o) {
+    public void rollback(Order o) {
         Objects.requireNonNull(o);
         this.id = o.id;
         this.uid = uid;
@@ -177,4 +191,10 @@ public class Order {
                 ", version=" + version +
                 '}';
     }
+
+    public String getSymbol() {
+        return productId + "-" +currencyId;
+    }
+
+
 }

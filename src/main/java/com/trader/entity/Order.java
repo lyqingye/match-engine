@@ -84,6 +84,10 @@ public class Order {
      */
     private BigDecimal leavesQuantity = BigDecimal.ZERO;
 
+    private BigDecimal executedAmount = BigDecimal.ZERO;
+
+    private BigDecimal leavesAmount = BigDecimal.ZERO;
+
     /**
      * 成交方式:
      * + 部分成交直到订单取消
@@ -127,6 +131,16 @@ public class Order {
     public BigDecimal incExecutedQuality (BigDecimal q) {
         this.executedQuantity = executedQuantity.add(q);
         return this.executedQuantity;
+    }
+
+    public BigDecimal decLeavesAmount (BigDecimal q) {
+        this.leavesAmount = leavesAmount.subtract(q);
+        return this.leavesAmount;
+    }
+
+    public BigDecimal incExecutedAmount (BigDecimal q) {
+        this.executedAmount = executedAmount.add(q);
+        return this.executedAmount;
     }
 
     @Override

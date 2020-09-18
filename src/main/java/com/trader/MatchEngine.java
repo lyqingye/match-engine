@@ -71,6 +71,8 @@ public class MatchEngine {
      */
     private List<Matcher> matchers = new ArrayList<>(16);
 
+    private MarketManager marketManager;
+
     public void addProduct(Product product) {
         productMap.put(product.getId(),product);
     }

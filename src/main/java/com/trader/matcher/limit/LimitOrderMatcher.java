@@ -98,7 +98,7 @@ public class LimitOrderMatcher implements Matcher {
         // 卖家以 9块单价卖出BTC 10个
         // 所以对于买家来说, 成交价是 10 块
         // 卖家的成交价是: 9块
-        // TODO 这样的话用户根本赚不了钱, 真的🐮🍺
+        // NOTE 这样的话用户根本赚不了钱, 真的🐮🍺
 
         BigDecimal executePrice = BigDecimal.ZERO;
         if (order.isBuy()) {
@@ -108,6 +108,9 @@ public class LimitOrderMatcher implements Matcher {
         if (order.isSell()) {
             executePrice = opponentOrder.getPrice();
         }
+
+        // TODO 也顺便记录下真实的成交价格, 也就是对手盘的价格
+        BigDecimal actualExecutePrice = opponentOrder.getPrice();
 
         return new TradeResult(executePrice,quantity);
     }

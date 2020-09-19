@@ -1,4 +1,4 @@
-package com.trader;
+package com.trader.support;
 
 import java.math.BigDecimal;
 

@@ -10,6 +10,8 @@ import com.trader.entity.Product;
 import com.trader.matcher.limit.InMemoryLimitMatchHandler;
 import com.trader.handler.LogMatchHandler;
 import com.trader.matcher.limit.LimitOrderMatcher;
+import com.trader.matcher.market.InMemoryMarketMatchHandler;
+import com.trader.matcher.market.MarketOrderMatcher;
 import com.trader.utils.SnowflakeIdWorker;
 import org.junit.After;
 import org.junit.Before;
@@ -30,8 +32,12 @@ public class TestLimitOrderMatch {
     public void before () {
         engine = new MatchEngine();
         engine.addHandler(new InMemoryLimitMatchHandler());
-        engine.addMatcher(new LimitOrderMatcher());
+        engine.addHandler(new InMemoryMarketMatchHandler());
         engine.addHandler(new LogMatchHandler());
+
+        engine.addMatcher(new LimitOrderMatcher());
+        engine.addMatcher(new MarketOrderMatcher());
+
         engine.addProduct(new Product("BTC","BTC"));
         engine.addCurrency(new Currency("USDT","USDT"));
         engine.enableMatching();
@@ -127,16 +133,32 @@ public class TestLimitOrderMatch {
         sell3.setCreateDateTime(new Date());
 
 
-        engine.addLimitOrder(buy1);
-        engine.addLimitOrder(buy2);
-        engine.addLimitOrder(buy3);
-        engine.addLimitOrder(sell1);
-        engine.addLimitOrder(sell2);
-        engine.addLimitOrder(sell3);
+        // 市价 卖10个
+        Order sell4 = new Order();
+        sell4.setId(SnowflakeIdWorker.nextId());
+        sell4.setQuantity(BigDecimal.valueOf(10));
+        sell4.setLeavesQuantity(BigDecimal.valueOf(10));
+        sell4.setPrice(BigDecimal.valueOf(-1));
+        sell4.setProductId("BTC");
+        sell4.setCurrencyId("USDT");
+        sell4.setType(OrderType.MARKET);
+        sell4.setTimeInForce(OrderTimeInForce.GTC);
+        sell4.setUid("1");
+        sell4.setSide(OrderSide.SELL);
+        sell4.setCreateDateTime(new Date());
+
+
+        engine.addOrder(buy1);
+        engine.addOrder(buy2);
+        engine.addOrder(buy3);
+        engine.addOrder(sell1);
+        engine.addOrder(sell2);
+        engine.addOrder(sell3);
+        engine.addOrder(sell4);
+
     }
 
     @After
     public void after () {
     }
-
 }

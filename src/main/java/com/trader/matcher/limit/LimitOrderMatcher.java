@@ -9,6 +9,8 @@ import com.trader.utils.MathUtils;
 import java.math.BigDecimal;
 
 /**
+ * 限价订单匹配器
+ *
  * @author yjt
  * @since 2020/9/18 上午9:16
  */
@@ -38,12 +40,12 @@ public class LimitOrderMatcher implements Matcher {
 
         //
         // 区分买卖单:
-        // 买入单: 则买入的价格必须要 <= 卖盘
-        // 卖出单: 则卖出的价格必须要 >= 买盘
+        // 买入单: 则卖盘的价格必须要 <= 买入价
+        // 卖出单: 则买盘的价格必须要 >= 卖出价
         //
         boolean arbitrage;
         if (order.isBuy()) {
-            arbitrage = order.getPrice().compareTo(opponentOrder.getPrice()) <= 0;
+            arbitrage = opponentOrder.getPrice().compareTo(order.getPrice()) <= 0;
         } else {
             arbitrage = opponentOrder.getPrice().compareTo(order.getPrice()) >= 0;
         }
@@ -88,9 +90,26 @@ public class LimitOrderMatcher implements Matcher {
         // 计算成交量
         BigDecimal quantity = MathUtils.min(order.getLeavesQuantity(),
                                             opponentOrder.getLeavesQuantity());
-        // 成交价
-        BigDecimal price = opponentOrder.getPrice();
-        return new TradeResult(price,quantity);
+
+        //
+        // 平台要吃掉差价. 并且这个过程对于用户来说是透明的.
+        // 例：
+        // 买家以 10块单价买入BTC 10个
+        // 卖家以 9块单价卖出BTC 10个
+        // 所以对于买家来说, 成交价是 10 块
+        // 卖家的成交价是: 9块
+        // TODO 这样的话用户根本赚不了钱, 真的🐮🍺
+
+        BigDecimal executePrice = BigDecimal.ZERO;
+        if (order.isBuy()) {
+            executePrice = order.getPrice();
+        }
+
+        if (order.isSell()) {
+            executePrice = opponentOrder.getPrice();
+        }
+
+        return new TradeResult(executePrice,quantity);
     }
 
     /**

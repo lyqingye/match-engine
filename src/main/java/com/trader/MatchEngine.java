@@ -5,9 +5,8 @@ import com.trader.entity.Order;
 import com.trader.entity.OrderBook;
 import com.trader.entity.Product;
 import com.trader.matcher.TradeResult;
-import com.trader.utils.MathUtils;
+import com.trader.support.MarketManager;
 
-import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -102,11 +101,11 @@ public class MatchEngine {
     }
 
     /**
-     * 添加限价单
+     * 添加订单
      *
-     * @param order 限价订单
+     * @param order 订单
      */
-    public void addLimitOrder(Order order) {
+    public void addOrder(Order order) {
         OrderBook book = this.getBook(order);
 
         if (book == null) {

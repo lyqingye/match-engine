@@ -26,6 +26,7 @@ public class InMemoryLimitMatchHandler implements MatchHandler {
                                BigDecimal quantity) throws Exception {
 
         switch (order.getType()) {
+            case STOP:
             case LIMIT: {
                 //
                 // 增加成交量, 与减少剩余成交量

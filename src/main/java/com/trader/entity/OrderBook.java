@@ -48,9 +48,10 @@ public class OrderBook {
 
     /**
      * 增加订单
+     *
      * @param o
      */
-    public void addOrder (Order o) {
+    public void addOrder(Order o) {
         Objects.requireNonNull(o, "order is null");
 
         switch (o.getType()) {
@@ -61,7 +62,7 @@ public class OrderBook {
             case LIMIT: {
                 if (o.isBuy()) {
                     bidOrders.add(o);
-                }else {
+                } else {
                     askOrders.add(o);
                 }
                 break;
@@ -73,7 +74,7 @@ public class OrderBook {
                  */
                 if (o.isBuy()) {
                     buyStopOrders.add(o);
-                }else {
+                } else {
                     sellStopOrders.add(o);
                 }
                 break;
@@ -85,7 +86,7 @@ public class OrderBook {
         }
     }
 
-    public void removeOrder (Order o) {
+    public void removeOrder(Order o) {
         TreeSet<Order> orders = null;
         switch (o.getType()) {
             /**
@@ -95,7 +96,7 @@ public class OrderBook {
             case LIMIT: {
                 if (o.isBuy()) {
                     orders = bidOrders;
-                }else {
+                } else {
                     orders = askOrders;
                 }
                 break;
@@ -107,7 +108,7 @@ public class OrderBook {
                  */
                 if (o.isBuy()) {
                     orders = buyStopOrders;
-                }else {
+                } else {
                     orders = sellStopOrders;
                 }
                 break;
@@ -120,19 +121,19 @@ public class OrderBook {
         orders.removeIf(v -> v.getId().equals(o.getId()));
     }
 
-    public Order getBestBid () {
+    public Order getBestBid() {
         return bidOrders.first();
     }
 
-    public Order getBestAsk () {
+    public Order getBestAsk() {
         return askOrders.first();
     }
 
-    public Order getBestSellStop () {
+    public Order getBestSellStop() {
         return sellStopOrders.first();
     }
 
-    public Order getBestBuyStop () {
+    public Order getBestBuyStop() {
         return buyStopOrders.first();
     }
 
@@ -140,47 +141,48 @@ public class OrderBook {
     //
     // DEBUG ONLY
     //
-    public String render_bid_ask () {
+    public String render_bid_ask() {
         AsciiTable at = new AsciiTable();
 
         Iterator<Order> bidIt = bidOrders.iterator();
         Iterator<Order> askIt = askOrders.iterator();
         // 表头
         at.addRule();
-        at.addRow("Id","Side","Type","Price","Quality","LeaveQuality","  ","Id","Side","Type","Price","Quality","LeaveQuality");
+        at.addRow("Id", "Side", "Type", "Price", "Quality", "LeaveQuality", "LeaveAmount", "  ", "Id", "Side", "Type", "Price", "Quality", "LeaveQuality", "LeaveAmount");
         at.addRule();
         while (bidIt.hasNext() || askIt.hasNext()) {
             Order bid = bidIt.hasNext() ? bidIt.next() : null;
             Order ask = askIt.hasNext() ? askIt.next() : null;
 
-            String[] row = new String[13];
+            String[] row = new String[15];
             if (bid == null) {
-                for (int i = 0; i < 6; i++) {
+                for (int i = 0; i < 7; i++) {
                     row[i] = "-";
                 }
-            }else {
+            } else {
                 row[0] = bid.getId();
                 row[1] = bid.getSide().name();
                 row[2] = bid.getType().name();
                 row[3] = bid.getPrice().toPlainString();
                 row[4] = bid.getQuantity().toPlainString();
                 row[5] = bid.getLeavesQuantity().toPlainString();
+                row[6] = bid.getLeavesAmount().toPlainString();
             }
 
-            row[6] = "  ";
+            row[7] = "  ";
 
             if (ask == null) {
-                for (int i = 7; i < 13; i++) {
+                for (int i = 8; i < 15; i++) {
                     row[i] = "-";
                 }
-            }
-            else {
-                    row[7] = ask.getId();
-                    row[8] = ask.getSide().name();
-                    row[9] = ask.getType().name();
-                    row[10] = ask.getPrice().toPlainString();
-                    row[11] = ask.getQuantity().toPlainString();
-                    row[12] = ask.getLeavesQuantity().toPlainString();
+            } else {
+                row[8] = ask.getId();
+                row[9] = ask.getSide().name();
+                row[10] = ask.getType().name();
+                row[11] = ask.getPrice().toPlainString();
+                row[12] = ask.getQuantity().toPlainString();
+                row[13] = ask.getLeavesQuantity().toPlainString();
+                row[14] = ask.getLeavesAmount().toPlainString();
             }
             at.addRow(row);
             at.addRule();

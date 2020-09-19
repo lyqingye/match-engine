@@ -42,4 +42,6 @@ public interface Matcher {
      * @return 上下文对象
      */
     default MatchingContext ctx () {throw new UnsupportedOperationException("无上下文");}
+
+
 }

@@ -1,10 +1,8 @@
 package com.trader.context;
 
-import com.trader.MarketManager;
+import com.trader.support.MarketManager;
 import com.trader.MatchEngine;
-import com.trader.Matcher;
-
-import java.math.BigDecimal;
+import com.trader.entity.OrderBook;
 
 /**
  * @author yjt
@@ -25,4 +23,11 @@ public interface MatchingContext {
       * @return 撮合引擎
       */
      MatchEngine getEngine ();
+
+     /**
+      * 当前的买卖账本
+      *
+      * @return 账本
+      */
+     OrderBook getOrderBook();
 }

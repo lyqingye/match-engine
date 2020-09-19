@@ -84,8 +84,19 @@ public class Order {
      */
     private BigDecimal leavesQuantity = BigDecimal.ZERO;
 
+    /**
+     * 总金额
+     */
+    private BigDecimal totalAmount;
+
+    /**
+     * 已经执行的金额
+     */
     private BigDecimal executedAmount = BigDecimal.ZERO;
 
+    /**
+     * 剩余执行的金额
+     */
     private BigDecimal leavesAmount = BigDecimal.ZERO;
 
     /**
@@ -121,6 +132,26 @@ public class Order {
 
     public boolean isAON () {
         return OrderTimeInForce.AON.equals(this.timeInForce);
+    }
+
+    public boolean isLimitOrder () {
+        return OrderType.LIMIT.equals(this.type);
+    }
+
+    public boolean isMarketOrder () {
+        return OrderType.MARKET.equals(this.type);
+    }
+
+    public boolean isStopOrder () {
+        return OrderType.STOP.equals(this.type);
+    }
+
+    public boolean isBuyMarketOrder () {
+        return this.isBuy() && this.isMarketOrder();
+    }
+
+    public boolean isSellMarketOrder () {
+        return this.isSell() && this.isMarketOrder();
     }
 
     public BigDecimal decLeavesQuality (BigDecimal q) {

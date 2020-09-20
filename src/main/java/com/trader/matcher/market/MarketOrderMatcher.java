@@ -49,7 +49,7 @@ public class MarketOrderMatcher implements Matcher {
         // 买: 单价 = 市场价, 执行量 = 交易额 / 单价
         // 卖: 单价 = 市场价
         //
-        // 撮合条件判定只需要判定双方买卖价格即可, 参考限价交易 {@link com.trader.matcher.limit.LimitOrderMatcher}
+        /** 撮合条件判定只需要判定双方买卖价格即可, 参考限价交易 {@link com.trader.matcher.limit.LimitOrderMatcher}*/
 
         BigDecimal orderPrice = order.isMarketOrder() ? marketPrice : order.getPrice();
         BigDecimal opponentPrice = opponentOrder.isMarketOrder() ?  marketPrice : opponentOrder.getPrice();
@@ -61,9 +61,9 @@ public class MarketOrderMatcher implements Matcher {
         //
         boolean arbitrage;
         if (order.isBuy()) {
-            arbitrage = opponentOrder.getPrice().compareTo(order.getPrice()) <= 0;
+            arbitrage = opponentPrice.compareTo(orderPrice) <= 0;
         } else {
-            arbitrage = opponentOrder.getPrice().compareTo(order.getPrice()) >= 0;
+            arbitrage = opponentPrice.compareTo(orderPrice) >= 0;
         }
 
         if (!arbitrage)

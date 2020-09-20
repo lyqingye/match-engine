@@ -2,6 +2,8 @@ package com.trader.matcher.limit;
 
 import com.trader.MatchHandler;
 import com.trader.entity.Order;
+import com.trader.matcher.TradeResult;
+
 import java.math.BigDecimal;
 
 /**
@@ -14,20 +16,17 @@ public class InMemoryLimitMatchHandler implements MatchHandler {
      *
      * @param order
      * @param opponentOrder
-     * @param price
-     * @param quantity
-     *
+     * @param tradeResult
      * @throws Exception
      */
     @Override
     public void onExecuteOrder(Order order,
-                               Order opponentOrder,
-                               BigDecimal price,
-                               BigDecimal quantity) throws Exception {
+                               Order opponentOrder, TradeResult tradeResult) throws Exception {
 
         switch (order.getType()) {
             case STOP:
             case LIMIT: {
+                BigDecimal quantity = tradeResult.getQuantity();
                 //
                 // 增加成交量, 与减少剩余成交量
                 //

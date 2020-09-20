@@ -112,7 +112,8 @@ public class LimitOrderMatcher implements Matcher {
         // TODO 也顺便记录下真实的成交价格, 也就是对手盘的价格
         BigDecimal actualExecutePrice = opponentOrder.getPrice();
 
-        return new TradeResult(executePrice,quantity);
+//        return new TradeResult(executePrice,quantity);
+        return null;
     }
 
     /**

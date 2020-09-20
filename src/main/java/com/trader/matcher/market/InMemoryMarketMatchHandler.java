@@ -3,6 +3,7 @@ package com.trader.matcher.market;
 import com.trader.MatchHandler;
 import com.trader.def.OrderType;
 import com.trader.entity.Order;
+import com.trader.matcher.TradeResult;
 
 import java.math.BigDecimal;
 
@@ -17,16 +18,14 @@ public class InMemoryMarketMatchHandler implements MatchHandler {
      *
      * @param order
      * @param opponentOrder
-     * @param price
-     * @param quantity
-     *
+     * @param ts
      * @throws Exception
      */
     @Override
     public void onExecuteOrder(Order order,
-                               Order opponentOrder,
-                               BigDecimal price,
-                               BigDecimal quantity) throws Exception {
+                               Order opponentOrder, TradeResult ts) throws Exception {
+        BigDecimal quantity = ts.getQuantity();
+        BigDecimal price = ts.getPrice();
 
         //
         // 处理以下类型的订单

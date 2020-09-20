@@ -1,9 +1,9 @@
 package com.trader.entity;
 
+import com.trader.def.ExecutePriceType;
 import com.trader.def.OrderSide;
 import com.trader.def.OrderTimeInForce;
 import com.trader.def.OrderType;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -55,6 +55,11 @@ public class Order {
     private OrderSide side;
 
     /**
+     * 最终成交价的取值方式
+     */
+    private ExecutePriceType executePriceType;
+
+    /**
      * 价格
      */
     private BigDecimal price;
@@ -85,17 +90,17 @@ public class Order {
     private BigDecimal leavesQuantity = BigDecimal.ZERO;
 
     /**
-     * 总金额
+     * 总金额 （市价订单）
      */
     private BigDecimal totalAmount;
 
     /**
-     * 已经执行的金额
+     * 已经执行的金额 （市价订单）
      */
     private BigDecimal executedAmount = BigDecimal.ZERO;
 
     /**
-     * 剩余执行的金额
+     * 剩余执行的金额 （市价订单）
      */
     private BigDecimal leavesAmount = BigDecimal.ZERO;
 
@@ -111,7 +116,6 @@ public class Order {
      * 创建时间
      */
     private Date createDateTime;
-
 
     /**
      * 版本 (预留)

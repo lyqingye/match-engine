@@ -2,6 +2,7 @@ package com.trader.handler;
 
 import com.trader.MatchHandler;
 import com.trader.entity.Order;
+import com.trader.matcher.TradeResult;
 
 import java.math.BigDecimal;
 
@@ -13,9 +14,9 @@ public class LogMatchHandler implements MatchHandler {
 
     @Override
     public void onExecuteOrder(Order order,
-                               Order opponentOrder,
-                               BigDecimal price,
-                               BigDecimal quantity) throws Exception {
+                               Order opponentOrder, TradeResult ts) throws Exception {
+        BigDecimal quantity = ts.getQuantity();
+        BigDecimal price = ts.getPrice();
         System.out.println(String.format("订单: %s %s 成交数量: %s 成交价格: %s 剩余数量: %s",
                                          order.getId(),
                                          order.isBuy() ? "买入" : "卖出",

@@ -3,8 +3,7 @@ package com.trader;
 import com.trader.entity.Order;
 import com.trader.entity.OrderBook;
 import com.trader.entity.Product;
-
-import java.math.BigDecimal;
+import com.trader.matcher.TradeResult;
 
 /**
  * 撮合引擎事件处理器
@@ -67,9 +66,8 @@ public interface MatchHandler {
      * 撮合订单事件
      * @param order
      * @param opponentOrder
-     * @param price
-     * @param quantity
+     * @param tradeResult
      * @throws Exception
      */
-    default void onExecuteOrder (Order order,Order opponentOrder,BigDecimal price,BigDecimal quantity) throws Exception {}
+    default void onExecuteOrder(Order order, Order opponentOrder, TradeResult tradeResult) throws Exception {}
 }

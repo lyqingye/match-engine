@@ -116,7 +116,8 @@ public class MarketOrderMatcher implements Matcher {
 
 
         BigDecimal price = opponentOrder.isMarketOrder() ? marketPrice : opponentOrder.getPrice();
-        return new TradeResult(price,quantity);
+//        return new TradeResult(price,quantity);
+        return null;
     }
 
     /**
@@ -131,6 +132,4 @@ public class MarketOrderMatcher implements Matcher {
     public boolean isFinished(Order order) {
         return order.getLeavesAmount().compareTo(BigDecimal.ZERO) == 0;
     }
-
-
 }

@@ -35,7 +35,7 @@ public class InMemoryMarketMatchHandler implements MatchHandler {
 
         if (order.getType().equals(OrderType.MARKET) || opponentOrder.getType().equals(OrderType.MARKET)) {
             this.processOrder(order, ts.getExecutePrice(), quantity);
-            this.processOrder(opponentOrder, ts.getOpponentExecutePrice(), quantity);
+            this.processOrder(opponentOrder, ts.getExecutePrice(), quantity);
         }
     }
 

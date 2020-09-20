@@ -119,14 +119,8 @@ public class MarketOrderMatcher implements Matcher {
         BigDecimal executePrice = TradeHelper.calcExecutePrice(order.getExecutePriceType(),
                                                                orderPrice,
                                                                opponentPrice);
-
-        // 计算对手订单最终成交价
-        BigDecimal opponentExecutePrice = TradeHelper.calcExecutePrice(opponentOrder.getExecutePriceType(),
-                                                                       opponentPrice,
-                                                                       orderPrice);
         TradeResult ts = new TradeResult();
         ts.setExecutePrice(executePrice);
-        ts.setOpponentExecutePrice(opponentExecutePrice);
         ts.setQuantity(quantity);
         return ts;
     }

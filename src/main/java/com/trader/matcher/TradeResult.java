@@ -17,11 +17,6 @@ public class TradeResult {
     private BigDecimal executePrice;
 
     /**
-     * 对手订单的成交价
-     */
-    private BigDecimal opponentExecutePrice;
-
-    /**
      * 成交量
      */
     private BigDecimal quantity;

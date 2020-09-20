@@ -28,7 +28,7 @@ public class LogMatchHandler implements MatchHandler {
                                          opponentOrder.getId(),
                                          opponentOrder.isBuy() ? "买入" : "卖出",
                                          quantity.toPlainString(),
-                                         ts.getOpponentExecutePrice().toPlainString(),
+                                         ts.getExecutePrice().toPlainString(),
                                          opponentOrder.getLeavesQuantity().toPlainString()));
 
         System.out.println("--------------------------------------------------------");

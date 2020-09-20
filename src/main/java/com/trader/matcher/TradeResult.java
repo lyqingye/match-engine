@@ -24,6 +24,11 @@ public class TradeResult {
     private BigDecimal opponentPrice;
 
     /**
+     * 最终的成交价
+     */
+    private BigDecimal executePrice;
+
+    /**
      * 真实的成交价
      */
     private BigDecimal actualPrice;

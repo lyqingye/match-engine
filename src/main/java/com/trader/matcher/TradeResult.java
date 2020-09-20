@@ -1,6 +1,5 @@
 package com.trader.matcher;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.math.BigDecimal;

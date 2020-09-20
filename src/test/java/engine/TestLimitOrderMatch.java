@@ -8,7 +8,7 @@ import com.trader.entity.Currency;
 import com.trader.entity.Order;
 import com.trader.entity.Product;
 import com.trader.matcher.limit.InMemoryLimitMatchHandler;
-import com.trader.handler.LogMatchHandler;
+import com.trader.handler.ExampleLoggerHandler;
 import com.trader.matcher.limit.LimitOrderMatcher;
 import com.trader.matcher.market.InMemoryMarketMatchHandler;
 import com.trader.matcher.market.MarketOrderMatcher;
@@ -33,13 +33,13 @@ public class TestLimitOrderMatch {
         engine = new MatchEngine();
         engine.addHandler(new InMemoryLimitMatchHandler());
         engine.addHandler(new InMemoryMarketMatchHandler());
-        engine.addHandler(new LogMatchHandler());
+        engine.addHandler(new ExampleLoggerHandler());
 
         engine.addMatcher(new LimitOrderMatcher());
         engine.addMatcher(new MarketOrderMatcher());
 
-        engine.addProduct(new Product("BTC","BTC"));
-        engine.addCurrency(new Currency("USDT","USDT"));
+        engine.getProductMgr().addProduct(new Product("BTC","BTC"));
+        engine.getCurrencyMgr().addCurrency(new Currency("USDT","USDT"));
         engine.enableMatching();
     }
 

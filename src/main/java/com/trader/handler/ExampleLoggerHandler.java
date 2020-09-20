@@ -10,7 +10,7 @@ import java.math.BigDecimal;
  * @author yjt
  * @since 2020/9/17 下午7:57
  */
-public class LogMatchHandler implements MatchHandler {
+public class ExampleLoggerHandler implements MatchHandler {
 
     @Override
     public void onExecuteOrder(Order order,

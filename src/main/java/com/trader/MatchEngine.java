@@ -1,11 +1,10 @@
 package com.trader;
 
-import com.trader.entity.Currency;
 import com.trader.entity.Order;
 import com.trader.entity.OrderBook;
-import com.trader.entity.Product;
 import com.trader.matcher.TradeResult;
-import com.trader.support.MarketManager;
+import com.trader.support.*;
+import lombok.Getter;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -28,39 +27,6 @@ public class MatchEngine {
     private volatile boolean isMatching = false;
 
     /**
-     * 产品列表
-     */
-    private List<Product> products = new ArrayList<>(16);
-
-    /**
-     * for lookup
-     */
-    private Map<String, Product> productMap = new HashMap<>(16);
-
-    /**
-     * 委托账本列表
-     * 不同的产品有不同的账本列表
-     */
-    private List<OrderBook> books = new ArrayList<>(16);
-
-    /**
-     * 同上, 为了快速检索
-     */
-    private Map<String, OrderBook> bookMap = new HashMap<>(16);
-
-    /**
-     * 订单映射集合
-     * K: 订单ID
-     * V: 订单
-     */
-    private Map<String, Order> orderMap = new HashMap<>(16);
-
-    /**
-     * 货币映射集合
-     */
-    private Map<String, Currency> currencyMap = new HashMap<>(16);
-
-    /**
      * 处理器列表
      */
     private List<MatchHandler> handlers = new ArrayList<>(16);
@@ -70,34 +36,41 @@ public class MatchEngine {
      */
     private List<Matcher> matchers = new ArrayList<>(16);
 
-    private MarketManager marketManager;
+    /**
+     * 货币管理器
+     */
+    @Getter
+    private CurrencyManager currencyMgr;
 
-    public void addProduct(Product product) {
-        productMap.put(product.getId(), product);
-    }
+    /**
+     * 产品管理器
+     */
+    @Getter
+    private ProductManager productMgr;
 
-    public Product getProduct(String id) {
-        return productMap.get(id);
-    }
+    /**
+     * 账本管理器
+     */
+    @Getter
+    private OrderBookManager bookMgr;
 
-    public void addCurrency(Currency currency) {
-        currencyMap.put(currency.getId(), currency);
-    }
+    /**
+     * 订单管理器
+     */
+    @Getter
+    private OrderManager orderMgr;
 
-    public Currency getCurrency(String id) {
-        return currencyMap.get(id);
-    }
+    /**
+     * 市场管理器
+     */
+    private MarketManager marketMgr;
 
-    private OrderBook getBook(Order order) {
-        OrderBook book = bookMap.get(order.getSymbol());
-        if (book == null) {
-            OrderBook newBook = new OrderBook();
-            newBook.setProduct(this.getProduct(order.getProductId()));
-            newBook.setCurrency(this.getCurrency(order.getCurrencyId()));
-            book = newBook;
-            bookMap.put(order.getSymbol(), newBook);
-        }
-        return book;
+    public MatchEngine () {
+        this.currencyMgr = new CurrencyManager();
+        this.productMgr = new ProductManager();
+        this.orderMgr = new OrderManager();
+        this.bookMgr = new OrderBookManager(currencyMgr,productMgr);
+        this.marketMgr = new MarketManager();
     }
 
     /**
@@ -107,22 +80,21 @@ public class MatchEngine {
      *         订单
      */
     public void addOrder(Order order) {
-        OrderBook book = this.getBook(order);
+        OrderBook book = this.bookMgr.getBook(order);
 
         if (book == null) {
             return;
         }
 
         Order newOrder = order.snap();
-        this.orderMap.put(newOrder.getId(), newOrder);
+        this.orderMgr.addOrder(newOrder);
         book.addOrder(newOrder);
-
         // 添加订单
         this.executeHandler(h -> {
             try {
                 h.onAddOrder(newOrder);
             } catch (Exception e) {
-                this.orderMap.remove(newOrder.getId());
+                this.orderMgr.removeOrder(order);
                 book.removeOrder(newOrder);
             }
         });
@@ -134,12 +106,12 @@ public class MatchEngine {
     }
 
     /**
-     * 撮合限价单
+     * 订单撮合
      *
-     * @param book
-     * @param order
+     * @param book 账本
+     * @param order 订单
      */
-    public void matchOrder(OrderBook book, Order order) {
+    private void matchOrder(OrderBook book, Order order) {
         //
         // 根据订单类型确定对手盘
         // 买入单: 则对手盘为卖盘
@@ -215,10 +187,26 @@ public class MatchEngine {
         }
     }
 
+    /**
+     * 添加一个匹配器
+     *
+     * @param matcher
+     *         匹配器
+     */
     public void addMatcher(Matcher matcher) {
         this.matchers.add(Objects.requireNonNull(matcher));
     }
 
+    /**
+     * 根据订单搜索合适的匹配器, 如果没有找到合适的匹配器那么则返回 {@code null}
+     *
+     * @param order
+     *         订单
+     * @param opponentOrder
+     *         对手订单
+     *
+     * @return 匹配器
+     */
     private Matcher lookupMatcher(Order order, Order opponentOrder) {
         return this.matchers.stream()
                             .filter(matcher -> matcher.isSupport(order, opponentOrder))

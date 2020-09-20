@@ -3,6 +3,7 @@ package com.trader.matcher.limit;
 import com.trader.Matcher;
 import com.trader.def.OrderType;
 import com.trader.entity.Order;
+import com.trader.helper.TradeHelper;
 import com.trader.matcher.TradeResult;
 import com.trader.utils.MathUtils;
 
@@ -98,22 +99,18 @@ public class LimitOrderMatcher implements Matcher {
         // 卖家以 9块单价卖出BTC 10个
         // 所以对于买家来说, 成交价是 10 块
         // 卖家的成交价是: 9块
-        // NOTE 这样的话用户根本赚不了钱, 真的🐮🍺
+        // 🐮🍺
 
-        BigDecimal executePrice = BigDecimal.ZERO;
-        if (order.isBuy()) {
-            executePrice = order.getPrice();
-        }
-
-        if (order.isSell()) {
-            executePrice = opponentOrder.getPrice();
-        }
-
-        // TODO 也顺便记录下真实的成交价格, 也就是对手盘的价格
-        BigDecimal actualExecutePrice = opponentOrder.getPrice();
-
-//        return new TradeResult(executePrice,quantity);
-        return null;
+        // 计算最终成交价
+        BigDecimal executePrice = TradeHelper.calcExecutePrice(order.getExecutePriceType(),
+                                                               order.getPrice(),
+                                                               opponentOrder.getPrice());
+        TradeResult ts = new TradeResult();
+        ts.setExecutePrice(executePrice);
+        ts.setPrice(order.getPrice());
+        ts.setOpponentPrice(opponentOrder.getPrice());
+        ts.setQuantity(quantity);
+        return ts;
     }
 
     /**

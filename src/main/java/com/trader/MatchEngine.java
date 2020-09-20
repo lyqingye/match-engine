@@ -174,7 +174,7 @@ public class MatchEngine {
                 return;
             }
 
-            TradeResult tradeResult = matcher.doTrade(order, best);
+            TradeResult ts = matcher.doTrade(order, best);
 
             //
             // 事务
@@ -194,7 +194,7 @@ public class MatchEngine {
                     // 调用链的顶部必然是一个内存操作的 handler, 也就是必须先写入内存
                     // 可能也存在一个持久化的 handler, 所以需要在执行做事务处理
                     // 当 handler 发生异常, 我们将需要将内存数据进行回滚
-                    handler.onExecuteOrder(order, best, , tradeResult.getPrice());
+                    handler.onExecuteOrder(order, best, ts);
                 } catch (Exception e) {
                     order.rollback(snap_order);
                     best.rollback(snap_best);

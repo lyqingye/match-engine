@@ -3,6 +3,7 @@ package com.trader.matcher.market;
 import com.trader.Matcher;
 import com.trader.def.OrderType;
 import com.trader.entity.Order;
+import com.trader.helper.TradeHelper;
 import com.trader.matcher.TradeResult;
 import com.trader.utils.MathUtils;
 
@@ -111,13 +112,19 @@ public class MarketOrderMatcher implements Matcher {
         BigDecimal quantity = MathUtils.min(leavesQuality,
                                             opponentLeavesQuality);
 
-        // TODO 最终成交价的计算
+        BigDecimal orderPrice = order.isMarketOrder() ? marketPrice : order.getPrice();
+        BigDecimal opponentPrice = opponentOrder.isMarketOrder() ?  marketPrice : opponentOrder.getPrice();
 
-
-
-        BigDecimal price = opponentOrder.isMarketOrder() ? marketPrice : opponentOrder.getPrice();
-//        return new TradeResult(price,quantity);
-        return null;
+        // 计算最终成交价
+        BigDecimal executePrice = TradeHelper.calcExecutePrice(order.getExecutePriceType(),
+                                                               orderPrice,
+                                                               opponentPrice);
+        TradeResult ts = new TradeResult();
+        ts.setExecutePrice(executePrice);
+        ts.setPrice(orderPrice);
+        ts.setOpponentPrice(opponentPrice);
+        ts.setQuantity(quantity);
+        return ts;
     }
 
     /**

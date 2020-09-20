@@ -10,7 +10,6 @@ import java.math.BigDecimal;
  * @since 2020/9/18 下午2:18
  */
 @Data
-@AllArgsConstructor
 public class TradeResult {
 
     /**
@@ -27,11 +26,6 @@ public class TradeResult {
      * 最终的成交价
      */
     private BigDecimal executePrice;
-
-    /**
-     * 真实的成交价
-     */
-    private BigDecimal actualPrice;
 
     /**
      * 成交量

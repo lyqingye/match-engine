@@ -39,6 +39,11 @@ public class LimitOrderMatcher implements Matcher {
 //            return false;
 //        }
 
+        BigDecimal price = order.getPrice();
+        BigDecimal opponentPrice = opponentOrder.getPrice();
+
+
+
         //
         // 区分买卖单:
         // 买入单: 则卖盘的价格必须要 <= 买入价
@@ -46,9 +51,31 @@ public class LimitOrderMatcher implements Matcher {
         //
         boolean arbitrage;
         if (order.isBuy()) {
-            arbitrage = opponentOrder.getPrice().compareTo(order.getPrice()) <= 0;
+
+            // 买入价上界
+            if (order.getPriceUpperBound().compareTo(BigDecimal.ZERO) > 0) {
+                price = price.add(price.multiply(order.getPriceUpperBound()));
+            }
+
+            // 卖出价下限
+            if (opponentOrder.getPriceLowerBound().compareTo(BigDecimal.ZERO) > 0) {
+                opponentPrice = opponentPrice.subtract(opponentPrice.multiply(opponentOrder.getPriceUpperBound()));
+            }
+
+            arbitrage = opponentPrice.compareTo(price) <= 0;
         } else {
-            arbitrage = opponentOrder.getPrice().compareTo(order.getPrice()) >= 0;
+
+            // 卖出价下限
+            if (order.getPriceLowerBound().compareTo(BigDecimal.ZERO) > 0) {
+                price = price.subtract(price.multiply(order.getPriceLowerBound()));
+            }
+
+            // 买入价上限
+            if (opponentOrder.getPriceUpperBound().compareTo(BigDecimal.ZERO) > 0) {
+                opponentPrice = opponentPrice.add(opponentPrice.multiply(opponentOrder.getPriceUpperBound()));
+            }
+
+            arbitrage = opponentPrice.compareTo(price) >= 0;
         }
 
         if (!arbitrage)

@@ -158,6 +158,29 @@ public class Order {
         return this.isSell() && this.isMarketOrder();
     }
 
+    /**
+     * 获取当前订单的最高买入价或最低卖出价
+     *
+     * @return
+     */
+    public BigDecimal getPriceBound () {
+
+        // 市价单没有上界和下限
+        if (isMarketOrder()) {
+            throw new IllegalArgumentException("订单为市价单,不存在上届下限的价格");
+        }
+
+        //
+        // 买入订单是上界
+        // 卖出订单是下限
+        //
+        if (this.isBuy()) {
+            return price.add(price.multiply(this.priceUpperBound));
+        }else {
+            return price.subtract(price.multiply(this.priceLowerBound));
+        }
+    }
+
     public BigDecimal decLeavesQuality (BigDecimal q) {
         this.leavesQuantity = leavesQuantity.subtract(q);
         return this.leavesQuantity;

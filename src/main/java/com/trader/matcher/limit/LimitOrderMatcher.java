@@ -106,8 +106,13 @@ public class LimitOrderMatcher implements Matcher {
                                                                order.getPrice(),
                                                                opponentOrder.getPrice());
 
+        BigDecimal opponentExecutePrice = TradeHelper.calcExecutePrice(opponentOrder.getExecutePriceType(),
+                                                                       opponentOrder.getPrice(),
+                                                                       order.getPrice());
+
         TradeResult ts = new TradeResult();
         ts.setExecutePrice(executePrice);
+        ts.setOpponentExecutePrice(opponentExecutePrice);
         ts.setQuantity(quantity);
         return ts;
     }

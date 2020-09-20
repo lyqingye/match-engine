@@ -57,7 +57,7 @@ public class Order {
     /**
      * 最终成交价的取值方式
      */
-    private ExecutePriceType executePriceType = ExecutePriceType.OPPONENT;
+    private ExecutePriceType executePriceType = ExecutePriceType.SELF;
 
     /**
      * 价格

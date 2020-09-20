@@ -16,6 +16,11 @@ public class TradeResult {
     private BigDecimal executePrice;
 
     /**
+     * 对手订单最终的成交价 (市价订单没有对手订单最终成交价)
+     */
+    private BigDecimal opponentExecutePrice = BigDecimal.ZERO;
+
+    /**
      * 成交量
      */
     private BigDecimal quantity;

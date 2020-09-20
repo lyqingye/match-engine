@@ -17,19 +17,42 @@ public class ExampleLoggerHandler implements MatchHandler {
                                Order opponentOrder, TradeResult ts) throws Exception {
         BigDecimal quantity = ts.getQuantity();
 
-        System.out.println(String.format("订单: %s %s 成交数量: %s 成交价格: %s 剩余数量: %s",
-                                         order.getId(),
-                                         order.isBuy() ? "买入" : "卖出",
-                                         quantity.toPlainString(),
-                                         ts.getExecutePrice().toPlainString(),
-                                         order.getLeavesQuantity().toPlainString()));
 
-        System.out.println(String.format("订单: %s %s 成交数量: %s 成交价格: %s 剩余数量: %s",
-                                         opponentOrder.getId(),
-                                         opponentOrder.isBuy() ? "买入" : "卖出",
-                                         quantity.toPlainString(),
-                                         ts.getExecutePrice().toPlainString(),
-                                         opponentOrder.getLeavesQuantity().toPlainString()));
+
+        if (!opponentOrder.isMarketOrder()) {
+
+            System.out.println(String.format("订单: %s %s 成交数量: %s 成交价格: %s 剩余数量: %s",
+                                             order.getId(),
+                                             order.isBuy() ? "买入" : "卖出",
+                                             quantity.toPlainString(),
+                                             ts.getExecutePrice().toPlainString(),
+                                             order.getLeavesQuantity().toPlainString()));
+
+
+            System.out.println(String.format("订单: %s %s 成交数量: %s 成交价格: %s 剩余数量: %s",
+                                             opponentOrder.getId(),
+                                             opponentOrder.isBuy() ? "买入" : "卖出",
+                                             quantity.toPlainString(),
+                                             ts.getOpponentExecutePrice().toPlainString(),
+                                             opponentOrder.getLeavesQuantity().toPlainString()));
+        }else {
+
+            System.out.println(String.format("订单: %s %s 成交数量: %s 成交价格: %s 剩余数量: %s",
+                                             order.getId(),
+                                             order.isBuy() ? "买入" : "卖出",
+                                             quantity.toPlainString(),
+                                             ts.getExecutePrice().toPlainString(),
+                                             order.getLeavesQuantity().toPlainString()));
+
+
+            System.out.println(String.format("订单: %s %s 成交数量: %s 成交价格: %s 剩余数量: %s",
+                                             opponentOrder.getId(),
+                                             opponentOrder.isBuy() ? "买入" : "卖出",
+                                             quantity.toPlainString(),
+                                             ts.getExecutePrice().toPlainString(),
+                                             opponentOrder.getLeavesQuantity().toPlainString()));
+        }
+
 
         System.out.println("--------------------------------------------------------");
     }

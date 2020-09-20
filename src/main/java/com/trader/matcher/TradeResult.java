@@ -11,21 +11,15 @@ import java.math.BigDecimal;
  */
 @Data
 public class TradeResult {
-
-    /**
-     * 当前订单的成交价 (透明)
-     */
-    private BigDecimal price;
-
-    /**
-     * 对手订单的成交价 (透明)
-     */
-    private BigDecimal opponentPrice;
-
     /**
      * 最终的成交价
      */
     private BigDecimal executePrice;
+
+    /**
+     * 对手订单的成交价
+     */
+    private BigDecimal opponentExecutePrice;
 
     /**
      * 成交量

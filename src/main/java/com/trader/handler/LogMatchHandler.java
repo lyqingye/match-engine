@@ -16,19 +16,19 @@ public class LogMatchHandler implements MatchHandler {
     public void onExecuteOrder(Order order,
                                Order opponentOrder, TradeResult ts) throws Exception {
         BigDecimal quantity = ts.getQuantity();
-        BigDecimal price = ts.getPrice();
+
         System.out.println(String.format("订单: %s %s 成交数量: %s 成交价格: %s 剩余数量: %s",
                                          order.getId(),
                                          order.isBuy() ? "买入" : "卖出",
                                          quantity.toPlainString(),
-                                         price.toPlainString(),
+                                         ts.getExecutePrice().toPlainString(),
                                          order.getLeavesQuantity().toPlainString()));
 
         System.out.println(String.format("订单: %s %s 成交数量: %s 成交价格: %s 剩余数量: %s",
                                          opponentOrder.getId(),
                                          opponentOrder.isBuy() ? "买入" : "卖出",
                                          quantity.toPlainString(),
-                                         price.toPlainString(),
+                                         ts.getOpponentExecutePrice().toPlainString(),
                                          opponentOrder.getLeavesQuantity().toPlainString()));
 
         System.out.println("--------------------------------------------------------");

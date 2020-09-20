@@ -25,7 +25,6 @@ public class InMemoryMarketMatchHandler implements MatchHandler {
     public void onExecuteOrder(Order order,
                                Order opponentOrder, TradeResult ts) throws Exception {
         BigDecimal quantity = ts.getQuantity();
-        BigDecimal price = ts.getPrice();
 
         //
         // 处理以下类型的订单
@@ -35,8 +34,8 @@ public class InMemoryMarketMatchHandler implements MatchHandler {
         // MARKET <-> STOP (市价单和止盈止损单)
 
         if (order.getType().equals(OrderType.MARKET) || opponentOrder.getType().equals(OrderType.MARKET)) {
-            this.processOrder(order, price, quantity);
-            this.processOrder(opponentOrder, price, quantity);
+            this.processOrder(order, ts.getExecutePrice(), quantity);
+            this.processOrder(opponentOrder, ts.getOpponentExecutePrice(), quantity);
         }
     }
 

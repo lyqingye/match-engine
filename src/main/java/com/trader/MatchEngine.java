@@ -5,6 +5,7 @@ import com.trader.entity.OrderBook;
 import com.trader.matcher.TradeResult;
 import com.trader.support.*;
 import lombok.Getter;
+import lombok.Synchronized;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -79,6 +80,7 @@ public class MatchEngine {
      * @param order
      *         订单
      */
+    @Synchronized
     public void addOrder(Order order) {
         OrderBook book = this.bookMgr.getBook(order);
 

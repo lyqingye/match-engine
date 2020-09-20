@@ -73,29 +73,29 @@ public class MatchEngine {
     private MarketManager marketManager;
 
     public void addProduct(Product product) {
-        productMap.put(product.getId(),product);
+        productMap.put(product.getId(), product);
     }
 
-    public Product getProduct (String id) {
+    public Product getProduct(String id) {
         return productMap.get(id);
     }
 
     public void addCurrency(Currency currency) {
-        currencyMap.put(currency.getId(),currency);
+        currencyMap.put(currency.getId(), currency);
     }
 
-    public Currency getCurrency (String id) {
+    public Currency getCurrency(String id) {
         return currencyMap.get(id);
     }
 
-    private OrderBook getBook (Order order) {
+    private OrderBook getBook(Order order) {
         OrderBook book = bookMap.get(order.getSymbol());
         if (book == null) {
             OrderBook newBook = new OrderBook();
             newBook.setProduct(this.getProduct(order.getProductId()));
             newBook.setCurrency(this.getCurrency(order.getCurrencyId()));
             book = newBook;
-            bookMap.put(order.getSymbol(),newBook);
+            bookMap.put(order.getSymbol(), newBook);
         }
         return book;
     }
@@ -103,7 +103,8 @@ public class MatchEngine {
     /**
      * 添加订单
      *
-     * @param order 订单
+     * @param order
+     *         订单
      */
     public void addOrder(Order order) {
         OrderBook book = this.getBook(order);
@@ -132,20 +133,6 @@ public class MatchEngine {
         }
     }
 
-    public void matchMarket(OrderBook book, Order order) {
-        if (order.isBuy()) {
-            Order bestAsk = book.getBestAsk();
-            if (bestAsk == null)
-                return;
-            order.setPrice(bestAsk.getPrice());
-        } else {
-            Order bestBid = book.getBestBid();
-            if (bestBid == null)
-                return;
-            order.setPrice(bestBid.getPrice());
-        }
-    }
-
     /**
      * 撮合限价单
      *
@@ -168,12 +155,14 @@ public class MatchEngine {
         while (opponentIt.hasNext()) {
             Order best = opponentIt.next();
 
+            // 查找订单匹配器
             Matcher matcher = this.lookupMatcher(order, best);
 
             if (matcher == null) {
                 return;
             }
 
+            // 执行撮合
             TradeResult ts = matcher.doTrade(order, best);
 
             //
@@ -182,6 +171,7 @@ public class MatchEngine {
             Order snap_order = order.snap();
             Order snap_best = best.snap();
 
+            // NOTE TEST ONLY
             System.out.println(book.render_bid_ask());
 
             //
@@ -225,55 +215,22 @@ public class MatchEngine {
         }
     }
 
-    public void addMatcher (Matcher matcher) {
+    public void addMatcher(Matcher matcher) {
         this.matchers.add(Objects.requireNonNull(matcher));
     }
 
-    private Matcher lookupMatcher (Order order, Order opponentOrder) {
+    private Matcher lookupMatcher(Order order, Order opponentOrder) {
         return this.matchers.stream()
                             .filter(matcher -> matcher.isSupport(order, opponentOrder))
                             .findFirst()
                             .orElse(null);
     }
 
-
-    /****************************************
-     *              止盈止损
-     ****************************************/
-
     /**
-     * 激活一个止盈止损的单
-     *
-     * @param order
-     *         订单
-     *
-     * @return
-     */
-    private boolean activateStopOrder(Order order) {
-        return false;
-    }
-
-    /**
-     * 批量激活止盈止损的单
-     *
-     * @param orders
-     *         订单
-     *
-     * @return
-     */
-    private boolean activateStopOrders(List<Order> orders) {
-        return false;
-    }
-
-
-    /****************************************
-     *              事件处理器
-     ****************************************
-
-     /**
      * 添加一个事件处理器
      *
-     * @param h {@link MatchHandler}
+     * @param h
+     *         {@link MatchHandler}
      */
     public void addHandler(MatchHandler h) {
         Objects.requireNonNull(h, "handler is null");
@@ -295,13 +252,9 @@ public class MatchEngine {
         }
     }
 
-
-    /****************************************
-     *              引擎撮合状态
-     ****************************************
-
-     /**
+    /**
      * 是否正在撮合
+     *
      * @return 是否正在撮合
      */
     public boolean isMatching() {

@@ -2,6 +2,7 @@ package com.trader;
 
 import com.trader.context.MatchingContext;
 import com.trader.entity.Order;
+import com.trader.helper.TradeHelper;
 import com.trader.matcher.TradeResult;
 
 /**
@@ -34,7 +35,9 @@ public interface Matcher {
      * @param order order
      * @return 是否已经结束
      */
-    boolean isFinished (Order order);
+    default boolean isFinished (Order order) {
+        return TradeHelper.isFinished(order);
+    }
 
     /**
      * 获取上下文

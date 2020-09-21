@@ -52,8 +52,17 @@ public class MarketOrderMatcher implements Matcher {
         //
         /** 撮合条件判定只需要判定双方买卖价格即可, 参考限价交易 {@link com.trader.matcher.limit.LimitOrderMatcher}*/
 
-        BigDecimal orderPrice = order.isMarketOrder() ? marketPrice : order.getPrice();
-        BigDecimal opponentPrice = opponentOrder.isMarketOrder() ? marketPrice : opponentOrder.getPrice();
+        BigDecimal price = order.isMarketOrder() ? marketPrice : order.getBoundPrice();
+        BigDecimal opponentPrice = opponentOrder.isMarketOrder() ? marketPrice : opponentOrder.getBoundPrice();
+
+        //
+        // 判断是否有足够的钱进行购买
+        //
+        if (!TradeHelper.isHasEnoughAmount(order,opponentPrice) ||
+        !TradeHelper.isHasEnoughAmount(opponentOrder,price)) {
+            return false;
+        }
+
 
         //
         // 区分买卖单:
@@ -62,9 +71,9 @@ public class MarketOrderMatcher implements Matcher {
         //
         boolean arbitrage;
         if (order.isBuy()) {
-            arbitrage = opponentPrice.compareTo(orderPrice) <= 0;
+            arbitrage = opponentPrice.compareTo(price) <= 0;
         } else {
-            arbitrage = opponentPrice.compareTo(orderPrice) >= 0;
+            arbitrage = opponentPrice.compareTo(price) >= 0;
         }
 
         if (!arbitrage)
@@ -92,7 +101,6 @@ public class MarketOrderMatcher implements Matcher {
         // TODO 市场价格的获取
         BigDecimal marketPrice = BigDecimal.TEN;
 
-
         //
         // 如果订单为市价单, 并且为买入单:
         // 那么: 剩余执行数量 = 剩余交易额 / 市价
@@ -112,9 +120,6 @@ public class MarketOrderMatcher implements Matcher {
         BigDecimal quantity = MathUtils.min(leavesQuality,
                                             opponentLeavesQuality);
 
-        BigDecimal orderPrice = order.isMarketOrder() ? marketPrice : order.getPrice();
-        BigDecimal opponentPrice = opponentOrder.isMarketOrder() ? marketPrice : opponentOrder.getPrice();
-
         // 计算最终成交价
         TradeResult ts = TradeHelper.calcExecutePrice(order,
                                                       opponentOrder,
@@ -123,16 +128,5 @@ public class MarketOrderMatcher implements Matcher {
         return ts;
     }
 
-    /**
-     * 目标订单是否已经结束
-     *
-     * @param order
-     *         order
-     *
-     * @return 是否已经结束
-     */
-    @Override
-    public boolean isFinished(Order order) {
-        return order.getLeavesAmount().compareTo(BigDecimal.ZERO) == 0;
-    }
+
 }

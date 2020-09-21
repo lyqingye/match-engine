@@ -15,40 +15,54 @@ import java.math.RoundingMode;
 public class TradeHelper {
 
     /**
-     * 计算最终成交价
+     * 判断买家的钱是否能够买得起最少的数量
      *
-     * @param type {@link ExecutePriceType}
-     * @param price 当前订单价格
-     * @param opponentPrice 对手盘价格
-     * @return 最终成交价格
+     * @param order 订单
+     * @param unitPrice 单价
+     * @return 是否能够买得起最少的数量
      */
-    public static final BigDecimal calcExecutePrice (ExecutePriceType type,
-                                                     BigDecimal price,
-                                                     BigDecimal opponentPrice) {
-
-        switch (type) {
-            case SELF: {
-                return price;
+    public static boolean isHasEnoughAmount(Order order, BigDecimal unitPrice) {
+        //
+        // 如果买家剩余的钱连 0.00000001 都买不起那就直接无法撮合, 因为成交数量不能为空
+        //
+        if (order.isBuy()) {
+            if (order.getLeavesAmount().divide(unitPrice, RoundingMode.DOWN).compareTo(BigDecimal.ZERO) == 0) {
+                return false;
             }
+        }
+        return true;
+    }
 
-            case MIDDLE: {
-                return price.add(opponentPrice)
-                            .divide(BigDecimal.valueOf(2),RoundingMode.DOWN);
+    /**
+     * 判断一个订单是否已经结束
+     *
+     * @param order 订单
+     * @return
+     */
+    public static boolean isFinished (Order order) {
+        switch (order.getType()) {
+            case MARKET:
+            case STOP:
+            case LIMIT: {
+                if (order.isBuy()) {
+                    return order.getLeavesAmount().compareTo(BigDecimal.ZERO) == 0;
+                }
+                return order.getLeavesQuantity().compareTo(BigDecimal.ZERO) == 0;
             }
-
-            case OPPONENT: {
-                return opponentPrice;
+            default: {
+                throw new IllegalArgumentException("非法订单类型");
             }
-
-            case RANDOM: {
-                return MathUtils.random(MathUtils.min(price,opponentPrice),
-                                        MathUtils.max(price,opponentPrice));
-            }
-
-            default: {throw new IllegalArgumentException("不支持的成交价方式");}
         }
     }
 
+    /**
+     * 计算成交价
+     *
+     * @param order 订单
+     * @param opponentOrder 对手订单
+     * @param marketPrice 市场价格（可以为空）
+     * @return 成交价格
+     */
     public static TradeResult calcExecutePrice (Order order,
                                                 Order opponentOrder,
                                                 BigDecimal marketPrice) {

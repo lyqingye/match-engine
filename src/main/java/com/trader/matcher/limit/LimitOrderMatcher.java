@@ -59,17 +59,11 @@ public class LimitOrderMatcher implements Matcher {
             return false;
 
         //
-        // 如果买家的钱连 0.00000001 都买不起那就直接无法撮合, 因为成交数量不能为空
+        // 判断是否有足够的钱进行购买
         //
-        if (order.isBuy()) {
-            if (order.getLeavesAmount().divide(opponentPrice, RoundingMode.DOWN).compareTo(BigDecimal.ZERO) == 0) {
-                return false;
-            }
-        }
-        if (opponentOrder.isBuy()) {
-            if (opponentOrder.getLeavesAmount().divide(price, RoundingMode.DOWN).compareTo(BigDecimal.ZERO) == 0) {
-                return false;
-            }
+        if (!TradeHelper.isHasEnoughAmount(order,opponentPrice) ||
+                !TradeHelper.isHasEnoughAmount(opponentOrder,price)) {
+            return false;
         }
 
         //
@@ -108,24 +102,17 @@ public class LimitOrderMatcher implements Matcher {
     public TradeResult doTrade(Order order, Order opponentOrder) {
 
         //
-        // 平台要吃掉差价. 并且这个过程对于用户来说是透明的.
-        // 例：
-        // 买家以 10块单价买入BTC 10个
-        // 卖家以 9块单价卖出BTC 10个
-        // 所以对于买家来说, 成交价是 10 块
-        // 卖家的成交价是: 9块
-        // 🐮🍺
-
+        // 计算成交价
+        //
         TradeResult ts = TradeHelper.calcExecutePrice(order,
                                                       opponentOrder,
                                                       null);
-
-        // 计算当前订单最终成交价
         BigDecimal executePrice = ts.getExecutePrice();
-
-        // 计算目标订单最终成交价
         BigDecimal opponentExecutePrice = ts.getOpponentExecutePrice();
 
+        //
+        // 计算最终成交量
+        //
         BigDecimal quantity = order.getLeavesQuantity();
         BigDecimal opponentQuantity = opponentOrder.getLeavesQuantity();
 
@@ -142,27 +129,10 @@ public class LimitOrderMatcher implements Matcher {
                                             .divide(opponentExecutePrice, RoundingMode.DOWN);
         }
 
-        // 计算成交量
+        // 成交量取两者最少部分
         BigDecimal executeQuantity = MathUtils.min(quantity,
                                                    opponentQuantity);
-
         ts.setQuantity(executeQuantity);
         return ts;
-    }
-
-    /**
-     * 目标订单是否已经结束
-     *
-     * @param order
-     *         order
-     *
-     * @return 是否已经结束
-     */
-    @Override
-    public boolean isFinished(Order order) {
-        if (order.isBuy()) {
-            return order.getLeavesAmount().compareTo(BigDecimal.ZERO) == 0;
-        }
-        return order.getLeavesQuantity().compareTo(BigDecimal.ZERO) == 0;
     }
 }

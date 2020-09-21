@@ -69,7 +69,14 @@ public class CsvOrderReader {
 
             if (order.isSell()) {
                 order.setLeavesQuantity(order.getQuantity());
+
+                if (order.isMarketOrder()) {
+                    order.setLeavesAmount(BigDecimal.ZERO);
+                    order.setTotalAmount(BigDecimal.ZERO);
+                }
             }
+
+
 
             result.add(order);
         }

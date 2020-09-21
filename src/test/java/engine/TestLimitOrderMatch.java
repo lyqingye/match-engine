@@ -13,12 +13,16 @@ import com.trader.matcher.limit.LimitOrderMatcher;
 import com.trader.matcher.market.InMemoryMarketMatchHandler;
 import com.trader.matcher.market.MarketOrderMatcher;
 import com.trader.utils.SnowflakeIdWorker;
+import helper.CsvOrderReader;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author yjt
@@ -155,13 +159,22 @@ public class TestLimitOrderMatch {
 //        sell4.setCreateDateTime(new Date());
 
 
-        engine.addOrder(buy1);
-        engine.addOrder(buy2);
-        engine.addOrder(buy3);
-        engine.addOrder(sell1);
-        engine.addOrder(sell2);
-        engine.addOrder(sell3);
+//        engine.addOrder(buy1);
+//        engine.addOrder(buy2);
+//        engine.addOrder(buy3);
+//        engine.addOrder(sell1);
+//        engine.addOrder(sell2);
+//        engine.addOrder(sell3);
 //        engine.addOrder(sell4);
+
+        try {
+            List<Order> orderList = CsvOrderReader.read(new File("/home/ex/桌面/order.csv"));
+            for (Order order : orderList) {
+                engine.addOrder(order);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
     }
 

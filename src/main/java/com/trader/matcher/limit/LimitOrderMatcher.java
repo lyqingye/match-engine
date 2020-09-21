@@ -8,6 +8,7 @@ import com.trader.matcher.TradeResult;
 import com.trader.utils.MathUtils;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /**
  * 限价订单匹配器
@@ -39,10 +40,8 @@ public class LimitOrderMatcher implements Matcher {
 //            return false;
 //        }
 
-        BigDecimal price = order.getPrice();
-        BigDecimal opponentPrice = opponentOrder.getPrice();
-
-
+        BigDecimal price = order.getBoundPrice();
+        BigDecimal opponentPrice = opponentOrder.getBoundPrice();
 
         //
         // 区分买卖单:
@@ -51,35 +50,27 @@ public class LimitOrderMatcher implements Matcher {
         //
         boolean arbitrage;
         if (order.isBuy()) {
-
-            // 买入价上界
-            if (order.getPriceUpperBound().compareTo(BigDecimal.ZERO) > 0) {
-                price = price.add(price.multiply(order.getPriceUpperBound()));
-            }
-
-            // 卖出价下限
-            if (opponentOrder.getPriceLowerBound().compareTo(BigDecimal.ZERO) > 0) {
-                opponentPrice = opponentPrice.subtract(opponentPrice.multiply(opponentOrder.getPriceUpperBound()));
-            }
-
             arbitrage = opponentPrice.compareTo(price) <= 0;
         } else {
-
-            // 卖出价下限
-            if (order.getPriceLowerBound().compareTo(BigDecimal.ZERO) > 0) {
-                price = price.subtract(price.multiply(order.getPriceLowerBound()));
-            }
-
-            // 买入价上限
-            if (opponentOrder.getPriceUpperBound().compareTo(BigDecimal.ZERO) > 0) {
-                opponentPrice = opponentPrice.add(opponentPrice.multiply(opponentOrder.getPriceUpperBound()));
-            }
-
             arbitrage = opponentPrice.compareTo(price) >= 0;
         }
 
         if (!arbitrage)
             return false;
+
+        //
+        // 如果买家的钱连 0.00000001 都买不起那就直接无法撮合, 因为成交数量不能为空
+        //
+        if (order.isBuy()) {
+            if (order.getLeavesAmount().divide(opponentPrice, RoundingMode.DOWN).compareTo(BigDecimal.ZERO) == 0) {
+                return false;
+            }
+        }
+        if (opponentOrder.isBuy()) {
+            if (opponentOrder.getLeavesAmount().divide(price, RoundingMode.DOWN).compareTo(BigDecimal.ZERO) == 0) {
+                return false;
+            }
+        }
 
         //
         // TODO 处理全量交易
@@ -115,9 +106,6 @@ public class LimitOrderMatcher implements Matcher {
      */
     @Override
     public TradeResult doTrade(Order order, Order opponentOrder) {
-        // 计算成交量
-        BigDecimal quantity = MathUtils.min(order.getLeavesQuantity(),
-                                            opponentOrder.getLeavesQuantity());
 
         //
         // 平台要吃掉差价. 并且这个过程对于用户来说是透明的.
@@ -128,19 +116,37 @@ public class LimitOrderMatcher implements Matcher {
         // 卖家的成交价是: 9块
         // 🐮🍺
 
+        TradeResult ts = TradeHelper.calcExecutePrice(order,
+                                                      opponentOrder,
+                                                      null);
+
         // 计算当前订单最终成交价
-        BigDecimal executePrice = TradeHelper.calcExecutePrice(order.getExecutePriceType(),
-                                                               order.getPrice(),
-                                                               opponentOrder.getPrice());
+        BigDecimal executePrice = ts.getExecutePrice();
 
-        BigDecimal opponentExecutePrice = TradeHelper.calcExecutePrice(opponentOrder.getExecutePriceType(),
-                                                                       opponentOrder.getPrice(),
-                                                                       order.getPrice());
+        // 计算目标订单最终成交价
+        BigDecimal opponentExecutePrice = ts.getOpponentExecutePrice();
 
-        TradeResult ts = new TradeResult();
-        ts.setExecutePrice(executePrice);
-        ts.setOpponentExecutePrice(opponentExecutePrice);
-        ts.setQuantity(quantity);
+        BigDecimal quantity = order.getLeavesQuantity();
+        BigDecimal opponentQuantity = opponentOrder.getLeavesQuantity();
+
+        //
+        // 如果是买入单, 则需要用待执行金额 / 成交价 = 待执行数量
+        //
+        if (order.isBuy()) {
+            quantity = order.getLeavesAmount()
+                            .divide(executePrice, RoundingMode.DOWN);
+        }
+
+        if (opponentOrder.isBuy()) {
+            opponentQuantity = opponentOrder.getLeavesAmount()
+                                            .divide(opponentExecutePrice, RoundingMode.DOWN);
+        }
+
+        // 计算成交量
+        BigDecimal executeQuantity = MathUtils.min(quantity,
+                                                   opponentQuantity);
+
+        ts.setQuantity(executeQuantity);
         return ts;
     }
 
@@ -154,6 +160,9 @@ public class LimitOrderMatcher implements Matcher {
      */
     @Override
     public boolean isFinished(Order order) {
+        if (order.isBuy()) {
+            return order.getLeavesAmount().compareTo(BigDecimal.ZERO) == 0;
+        }
         return order.getLeavesQuantity().compareTo(BigDecimal.ZERO) == 0;
     }
 }

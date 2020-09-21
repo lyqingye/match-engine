@@ -50,8 +50,13 @@ public class TestLimitOrderMatch {
         Order buy1 = new Order();
         buy1.setId(SnowflakeIdWorker.nextId());
         buy1.setPrice(BigDecimal.valueOf(10));
-        buy1.setQuantity(BigDecimal.valueOf(100));
-        buy1.setLeavesQuantity(BigDecimal.valueOf(100));
+        buy1.setQuantity(BigDecimal.valueOf(10));
+        buy1.setTotalAmount(BigDecimal.valueOf(100));
+        buy1.setLeavesAmount(BigDecimal.valueOf(100));
+
+        // 容差 10%
+        buy1.setPriceUpperBound(BigDecimal.valueOf(0.1));
+
         buy1.setProductId("BTC");
         buy1.setCurrencyId("USDT");
         buy1.setType(OrderType.LIMIT);
@@ -64,9 +69,10 @@ public class TestLimitOrderMatch {
         // 单价11 买入 100个
         Order buy2 = new Order();
         buy2.setId(SnowflakeIdWorker.nextId());
-        buy2.setPrice(BigDecimal.valueOf(11));
+        buy2.setPrice(BigDecimal.valueOf(10));
         buy2.setQuantity(BigDecimal.valueOf(100));
-        buy2.setLeavesQuantity(BigDecimal.valueOf(100));
+        buy2.setTotalAmount(BigDecimal.valueOf(1000));
+        buy2.setLeavesAmount(BigDecimal.valueOf(1000));
         buy2.setProductId("BTC");
         buy2.setCurrencyId("USDT");
         buy2.setType(OrderType.LIMIT);
@@ -78,9 +84,10 @@ public class TestLimitOrderMatch {
         // 单价12 买入 10个
         Order buy3 = new Order();
         buy3.setId(SnowflakeIdWorker.nextId());
-        buy3.setPrice(BigDecimal.valueOf(12));
+        buy3.setPrice(BigDecimal.valueOf(10));
         buy3.setQuantity(BigDecimal.valueOf(10));
-        buy3.setLeavesQuantity(BigDecimal.valueOf(10));
+        buy3.setTotalAmount(BigDecimal.valueOf(100));
+        buy3.setLeavesAmount(BigDecimal.valueOf(100));
         buy3.setProductId("BTC");
         buy3.setCurrencyId("USDT");
         buy3.setType(OrderType.LIMIT);
@@ -93,7 +100,7 @@ public class TestLimitOrderMatch {
         // 单价10 卖出 90个
         Order sell1 = new Order();
         sell1.setId(SnowflakeIdWorker.nextId());
-        sell1.setPrice(BigDecimal.valueOf(10));
+        sell1.setPrice(BigDecimal.valueOf(11));
         sell1.setQuantity(BigDecimal.valueOf(90));
         sell1.setLeavesQuantity(BigDecimal.valueOf(90));
         sell1.setProductId("BTC");
@@ -121,7 +128,7 @@ public class TestLimitOrderMatch {
         // 单价10 卖出 10个
         Order sell3 = new Order();
         sell3.setId(SnowflakeIdWorker.nextId());
-        sell3.setPrice(BigDecimal.valueOf(10));
+        sell3.setPrice(BigDecimal.valueOf(11));
         sell3.setQuantity(BigDecimal.valueOf(10));
         sell3.setLeavesQuantity(BigDecimal.valueOf(10));
         sell3.setProductId("BTC");
@@ -133,19 +140,19 @@ public class TestLimitOrderMatch {
         sell3.setCreateDateTime(new Date());
 
 
-        // 市价 卖10个
-        Order sell4 = new Order();
-        sell4.setId(SnowflakeIdWorker.nextId());
-        sell4.setQuantity(BigDecimal.valueOf(10));
-        sell4.setLeavesQuantity(BigDecimal.valueOf(10));
-        sell4.setPrice(BigDecimal.valueOf(-1));
-        sell4.setProductId("BTC");
-        sell4.setCurrencyId("USDT");
-        sell4.setType(OrderType.MARKET);
-        sell4.setTimeInForce(OrderTimeInForce.GTC);
-        sell4.setUid("1");
-        sell4.setSide(OrderSide.SELL);
-        sell4.setCreateDateTime(new Date());
+//        // 市价 卖10个
+//        Order sell4 = new Order();
+//        sell4.setId(SnowflakeIdWorker.nextId());
+//        sell4.setQuantity(BigDecimal.valueOf(10));
+//        sell4.setLeavesQuantity(BigDecimal.valueOf(10));
+//        sell4.setPrice(BigDecimal.valueOf(-1));
+//        sell4.setProductId("BTC");
+//        sell4.setCurrencyId("USDT");
+//        sell4.setType(OrderType.MARKET);
+//        sell4.setTimeInForce(OrderTimeInForce.GTC);
+//        sell4.setUid("1");
+//        sell4.setSide(OrderSide.SELL);
+//        sell4.setCreateDateTime(new Date());
 
 
         engine.addOrder(buy1);
@@ -154,7 +161,7 @@ public class TestLimitOrderMatch {
         engine.addOrder(sell1);
         engine.addOrder(sell2);
         engine.addOrder(sell3);
-        engine.addOrder(sell4);
+//        engine.addOrder(sell4);
 
     }
 

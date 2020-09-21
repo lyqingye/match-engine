@@ -4,6 +4,7 @@ import com.trader.entity.Order;
 import com.trader.entity.OrderBook;
 import com.trader.matcher.TradeResult;
 import com.trader.support.*;
+import jdk.nashorn.internal.runtime.regexp.joni.exception.InternalException;
 import lombok.Getter;
 import lombok.Synchronized;
 
@@ -26,6 +27,11 @@ public class MatchEngine {
      * 标志撮合引擎是否正在进行撮合
      */
     private volatile boolean isMatching = false;
+
+    /**
+     * 是否开启日志
+     */
+    private volatile boolean isEnableLog = false;
 
     /**
      * 处理器列表
@@ -98,6 +104,7 @@ public class MatchEngine {
             } catch (Exception e) {
                 this.orderMgr.removeOrder(order);
                 book.removeOrder(newOrder);
+                throw new InternalException(e.getMessage());
             }
         });
 
@@ -136,6 +143,14 @@ public class MatchEngine {
                 return;
             }
 
+            if (matcher.isFinished(order)) {
+                return;
+            }
+
+            if (matcher.isFinished(best)) {
+                continue;
+            }
+
             // 执行撮合
             TradeResult ts = matcher.doTrade(order, best);
 
@@ -162,8 +177,7 @@ public class MatchEngine {
                 } catch (Exception e) {
                     order.rollback(snap_order);
                     best.rollback(snap_best);
-
-                    System.err.println(e.getMessage());
+                    throw new InternalException(e.getMessage());
                 }
             });
 
@@ -263,5 +277,19 @@ public class MatchEngine {
      */
     public void enableMatching() {
         this.isMatching = true;
+    }
+
+    /**
+     * 开启日志
+     */
+    public void enableLog () {
+        this.isEnableLog = true;
+    }
+
+    /**
+     * 关闭日志
+     */
+    public void disableLog () {
+        this.isEnableLog = false;
     }
 }

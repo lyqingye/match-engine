@@ -5,6 +5,7 @@ import com.trader.entity.Order;
 import com.trader.matcher.TradeResult;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /**
  * @author yjt
@@ -16,24 +17,51 @@ public class InMemoryLimitMatchHandler implements MatchHandler {
      *
      * @param order
      * @param opponentOrder
-     * @param tradeResult
+     * @param ts
+     *
      * @throws Exception
      */
     @Override
     public void onExecuteOrder(Order order,
-                               Order opponentOrder, TradeResult tradeResult) throws Exception {
+                               Order opponentOrder, TradeResult ts) throws Exception {
 
         switch (order.getType()) {
             case STOP:
             case LIMIT: {
-                BigDecimal quantity = tradeResult.getQuantity();
-                //
-                // 增加成交量, 与减少剩余成交量
-                //
-                order.incExecutedQuality(quantity);
-                order.decLeavesQuality(quantity);
-                opponentOrder.incExecutedQuality(quantity);
-                opponentOrder.decLeavesQuality(quantity);
+
+                if (order.isBuy()) {
+                    // 限价买单
+                    BigDecimal executeAmount = ts.getExecutePrice()
+                                                 .multiply(ts.getQuantity())
+                                                 .setScale(8, RoundingMode.DOWN);
+                    order.decLeavesAmount(executeAmount);
+                    order.incExecutedAmount(executeAmount);
+                    order.incExecutedQuality(ts.getQuantity());
+                } else {
+                    BigDecimal quantity = ts.getQuantity();
+                    //
+                    // 增加成交量, 与减少剩余成交量
+                    //
+                    order.incExecutedQuality(quantity);
+                    order.decLeavesQuality(quantity);
+                }
+
+                if (opponentOrder.isBuy()) {
+                    // 限价买单
+                    BigDecimal executeAmount = ts.getOpponentExecutePrice()
+                                                 .multiply(ts.getQuantity())
+                                                 .setScale(8, RoundingMode.DOWN);
+                    opponentOrder.decLeavesAmount(executeAmount);
+                    opponentOrder.incExecutedAmount(executeAmount);
+                    opponentOrder.incExecutedQuality(ts.getQuantity());
+                } else {
+                    BigDecimal quantity = ts.getQuantity();
+                    //
+                    // 增加成交量, 与减少剩余成交量
+                    //
+                    opponentOrder.incExecutedQuality(quantity);
+                    opponentOrder.decLeavesQuality(quantity);
+                }
                 break;
             }
             default: {

@@ -2,6 +2,7 @@ package com.trader.helper;
 
 import com.trader.def.ExecutePriceType;
 import com.trader.entity.Order;
+import com.trader.matcher.TradeResult;
 import com.trader.utils.MathUtils;
 
 import java.math.BigDecimal;
@@ -46,5 +47,79 @@ public class TradeHelper {
 
             default: {throw new IllegalArgumentException("不支持的成交价方式");}
         }
+    }
+
+    public static TradeResult calcExecutePrice (Order order,
+                                                Order opponentOrder,
+                                                BigDecimal marketPrice) {
+
+        BigDecimal price = order.isMarketOrder() ? marketPrice :order.getBoundPrice();
+        BigDecimal opponentPrice = opponentOrder.isMarketOrder() ? marketPrice :opponentOrder.getBoundPrice();
+
+        if (price == null || opponentPrice == null) {
+            throw new IllegalArgumentException("计算成交价失败, 非法价格");
+        }
+
+        TradeResult ts = new TradeResult();
+        switch (order.getDifferencePriceStrategy()) {
+            case PLATFORM: {
+                // 平台通吃
+                if (!order.isMarketOrder()) {
+                    price = order.getBoundPrice();
+                }
+
+                if (!opponentOrder.isMarketOrder()) {
+                    opponentPrice = opponentOrder.getBoundPrice();
+                }
+
+                ts.setExecutePrice(price);
+                ts.setOpponentExecutePrice(opponentPrice);
+                break;
+            }
+
+            case TIME_FIRST: {
+
+                // 最早挂单者吃到差价
+                if (order.getCreateDateTime().before(opponentOrder.getCreateDateTime())) {
+                    ts.setExecutePrice(opponentPrice);
+                    ts.setOpponentExecutePrice(opponentPrice);
+                }else {
+                    ts.setExecutePrice(price);
+                    ts.setOpponentExecutePrice(price);
+                }
+                break;
+            }
+
+            case BUYER_FIRST: {
+
+                // 买家吃到差价
+                if (order.isBuy()) {
+                    ts.setExecutePrice(opponentPrice);
+                    ts.setOpponentExecutePrice(opponentPrice);
+                }else {
+                    ts.setExecutePrice(price);
+                    ts.setOpponentExecutePrice(price);
+                }
+                break;
+            }
+
+            case SELLER_FIRST: {
+
+                // 卖家吃到差价
+                if (order.isSell()) {
+                    ts.setExecutePrice(opponentPrice);
+                    ts.setOpponentExecutePrice(opponentPrice);
+                }else {
+                    ts.setExecutePrice(price);
+                    ts.setOpponentExecutePrice(price);
+                }
+                break;
+            }
+            default: {
+                throw new IllegalArgumentException("非法差价策略");
+            }
+        }
+
+        return ts;
     }
 }

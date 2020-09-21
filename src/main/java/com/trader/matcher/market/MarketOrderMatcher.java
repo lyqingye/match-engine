@@ -53,7 +53,7 @@ public class MarketOrderMatcher implements Matcher {
         /** 撮合条件判定只需要判定双方买卖价格即可, 参考限价交易 {@link com.trader.matcher.limit.LimitOrderMatcher}*/
 
         BigDecimal orderPrice = order.isMarketOrder() ? marketPrice : order.getPrice();
-        BigDecimal opponentPrice = opponentOrder.isMarketOrder() ?  marketPrice : opponentOrder.getPrice();
+        BigDecimal opponentPrice = opponentOrder.isMarketOrder() ? marketPrice : opponentOrder.getPrice();
 
         //
         // 区分买卖单:
@@ -113,14 +113,12 @@ public class MarketOrderMatcher implements Matcher {
                                             opponentLeavesQuality);
 
         BigDecimal orderPrice = order.isMarketOrder() ? marketPrice : order.getPrice();
-        BigDecimal opponentPrice = opponentOrder.isMarketOrder() ?  marketPrice : opponentOrder.getPrice();
+        BigDecimal opponentPrice = opponentOrder.isMarketOrder() ? marketPrice : opponentOrder.getPrice();
 
         // 计算最终成交价
-        BigDecimal executePrice = TradeHelper.calcExecutePrice(order.getExecutePriceType(),
-                                                               orderPrice,
-                                                               opponentPrice);
-        TradeResult ts = new TradeResult();
-        ts.setExecutePrice(executePrice);
+        TradeResult ts = TradeHelper.calcExecutePrice(order,
+                                                      opponentOrder,
+                                                      marketPrice);
         ts.setQuantity(quantity);
         return ts;
     }

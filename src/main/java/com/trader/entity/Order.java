@@ -1,9 +1,6 @@
 package com.trader.entity;
 
-import com.trader.def.ExecutePriceType;
-import com.trader.def.OrderSide;
-import com.trader.def.OrderTimeInForce;
-import com.trader.def.OrderType;
+import com.trader.def.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -54,30 +51,40 @@ public class Order {
      */
     private OrderSide side;
 
+//    /**
+//     * 最终成交价的取值方式
+//     */
+//    private ExecutePriceType executePriceType = ExecutePriceType.OPPONENT;
+
     /**
-     * 最终成交价的取值方式
+     * 差价策略
      */
-    private ExecutePriceType executePriceType = ExecutePriceType.SELF;
+    private DifferencePriceStrategy differencePriceStrategy = DifferencePriceStrategy.BUYER_FIRST;
 
     /**
      * 价格
      */
-    private BigDecimal price;
+    private BigDecimal price = BigDecimal.ZERO;
 
     /**
-     * 上限
+     * 上限 (非市价单)
      */
-    private BigDecimal priceUpperBound;
+    private BigDecimal priceUpperBound = BigDecimal.ZERO;
 
     /**
-     * 下界
+     * 下界 (非市价单)
      */
-    private BigDecimal priceLowerBound;
+    private BigDecimal priceLowerBound = BigDecimal.ZERO;
+
+    /**
+     * 触发价 (止盈止损)
+     */
+    private BigDecimal triggerPrice = BigDecimal.ZERO;
 
     /**
      * 数量
      */
-    private BigDecimal quantity;
+    private BigDecimal quantity = BigDecimal.ZERO;
 
     /**
      * 已经执行的数量 （买入/卖出）的数量
@@ -90,17 +97,17 @@ public class Order {
     private BigDecimal leavesQuantity = BigDecimal.ZERO;
 
     /**
-     * 总金额 （市价订单）
+     * 总金额 （市价买单 | 限价买单）
      */
-    private BigDecimal totalAmount;
+    private BigDecimal totalAmount = BigDecimal.ZERO;
 
     /**
-     * 已经执行的金额 （市价订单）
+     * 已经执行的金额 （市价买单 | 限价买单）
      */
     private BigDecimal executedAmount = BigDecimal.ZERO;
 
     /**
-     * 剩余执行的金额 （市价订单）
+     * 剩余执行的金额 （市价买单 | 限价买单）
      */
     private BigDecimal leavesAmount = BigDecimal.ZERO;
 
@@ -163,7 +170,7 @@ public class Order {
      *
      * @return
      */
-    public BigDecimal getPriceBound () {
+    public BigDecimal getBoundPrice() {
 
         // 市价单没有上界和下限
         if (isMarketOrder()) {
@@ -178,6 +185,24 @@ public class Order {
             return price.add(price.multiply(this.priceUpperBound));
         }else {
             return price.subtract(price.multiply(this.priceLowerBound));
+        }
+    }
+
+    /**
+     * 是否存在上界下限价格
+     *
+     * @return 是否存在上界下限价格
+     */
+    public boolean hasBoundPrice () {
+        // 市价单没有上界和下限
+        if (isMarketOrder()) {
+            throw new IllegalArgumentException("[市价]订单不存在上界下限的价格");
+        }
+
+        if (this.isBuy()) {
+            return this.priceUpperBound.compareTo(BigDecimal.ZERO) == 0;
+        }else {
+            return this.priceLowerBound.compareTo(BigDecimal.ZERO) == 0;
         }
     }
 
@@ -226,10 +251,19 @@ public class Order {
         order.uid = uid;
         order.productId = productId;
         order.price = price;
+
+        order.totalAmount = totalAmount;
+        order.executedAmount = executedAmount;
+        order.leavesAmount = leavesAmount;
+
+        order.priceUpperBound = priceUpperBound;
+        order.priceLowerBound = priceLowerBound;
+
         order.createDateTime = createDateTime;
-        order.executedQuantity = executedQuantity;
-        order.leavesQuantity = leavesQuantity;
         order.quantity = quantity;
+        order.leavesQuantity = leavesQuantity;
+        order.executedQuantity = executedQuantity;
+
         order.side = side;
         order.type = type;
         order.timeInForce = timeInForce;
@@ -248,9 +282,18 @@ public class Order {
         this.productId = o.productId;
         this.price = o.price;
         this.createDateTime = o.createDateTime;
+
+        this.totalAmount = o.totalAmount;
+        this.executedAmount = o.executedAmount;
+        this.leavesAmount = o.leavesAmount;
+
+        this.priceUpperBound = o.priceUpperBound;
+        this.priceLowerBound = o.priceLowerBound;
+
+        this.quantity = o.quantity;
         this.executedQuantity = o.executedQuantity;
         this.leavesQuantity = o.leavesQuantity;
-        this.quantity = o.quantity;
+
         this.side = o.side;
         this.type = o.type;
         this.timeInForce = o.timeInForce;

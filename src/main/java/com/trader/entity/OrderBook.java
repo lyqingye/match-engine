@@ -5,8 +5,11 @@ import com.trader.cmp.BidComparator;
 import de.vandermeer.asciitable.AsciiTable;
 import lombok.Data;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Iterator;
 import java.util.Objects;
+import java.util.Random;
 import java.util.TreeSet;
 
 /**
@@ -154,7 +157,7 @@ public class OrderBook {
             Order bid = bidIt.hasNext() ? bidIt.next() : null;
             Order ask = askIt.hasNext() ? askIt.next() : null;
 
-            String[] row = new String[15];
+            Object[] row = new String[15];
             if (bid == null) {
                 for (int i = 0; i < 7; i++) {
                     row[i] = "-";
@@ -164,6 +167,15 @@ public class OrderBook {
                 row[1] = bid.getSide().name();
                 row[2] = bid.getType().name();
                 row[3] = bid.getPrice().toPlainString();
+
+                if (bid.getPriceUpperBound().compareTo(BigDecimal.ZERO) != 0) {
+                    row[3] += " (+" + bid.getPriceUpperBound().multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.DOWN).toPlainString() + "%)";
+                }
+
+                if (bid.getPriceLowerBound().compareTo(BigDecimal.ZERO) != 0) {
+                    row[3] += " (-" + bid.getPriceLowerBound().multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.DOWN).toPlainString() + "%)";
+                }
+
                 row[4] = bid.getQuantity().toPlainString();
                 row[5] = bid.getLeavesQuantity().toPlainString();
                 row[6] = bid.getLeavesAmount().toPlainString();
@@ -180,6 +192,15 @@ public class OrderBook {
                 row[9] = ask.getSide().name();
                 row[10] = ask.getType().name();
                 row[11] = ask.getPrice().toPlainString();
+
+                if (ask.getPriceUpperBound().compareTo(BigDecimal.ZERO) != 0) {
+                    row[11] += " (+" + ask.getPriceUpperBound().multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.DOWN).toPlainString() + "%)";
+                }
+
+                if (ask.getPriceLowerBound().compareTo(BigDecimal.ZERO) != 0) {
+                    row[11] += " (-" + ask.getPriceLowerBound().multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.DOWN).toPlainString() + "%)";;
+                }
+
                 row[12] = ask.getQuantity().toPlainString();
                 row[13] = ask.getLeavesQuantity().toPlainString();
                 row[14] = ask.getLeavesAmount().toPlainString();

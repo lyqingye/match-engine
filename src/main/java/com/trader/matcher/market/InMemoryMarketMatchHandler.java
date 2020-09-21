@@ -4,6 +4,7 @@ import com.trader.MatchHandler;
 import com.trader.def.OrderType;
 import com.trader.entity.Order;
 import com.trader.matcher.TradeResult;
+import com.trader.matcher.limit.InMemoryLimitMatchHandler;
 
 import java.math.BigDecimal;
 
@@ -34,8 +35,8 @@ public class InMemoryMarketMatchHandler implements MatchHandler {
         // MARKET <-> STOP (市价单和止盈止损单)
 
         if (order.getType().equals(OrderType.MARKET) || opponentOrder.getType().equals(OrderType.MARKET)) {
-            this.processOrder(order, ts.getExecutePrice(), quantity);
-            this.processOrder(opponentOrder, ts.getExecutePrice(), quantity);
+            InMemoryMarketMatchHandler.updateOrder(order, ts.getExecutePrice(), quantity);
+            InMemoryMarketMatchHandler.updateOrder(opponentOrder, ts.getOpponentExecutePrice(), quantity);
         }
     }
 
@@ -43,26 +44,24 @@ public class InMemoryMarketMatchHandler implements MatchHandler {
      * 扣除订单
      *
      * @param order 订单
-     * @param price 成交价
-     * @param quantity 成交量
+     * @param executePrice 成交价
+     * @param executeQuantity 成交量
      */
-    private void processOrder(Order order, BigDecimal price, BigDecimal quantity) {
+    public static void updateOrder(Order order,
+                                   BigDecimal executePrice,
+                                   BigDecimal executeQuantity) {
 
         switch (order.getType()) {
             case LIMIT:
             case STOP: {
-                /**
-                 * 如果该订单不是市价单
-                 * 比如订单是: {@link OrderType#LIMIT] 或者 {@link OrderType#STOP}
-                 * 那么就直接扣除成交量即可
-                 */
-                order.incExecutedQuality(quantity);
-                order.decLeavesQuality(quantity);
+
+                // 处理限价和止盈止损订单
+                InMemoryLimitMatchHandler.updateOrder(order, executePrice, executeQuantity);
                 break;
             }
             case MARKET: {
                 // 计算成交总金额 = 单价 * 成交量
-                BigDecimal totalAmount = price.multiply(quantity);
+                BigDecimal totalAmount = executePrice.multiply(executeQuantity);
 
                 // 如果买入单则扣除成交总金额
                 if (order.isBuy()) {
@@ -72,8 +71,8 @@ public class InMemoryMarketMatchHandler implements MatchHandler {
 
                 // 如果是卖出单则扣除成交量
                 if (order.isSell()) {
-                    order.incExecutedQuality(quantity);
-                    order.decLeavesQuality(quantity);
+                    order.incExecutedQuality(executeQuantity);
+                    order.decLeavesQuality(executeQuantity);
                 }
                 break;
             }

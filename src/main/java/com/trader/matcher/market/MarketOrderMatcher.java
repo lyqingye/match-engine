@@ -95,23 +95,30 @@ public class MarketOrderMatcher implements Matcher {
      */
     @Override
     public TradeResult doTrade(Order order, Order opponentOrder) {
-        BigDecimal leavesQuality = order.getLeavesQuantity();
-        BigDecimal opponentLeavesQuality = opponentOrder.getLeavesQuantity();
-
         // TODO 市场价格的获取
         BigDecimal marketPrice = BigDecimal.TEN;
+
+        //
+        // 计算成交价
+        //
+        TradeResult ts = TradeHelper.calcExecutePrice(order,
+                                                      opponentOrder,
+                                                      marketPrice);
+
+        BigDecimal leavesQuality = order.getLeavesQuantity();
+        BigDecimal opponentLeavesQuality = opponentOrder.getLeavesQuantity();
 
         //
         // 如果订单为市价单, 并且为买入单:
         // 那么: 剩余执行数量 = 剩余交易额 / 市价
         //
 
-        if (order.isBuyMarketOrder()) {
+        if (order.isBuy()) {
             leavesQuality = order.getLeavesAmount()
                                  .divide(marketPrice, RoundingMode.DOWN);
         }
 
-        if (opponentOrder.isBuyMarketOrder()) {
+        if (opponentOrder.isBuy()) {
             opponentLeavesQuality = opponentOrder.getLeavesAmount()
                                                  .divide(marketPrice, RoundingMode.DOWN);
         }
@@ -119,11 +126,6 @@ public class MarketOrderMatcher implements Matcher {
         // 计算成交量
         BigDecimal quantity = MathUtils.min(leavesQuality,
                                             opponentLeavesQuality);
-
-        // 计算最终成交价
-        TradeResult ts = TradeHelper.calcExecutePrice(order,
-                                                      opponentOrder,
-                                                      marketPrice);
         ts.setQuantity(quantity);
         return ts;
     }

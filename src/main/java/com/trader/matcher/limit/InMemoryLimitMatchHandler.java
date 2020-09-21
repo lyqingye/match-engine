@@ -24,49 +24,56 @@ public class InMemoryLimitMatchHandler implements MatchHandler {
     @Override
     public void onExecuteOrder(Order order,
                                Order opponentOrder, TradeResult ts) throws Exception {
+        InMemoryLimitMatchHandler.executeOrder(order, opponentOrder, ts);
+    }
 
+    /**
+     * 处理限价和止盈止损单
+     * 根据撮合结果,更新订单数据
+     *
+     * @param order 订单
+     * @param opponentOrder 对手订单
+     * @param ts 撮合结果
+     */
+    public static void executeOrder(Order order,
+                                    Order opponentOrder, TradeResult ts) {
         switch (order.getType()) {
             case STOP:
             case LIMIT: {
-
-                if (order.isBuy()) {
-                    // 限价买单
-                    BigDecimal executeAmount = ts.getExecutePrice()
-                                                 .multiply(ts.getQuantity())
-                                                 .setScale(8, RoundingMode.DOWN);
-                    order.decLeavesAmount(executeAmount);
-                    order.incExecutedAmount(executeAmount);
-                    order.incExecutedQuality(ts.getQuantity());
-                } else {
-                    BigDecimal quantity = ts.getQuantity();
-                    //
-                    // 增加成交量, 与减少剩余成交量
-                    //
-                    order.incExecutedQuality(quantity);
-                    order.decLeavesQuality(quantity);
-                }
-
-                if (opponentOrder.isBuy()) {
-                    // 限价买单
-                    BigDecimal executeAmount = ts.getOpponentExecutePrice()
-                                                 .multiply(ts.getQuantity())
-                                                 .setScale(8, RoundingMode.DOWN);
-                    opponentOrder.decLeavesAmount(executeAmount);
-                    opponentOrder.incExecutedAmount(executeAmount);
-                    opponentOrder.incExecutedQuality(ts.getQuantity());
-                } else {
-                    BigDecimal quantity = ts.getQuantity();
-                    //
-                    // 增加成交量, 与减少剩余成交量
-                    //
-                    opponentOrder.incExecutedQuality(quantity);
-                    opponentOrder.decLeavesQuality(quantity);
-                }
+                InMemoryLimitMatchHandler.updateOrder(order,ts.getExecutePrice(),ts.getQuantity());
+                InMemoryLimitMatchHandler.updateOrder(opponentOrder,ts.getOpponentExecutePrice(),ts.getQuantity());
                 break;
             }
             default: {
                 // ignored
             }
+        }
+    }
+
+    /**
+     * 更新订单
+     *
+     * @param order 订单
+     * @param executePrice 成交价格
+     * @param executeQuantity 成交数量
+     */
+    public static void updateOrder (Order order,
+                                    BigDecimal executePrice,
+                                    BigDecimal executeQuantity) {
+        if (order.isBuy()) {
+            // 限价买单
+            BigDecimal executeAmount = executePrice
+                                         .multiply(executeQuantity)
+                                         .setScale(8, RoundingMode.DOWN);
+            order.decLeavesAmount(executeAmount);
+            order.incExecutedAmount(executeAmount);
+            order.incExecutedQuality(executeQuantity);
+        } else {
+            //
+            // 增加成交量, 与减少剩余成交量
+            //
+            order.incExecutedQuality(executeQuantity);
+            order.decLeavesQuality(executeQuantity);
         }
     }
 }

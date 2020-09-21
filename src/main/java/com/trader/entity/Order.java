@@ -173,7 +173,7 @@ public class Order {
     public BigDecimal getBoundPrice() {
 
         // 市价单没有上界和下限
-        if (isMarketOrder()) {
+        if (this.isMarketOrder()) {
             throw new IllegalArgumentException("订单为市价单,不存在上届下限的价格");
         }
 

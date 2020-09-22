@@ -1,9 +1,13 @@
 package com.trader;
 
 import com.trader.context.MatchingContext;
+import com.trader.context.ThreadLocalContext;
 import com.trader.entity.Order;
 import com.trader.helper.TradeHelper;
 import com.trader.matcher.TradeResult;
+import com.trader.utils.ThreadLocalUtils;
+
+import java.util.Objects;
 
 /**
  * @author yjt
@@ -44,5 +48,8 @@ public interface Matcher {
      *
      * @return 上下文对象
      */
-    default MatchingContext ctx () {throw new UnsupportedOperationException("无上下文");}
+    default MatchingContext ctx () {
+        return Objects.requireNonNull(ThreadLocalUtils.get(ThreadLocalContext.NAME_OF_CONTEXT),
+                                      "无法获取上下文");
+    }
 }

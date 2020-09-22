@@ -1,10 +1,12 @@
 package com.trader;
 
+import com.trader.context.ThreadLocalContext;
 import com.trader.entity.Order;
 import com.trader.entity.OrderBook;
+import com.trader.exception.TradeException;
 import com.trader.matcher.TradeResult;
 import com.trader.support.*;
-import jdk.nashorn.internal.runtime.regexp.joni.exception.InternalException;
+import com.trader.utils.ThreadLocalUtils;
 import lombok.Getter;
 import lombok.Synchronized;
 
@@ -72,11 +74,11 @@ public class MatchEngine {
      */
     private MarketManager marketMgr;
 
-    public MatchEngine () {
+    public MatchEngine() {
         this.currencyMgr = new CurrencyManager();
         this.productMgr = new ProductManager();
         this.orderMgr = new OrderManager();
-        this.bookMgr = new OrderBookManager(currencyMgr,productMgr);
+        this.bookMgr = new OrderBookManager(currencyMgr, productMgr);
         this.marketMgr = new MarketManager();
     }
 
@@ -104,7 +106,7 @@ public class MatchEngine {
             } catch (Exception e) {
                 this.orderMgr.removeOrder(order);
                 book.removeOrder(newOrder);
-                throw new InternalException(e.getMessage());
+                throw new TradeException(e.getMessage());
             }
         });
 
@@ -117,8 +119,10 @@ public class MatchEngine {
     /**
      * 订单撮合
      *
-     * @param book 账本
-     * @param order 订单
+     * @param book
+     *         账本
+     * @param order
+     *         订单
      */
     private void matchOrder(OrderBook book, Order order) {
         //
@@ -133,6 +137,9 @@ public class MatchEngine {
             opponentIt = book.getBidOrders().iterator();
         }
 
+        // 构建上下文
+        this.buildMatchingContext(book);
+
         while (opponentIt.hasNext()) {
             Order best = opponentIt.next();
 
@@ -143,12 +150,11 @@ public class MatchEngine {
                 return;
             }
 
-            if (matcher.isFinished(order)) {
-                return;
-            }
+            // 将查找到的匹配器设置到匹配上下文中
+            this.resetMatcherContext(matcher);
 
-            if (matcher.isFinished(best)) {
-                continue;
+            if (matcher.isFinished(order) || matcher.isFinished(best)) {
+                return;
             }
 
             // 执行撮合
@@ -177,7 +183,7 @@ public class MatchEngine {
                 } catch (Exception e) {
                     order.rollback(snap_order);
                     best.rollback(snap_best);
-                    throw new InternalException(e.getMessage());
+                    throw new TradeException(e.getMessage());
                 }
             });
 
@@ -201,6 +207,27 @@ public class MatchEngine {
                 return;
             }
         }
+    }
+
+    /**
+     * 构建匹配上下文
+     *
+     * @param book book
+     */
+    private void buildMatchingContext(OrderBook book) {
+        ThreadLocalUtils.set(ThreadLocalContext.NAME_OF_CONTEXT, ThreadLocalContext.INSTANCE);
+        ThreadLocalUtils.set(ThreadLocalContext.NAME_OF_MARKET_MANAGER,marketMgr);
+        ThreadLocalUtils.set(ThreadLocalContext.NAME_OF_ORDER_BOOK,book);
+        ThreadLocalUtils.set(ThreadLocalContext.NAME_OF_MATCH_ENGINE,this);
+    }
+
+    /**
+     * 设置上下文的匹配器
+     *
+     * @param matcher 匹配器
+     */
+    private void resetMatcherContext(Matcher matcher) {
+        ThreadLocalUtils.set(ThreadLocalContext.NAME_OF_MATCHER,matcher);
     }
 
     /**
@@ -282,14 +309,14 @@ public class MatchEngine {
     /**
      * 开启日志
      */
-    public void enableLog () {
+    public void enableLog() {
         this.isEnableLog = true;
     }
 
     /**
      * 关闭日志
      */
-    public void disableLog () {
+    public void disableLog() {
         this.isEnableLog = false;
     }
 }

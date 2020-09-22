@@ -5,6 +5,7 @@ import com.trader.def.OrderType;
 import com.trader.entity.Order;
 import com.trader.helper.TradeHelper;
 import com.trader.matcher.TradeResult;
+import com.trader.support.MarketManager;
 import com.trader.utils.MathUtils;
 
 import java.math.BigDecimal;
@@ -36,6 +37,7 @@ public class MarketOrderMatcher implements Matcher {
         }
 
         // TODO 市场价格的获取
+        MarketManager marketMgr = this.ctx().getMarketMgr();
         BigDecimal marketPrice = BigDecimal.TEN;
 
         //

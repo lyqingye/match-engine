@@ -15,6 +15,7 @@ public class ExampleLoggerHandler implements MatchHandler {
     @Override
     public void onExecuteOrder(Order order,
                                Order opponentOrder, TradeResult ts) throws Exception {
+
         BigDecimal quantity = ts.getQuantity();
 
 

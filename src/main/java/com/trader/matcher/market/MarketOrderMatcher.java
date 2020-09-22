@@ -76,10 +76,7 @@ public class MarketOrderMatcher implements Matcher {
             arbitrage = opponentPrice.compareTo(price) >= 0;
         }
 
-        if (!arbitrage)
-            return false;
-
-        return true;
+        return arbitrage;
     }
 
 

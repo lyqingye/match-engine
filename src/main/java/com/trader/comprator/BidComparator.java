@@ -1,20 +1,21 @@
-package com.trader.cmp;
+package com.trader.comprator;
 
 import com.trader.entity.Order;
 
-import java.util.Comparator;
-import java.util.Objects;
+import java.util.*;
 
 /**
+ * 价格和事件优先原则比较器
+ *
  * @author yjt
- * @since 2020/9/4 下午3:24
+ * @since 2020/9/2 上午8:24
  */
-public class AskComparator implements Comparator<Order> {
-
+public class BidComparator implements Comparator<Order> {
     /**
      * instance
      */
-    private static final AskComparator INSTANCE = new AskComparator();
+    private static final BidComparator INSTANCE = new BidComparator();
+
 
     @Override
     public int compare(Order o1, Order o2) {
@@ -25,8 +26,8 @@ public class AskComparator implements Comparator<Order> {
         int cmp = o1.getType().getPriority() - o2.getType().getPriority();
 
         if (cmp == 0) {
-            // 价格低的优先
-            cmp = -o1.getPrice().compareTo(o2.getPrice());
+            // 价格高的优先
+            cmp = o1.getPrice().compareTo(o2.getPrice());
 
             if (cmp == 0) {
                 // 同等价格下时间优先
@@ -42,7 +43,7 @@ public class AskComparator implements Comparator<Order> {
         return -cmp;
     }
 
-    public static AskComparator getInstance() {
+    public static BidComparator getInstance() {
         return INSTANCE;
     }
 }

@@ -1,6 +1,6 @@
 package comparator;
 
-import com.trader.cmp.BidComparator;
+import com.trader.comprator.BidComparator;
 import com.trader.def.OrderType;
 import com.trader.entity.Order;
 import org.junit.Assert;
@@ -10,7 +10,6 @@ import org.junit.runners.Parameterized;
 
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author yjt

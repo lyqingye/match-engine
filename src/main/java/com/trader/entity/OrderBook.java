@@ -1,7 +1,7 @@
 package com.trader.entity;
 
-import com.trader.cmp.AskComparator;
-import com.trader.cmp.BidComparator;
+import com.trader.comprator.AskComparator;
+import com.trader.comprator.BidComparator;
 import de.vandermeer.asciitable.AsciiTable;
 import lombok.Data;
 
@@ -9,7 +9,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Iterator;
 import java.util.Objects;
-import java.util.Random;
 import java.util.TreeSet;
 
 /**

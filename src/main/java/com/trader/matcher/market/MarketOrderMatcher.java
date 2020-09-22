@@ -5,11 +5,9 @@ import com.trader.def.OrderType;
 import com.trader.entity.Order;
 import com.trader.helper.TradeHelper;
 import com.trader.matcher.TradeResult;
-import com.trader.support.MarketManager;
-import com.trader.utils.MathUtils;
+import com.trader.market.MarketManager;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 /**
  * 市价订单匹配器

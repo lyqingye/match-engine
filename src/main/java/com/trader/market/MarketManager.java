@@ -1,4 +1,4 @@
-package com.trader.support;
+package com.trader.market;
 
 import com.trader.MatchHandler;
 import com.trader.entity.Currency;
@@ -34,4 +34,6 @@ public class MarketManager {
     public MatchHandler getHandler () {
         return null;
     }
+
+
 }

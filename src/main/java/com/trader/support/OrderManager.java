@@ -89,7 +89,7 @@ public class OrderManager {
     private void checkLimitOrder(Order order) {
         if (order.isBuy()) {
             if (order.getPriceLowerBound().compareTo(BigDecimal.ZERO) > 0) {
-                throw new IllegalArgumentException("[限价][买入]订单不存在下限");
+                throw new IllegalArgumentException("[限价][买入]订单不允许存在下限");
             }
 
             // 总金额 = 数量 * 单价
@@ -102,22 +102,18 @@ public class OrderManager {
                 throw new IllegalArgumentException("[限价][买入]非法总金额");
             }
 
-            if (order.getTriggerPrice().compareTo(BigDecimal.ZERO) != 0) {
-                throw new IllegalArgumentException("只有止盈止损单才有触发价格");
-            }
-
             if (order.getLeavesQuantity().compareTo(BigDecimal.ZERO) != 0) {
                 throw new IllegalArgumentException("[限价][买入]订单待执行数量 != 0");
             }
         }
 
+        if (order.getTriggerPrice().compareTo(BigDecimal.ZERO) != 0) {
+            throw new IllegalArgumentException("[限价][买入/卖出]订单不允许设置触发价格");
+        }
+
         if (order.isSell()) {
             if (order.getPriceUpperBound().compareTo(BigDecimal.ZERO) > 0) {
-                throw new IllegalArgumentException("[限价][卖出]订单不存在上界");
-            }
-
-            if (order.getTriggerPrice().compareTo(BigDecimal.ZERO) != 0) {
-                throw new IllegalArgumentException("只有止盈止损单才有触发价格");
+                throw new IllegalArgumentException("[限价][卖出]订单不允许存在上界");
             }
 
             if (order.getTotalAmount().compareTo(BigDecimal.ZERO) != 0) {
@@ -138,7 +134,10 @@ public class OrderManager {
     private void checkMarketOrder(Order order) {
         if (order.getPriceLowerBound().compareTo(BigDecimal.ZERO) != 0 ||
                 order.getPriceUpperBound().compareTo(BigDecimal.ZERO) != 0) {
-            throw new IllegalArgumentException("[市价][买入/卖出]订单不存在上界下限");
+            throw new IllegalArgumentException("[市价][买入/卖出]订单不允许存在上界下限");
+        }
+        if (order.getTriggerPrice().compareTo(BigDecimal.ZERO) != 0) {
+            throw new IllegalArgumentException("[市价][买入/卖出]订单,触发价格必须等于0");
         }
     }
 
@@ -150,7 +149,7 @@ public class OrderManager {
      */
     private void checkStopOrder(Order order) {
         if (order.getTriggerPrice().compareTo(BigDecimal.ZERO) == 0) {
-            throw new IllegalArgumentException("[止盈止损][买入/卖出]没有设置触发价格");
+            throw new IllegalArgumentException("[止盈止损][买入/卖出]订单没有设置触发价格");
         }
     }
 }

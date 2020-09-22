@@ -1,11 +1,9 @@
 package com.trader.context;
 
 import com.trader.Matcher;
-import com.trader.support.MarketManager;
+import com.trader.market.MarketManager;
 import com.trader.MatchEngine;
 import com.trader.entity.OrderBook;
-
-import java.util.Map;
 
 /**
  * @author yjt

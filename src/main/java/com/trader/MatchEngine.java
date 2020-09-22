@@ -4,6 +4,7 @@ import com.trader.context.ThreadLocalContext;
 import com.trader.entity.Order;
 import com.trader.entity.OrderBook;
 import com.trader.exception.TradeException;
+import com.trader.market.MarketManager;
 import com.trader.matcher.TradeResult;
 import com.trader.support.*;
 import com.trader.utils.ThreadLocalUtils;

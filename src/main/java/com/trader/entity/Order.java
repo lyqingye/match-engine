@@ -52,11 +52,6 @@ public class Order {
      */
     private OrderSide side;
 
-//    /**
-//     * 最终成交价的取值方式
-//     */
-//    private ExecutePriceType executePriceType = ExecutePriceType.OPPONENT;
-
     /**
      * 差价策略
      */

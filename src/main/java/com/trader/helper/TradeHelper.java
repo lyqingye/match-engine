@@ -14,46 +14,6 @@ import java.math.RoundingMode;
  */
 public class TradeHelper {
 
-    /**
-     * 判断买家的钱是否能够买得起最少的数量
-     *
-     * @param order 订单
-     * @param unitPrice 单价
-     * @return 是否能够买得起最少的数量
-     */
-    public static boolean isHasEnoughAmount(Order order, BigDecimal unitPrice) {
-        //
-        // 如果买家剩余的钱连 0.00000001 都买不起那就直接无法撮合, 因为成交数量不能为空
-        //
-        if (order.isBuy()) {
-            if (order.getLeavesAmount().divide(unitPrice, RoundingMode.DOWN).compareTo(BigDecimal.ZERO) == 0) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * 判断一个订单是否已经结束
-     *
-     * @param order 订单
-     * @return
-     */
-    public static boolean isFinished (Order order) {
-        switch (order.getType()) {
-            case MARKET:
-            case STOP:
-            case LIMIT: {
-                if (order.isBuy()) {
-                    return order.getLeavesAmount().compareTo(BigDecimal.ZERO) == 0;
-                }
-                return order.getLeavesQuantity().compareTo(BigDecimal.ZERO) == 0;
-            }
-            default: {
-                throw new IllegalArgumentException("非法订单类型");
-            }
-        }
-    }
 
     /**
      * 计算成交价
@@ -187,4 +147,50 @@ public class TradeHelper {
         ts.setQuantity(executeQuantity);
         return ts;
     }
+
+    /**
+     * 判断买家的钱是否能够买得起最少的数量
+     *
+     * 参考: {@link #genericTrade}
+     *
+     * @param order 订单
+     * @param unitPrice 单价
+     * @return 是否能够买得起最少的数量
+     */
+    public static boolean isHasEnoughAmount(Order order, BigDecimal unitPrice) {
+        //
+        // 如果买家剩余的钱连 0.00000001 都买不起那就直接无法撮合, 因为成交数量不能为空
+        //
+        if (order.isBuy()) {
+            if (order.getLeavesAmount().divide(unitPrice, RoundingMode.DOWN).compareTo(BigDecimal.ZERO) == 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * 判断一个订单是否已经结束
+     *
+     * 参考: {@link #genericTrade}
+     *
+     * @param order 订单
+     * @return
+     */
+    public static boolean isFinished (Order order) {
+        switch (order.getType()) {
+            case MARKET:
+            case STOP:
+            case LIMIT: {
+                if (order.isBuy()) {
+                    return order.getLeavesAmount().compareTo(BigDecimal.ZERO) == 0;
+                }
+                return order.getLeavesQuantity().compareTo(BigDecimal.ZERO) == 0;
+            }
+            default: {
+                throw new IllegalArgumentException("非法订单类型");
+            }
+        }
+    }
+
 }

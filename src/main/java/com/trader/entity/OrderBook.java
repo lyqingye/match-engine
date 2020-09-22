@@ -2,14 +2,16 @@ package com.trader.entity;
 
 import com.trader.comprator.AskComparator;
 import com.trader.comprator.BidComparator;
+import com.trader.def.OrderType;
+import com.trader.market.entity.MarketDepthChart;
+import com.trader.market.entity.MarketDepthInfo;
 import de.vandermeer.asciitable.AsciiTable;
 import lombok.Data;
 
+import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.Iterator;
-import java.util.Objects;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * @author yjt
@@ -88,6 +90,11 @@ public class OrderBook {
         }
     }
 
+    /**
+     * 从账本移除一个订单
+     *
+     * @param o 需要移除的订单
+     */
     public void removeOrder(Order o) {
         TreeSet<Order> orders = null;
         switch (o.getType()) {
@@ -123,26 +130,46 @@ public class OrderBook {
         orders.removeIf(v -> v.getId().equals(o.getId()));
     }
 
-    public Order getBestBid() {
-        return bidOrders.first();
+
+    /**
+     * 获取深度图
+     *
+     * @param limit 条数限制
+     * @param depth 深度
+     * @return 深度图
+     */
+    public MarketDepthChart depthChart (int limit,int depth) {
+        MarketDepthChart chart = new MarketDepthChart();
+
+        // 买盘
+        List<MarketDepthInfo> bids = new ArrayList<>(Math.max(limit, bidOrders.size()));
+
+        // 卖盘
+        List<MarketDepthInfo> asks = new ArrayList<>(Math.max(limit, askOrders.size()));
+        chart.setAsks(asks);
+        chart.setBids(bids);
+
+        // TODO 计算深度
+        Order order;
+        int bidCount = 0;
+        Iterator<Order> bidIt = this.bidOrders.iterator();
+        while (bidIt.hasNext() && bidCount <= limit) {
+            Order bid = bidIt.next();
+            // 忽略市价买单
+            if (OrderType.MARKET.equals(bid.getType())) {
+                continue;
+            }
+
+            MarketDepthInfo dep = new MarketDepthInfo();
+        }
+        return chart;
     }
 
-    public Order getBestAsk() {
-        return askOrders.first();
-    }
-
-    public Order getBestSellStop() {
-        return sellStopOrders.first();
-    }
-
-    public Order getBestBuyStop() {
-        return buyStopOrders.first();
-    }
-
-
-    //
-    // DEBUG ONLY
-    //
+    /**
+     * 表格形式展示买卖盘
+     *
+     * @return ascii table
+     */
     public String render_bid_ask() {
         AsciiTable at = new AsciiTable();
 

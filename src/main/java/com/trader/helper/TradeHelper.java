@@ -136,4 +136,44 @@ public class TradeHelper {
 
         return ts;
     }
+
+
+
+    public static TradeResult genericTrade(Order order,
+                                    Order opponentOrder,
+                                    BigDecimal marketPrice) {
+        //
+        // 计算成交价
+        //
+        TradeResult ts = TradeHelper.calcExecutePrice(order,
+                                                      opponentOrder,
+                                                      marketPrice);
+        BigDecimal executePrice = ts.getExecutePrice();
+        BigDecimal opponentExecutePrice = ts.getOpponentExecutePrice();
+
+        //
+        // 计算最终成交量
+        //
+        BigDecimal quantity = order.getLeavesQuantity();
+        BigDecimal opponentQuantity = opponentOrder.getLeavesQuantity();
+
+        //
+        // 如果是买入单, 则需要用待执行金额 / 成交价 = 待执行数量
+        //
+        if (order.isBuy()) {
+            quantity = order.getLeavesAmount()
+                            .divide(executePrice, RoundingMode.DOWN);
+        }
+
+        if (opponentOrder.isBuy()) {
+            opponentQuantity = opponentOrder.getLeavesAmount()
+                                            .divide(opponentExecutePrice, RoundingMode.DOWN);
+        }
+
+        // 成交量取两者最少部分
+        BigDecimal executeQuantity = MathUtils.min(quantity,
+                                                   opponentQuantity);
+        ts.setQuantity(executeQuantity);
+        return ts;
+    }
 }

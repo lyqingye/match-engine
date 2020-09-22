@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Date;
 import java.util.Objects;
 
@@ -182,9 +183,11 @@ public class Order {
         // 卖出订单是下限
         //
         if (this.isBuy()) {
-            return price.add(price.multiply(this.priceUpperBound));
+            return price.add(price.multiply(this.priceUpperBound))
+                        .setScale(8, RoundingMode.DOWN);
         }else {
-            return price.subtract(price.multiply(this.priceLowerBound));
+            return price.subtract(price.multiply(this.priceLowerBound))
+                        .setScale(8,RoundingMode.DOWN);
         }
     }
 

@@ -116,12 +116,12 @@ public class OrderManager {
                 throw new IllegalArgumentException("[限价][卖出]订单不允许存在上界");
             }
 
-            if (order.getTotalAmount().compareTo(BigDecimal.ZERO) != 0) {
-                throw new IllegalArgumentException("[限价][卖出]订单总金额 != 0");
+            if (order.getQuantity().compareTo(BigDecimal.ZERO) == 0) {
+                throw new IllegalArgumentException("[限价][卖出]订单总数量 != 0");
             }
 
-            if (order.getLeavesAmount().compareTo(BigDecimal.ZERO) != 0) {
-                throw new IllegalArgumentException("[限价][卖出]订单待执行金额 != 0");
+            if (order.getPrice().compareTo(BigDecimal.ZERO) == 0) {
+                throw new IllegalArgumentException("[限价][卖出]订单没有设置单价");
             }
         }
     }

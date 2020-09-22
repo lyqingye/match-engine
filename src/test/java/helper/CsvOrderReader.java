@@ -8,6 +8,7 @@ import com.trader.utils.SnowflakeIdWorker;
 
 import java.io.*;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -35,19 +36,19 @@ public class CsvOrderReader {
             order.setUid("1");
             order.setProductId("BTC");
             order.setCurrencyId("USDT");
-            order.setPrice(new BigDecimal(args[0]));
+            order.setPrice(new BigDecimal(args[0]).setScale(8, RoundingMode.DOWN));
             order.setExecutedAmount(BigDecimal.ZERO);
 
 
-            order.setPriceUpperBound(new BigDecimal(args[1]));
-            order.setPriceLowerBound(new BigDecimal(args[2]));
+            order.setPriceUpperBound(new BigDecimal(args[1]).setScale(8, RoundingMode.DOWN));
+            order.setPriceLowerBound(new BigDecimal(args[2]).setScale(8, RoundingMode.DOWN));
 
-            order.setTotalAmount(new BigDecimal(args[3]));
-            order.setLeavesAmount(order.getTotalAmount());
+            order.setTotalAmount(new BigDecimal(args[3]).setScale(8, RoundingMode.DOWN));
+            order.setLeavesAmount(order.getTotalAmount().setScale(8, RoundingMode.DOWN));
 
             order.setCreateDateTime(new Date());
 
-            order.setQuantity(new BigDecimal(args[4]));
+            order.setQuantity(new BigDecimal(args[4]).setScale(8, RoundingMode.DOWN));
 
             order.setExecutedQuantity(BigDecimal.ZERO);
 
@@ -68,16 +69,13 @@ public class CsvOrderReader {
             }
 
             if (order.isSell()) {
-                order.setLeavesQuantity(order.getQuantity());
+                order.setLeavesQuantity(order.getQuantity().setScale(8, RoundingMode.DOWN));
 
                 if (order.isMarketOrder()) {
                     order.setLeavesAmount(BigDecimal.ZERO);
                     order.setTotalAmount(BigDecimal.ZERO);
                 }
             }
-
-
-
             result.add(order);
         }
         reader.close();

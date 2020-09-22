@@ -133,12 +133,15 @@ public class TradeHelper {
         //
         if (order.isBuy()) {
             quantity = order.getLeavesAmount()
-                            .divide(executePrice, RoundingMode.DOWN);
+                            .divide(executePrice, RoundingMode.DOWN)
+                            .setScale(8,RoundingMode.DOWN);
         }
 
         if (opponentOrder.isBuy()) {
             opponentQuantity = opponentOrder.getLeavesAmount()
-                                            .divide(opponentExecutePrice, RoundingMode.DOWN);
+                                            .divide(opponentExecutePrice, RoundingMode.DOWN)
+                                            .setScale(8,RoundingMode.DOWN);
+
         }
 
         // 成交量取两者最少部分

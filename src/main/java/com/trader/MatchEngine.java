@@ -169,6 +169,7 @@ public class MatchEngine {
 
             // NOTE TEST ONLY
             System.out.println(book.render_bid_ask());
+            System.out.println(book.render_depth_chart());
 
             //
             // 处理订单撮合结果

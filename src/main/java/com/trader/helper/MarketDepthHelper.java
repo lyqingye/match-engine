@@ -54,7 +54,7 @@ public class MarketDepthHelper {
                 info.setPrice(trx);
                 info.setTotal(info.getTotal().add(unProcess.getTotal()));
                 info.setLeaves(info.getLeaves().add(unProcess.getLeaves()));
-                info.setDeal(info.getDeal().add(unProcess.getDeal()));
+                info.setExecuted(info.getExecuted().add(unProcess.getExecuted()));
             }
         }
         return trxMap.values()
@@ -94,7 +94,7 @@ public class MarketDepthHelper {
     }
 
     private static BigDecimal calcTrx(BigDecimal price,int depth) {
-        return price.setScale(getNumberOfDecimalPlaces(price) - depth, RoundingMode.DOWN);
+        return price.setScale(getNumberOfDecimalPlaces(price) - depth, BigDecimal.ROUND_DOWN);
     }
 
     /**

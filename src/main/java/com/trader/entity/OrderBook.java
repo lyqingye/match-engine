@@ -9,10 +9,11 @@ import com.trader.market.entity.MarketDepthInfo;
 import de.vandermeer.asciitable.AsciiTable;
 import lombok.Data;
 
-import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * @author yjt
@@ -50,6 +51,11 @@ public class OrderBook {
      * 止盈止损 (卖出)
      */
     private TreeSet<Order> sellStopOrders = new TreeSet<>(BidComparator.getInstance());
+
+    /**
+     * 读写锁 (预留)
+     */
+    private ReadWriteLock reserve = new ReentrantReadWriteLock();
 
     /**
      * 增加订单
@@ -156,7 +162,7 @@ public class OrderBook {
             }
             MarketDepthInfo dep = new MarketDepthInfo();
             // 已经成交量
-            dep.setDeal(bid.getExecutedQuantity());
+            dep.setExecuted(bid.getExecutedQuantity());
 
             // 总量 = 总金额 / 单价
             dep.setTotal(bid.getTotalAmount().divide(bid.getPrice(),RoundingMode.DOWN));
@@ -181,7 +187,7 @@ public class OrderBook {
             MarketDepthInfo dep = new MarketDepthInfo();
 
             // 成交量
-            dep.setDeal(ask.getExecutedQuantity());
+            dep.setExecuted(ask.getExecutedQuantity());
 
             // 总数量
             dep.setTotal(ask.getQuantity());
@@ -194,9 +200,59 @@ public class OrderBook {
             asks.add(dep);
         }
 
+        // 卖单升序
         chart.setAsks(MarketDepthHelper.fastRender(asks,depth,limit,MarketDepthInfo::compareTo));
+
+        // 买单降序
         chart.setBids(MarketDepthHelper.fastRender(bids,depth,limit,MarketDepthInfo::reverseCompare));
         return chart;
+    }
+
+
+    public String render_depth_chart() {
+        MarketDepthChart chart = this.snapDepthChart(0, 20);
+        AsciiTable at = new AsciiTable();
+
+        at.addRule();
+        at.addRow("BID","Price","Executed","Leaves","Total","-","ASK","Price","Executed","Leaves","Total");
+        at.addRule();
+
+        Iterator<MarketDepthInfo> askIt = chart.getAsks().iterator();
+        Iterator<MarketDepthInfo> bidIt = chart.getBids().iterator();
+
+        while (bidIt.hasNext() || askIt.hasNext()) {
+            MarketDepthInfo bid = bidIt.hasNext() ? bidIt.next() : null;
+            MarketDepthInfo ask = askIt.hasNext() ? askIt.next() : null;
+
+            Object[] row = new String[11];
+            row[0] = "-";
+            if (bid == null) {
+                for (int i = 0; i <= 4; i++) {
+                    row[i] = "-";
+                }
+            } else {
+                row[1] = bid.getPrice().toPlainString();
+                row[2] = bid.getExecuted().toPlainString();
+                row[3] = bid.getLeaves().toPlainString();
+                row[4] = bid.getTotal().toPlainString();
+            }
+
+            row[5] = "-";
+
+            if (ask == null) {
+                for (int i = 6; i < 11; i++) {
+                    row[i] = "-";
+                }
+            } else {
+                row[7] = ask.getPrice().toPlainString();
+                row[8] = ask.getExecuted().toPlainString();
+                row[9] = ask.getLeaves().toPlainString();
+                row[10] = ask.getTotal().toPlainString();
+            }
+            at.addRow(row);
+            at.addRule();
+        }
+        return at.render(150);
     }
 
     /**

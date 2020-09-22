@@ -3,6 +3,7 @@ package com.trader.entity;
 import com.trader.comprator.AskComparator;
 import com.trader.comprator.BidComparator;
 import com.trader.def.OrderType;
+import com.trader.helper.MarketDepthHelper;
 import com.trader.market.entity.MarketDepthChart;
 import com.trader.market.entity.MarketDepthInfo;
 import de.vandermeer.asciitable.AsciiTable;
@@ -136,7 +137,7 @@ public class OrderBook {
      *
      * @return 买卖盘
      */
-    public MarketDepthChart snapDepthChart() {
+    public MarketDepthChart snapDepthChart(int depth, int limit) {
         MarketDepthChart chart = new MarketDepthChart();
 
         // 买盘
@@ -144,8 +145,6 @@ public class OrderBook {
 
         // 卖盘
         List<MarketDepthInfo> asks = new ArrayList<>(askOrders.size());
-        chart.setAsks(asks);
-        chart.setBids(bids);
 
         // 获取买卖盘
         Iterator<Order> bidIt = this.bidOrders.iterator();
@@ -194,6 +193,9 @@ public class OrderBook {
             dep.setLeaves(ask.getLeavesQuantity());
             asks.add(dep);
         }
+
+        chart.setAsks(MarketDepthHelper.fastRender(asks,depth,limit,MarketDepthInfo::compareTo));
+        chart.setBids(MarketDepthHelper.fastRender(bids,depth,limit,MarketDepthInfo::reverseCompare));
         return chart;
     }
 

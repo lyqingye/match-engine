@@ -7,6 +7,5 @@ package com.trader;
  * @since 2020/9/20 下午2:36
  */
 public interface MarketEventHandler {
-
-
+    
 }

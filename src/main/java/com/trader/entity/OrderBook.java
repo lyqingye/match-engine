@@ -213,6 +213,8 @@ public class OrderBook {
         MarketDepthChart chart = this.snapDepthChart(0, 20);
         AsciiTable at = new AsciiTable();
 
+
+
         at.addRule();
         at.addRow("BID","Price","Executed","Leaves","Total","-","ASK","Price","Executed","Leaves","Total");
         at.addRule();
@@ -244,6 +246,7 @@ public class OrderBook {
                     row[i] = "-";
                 }
             } else {
+                row[6] = "-";
                 row[7] = ask.getPrice().toPlainString();
                 row[8] = ask.getExecuted().toPlainString();
                 row[9] = ask.getLeaves().toPlainString();

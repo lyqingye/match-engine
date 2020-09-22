@@ -138,7 +138,18 @@ public class TradeHelper {
     }
 
 
-
+    /**
+     * 通用的撮合, 所有的订单必须遵循以下规定:
+     * 1. 买入单, 无论是限价还是市价还是止盈止损单, 都只用总金额进行计算
+     * 2. 卖出单, 无论是限价还是市价还是止盈止损单, 都只用总数量进行计算
+     *
+     * 满足以上条件, 就可以统一成一个撮合规则
+     *
+     * @param order
+     * @param opponentOrder
+     * @param marketPrice
+     * @return
+     */
     public static TradeResult genericTrade(Order order,
                                     Order opponentOrder,
                                     BigDecimal marketPrice) {

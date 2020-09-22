@@ -132,35 +132,67 @@ public class OrderBook {
 
 
     /**
-     * 获取深度图
+     * 快照买卖盘
      *
-     * @param limit 条数限制
-     * @param depth 深度
-     * @return 深度图
+     * @return 买卖盘
      */
-    public MarketDepthChart depthChart (int limit,int depth) {
+    public MarketDepthChart snapDepthChart() {
         MarketDepthChart chart = new MarketDepthChart();
 
         // 买盘
-        List<MarketDepthInfo> bids = new ArrayList<>(Math.max(limit, bidOrders.size()));
+        List<MarketDepthInfo> bids = new ArrayList<>( bidOrders.size());
 
         // 卖盘
-        List<MarketDepthInfo> asks = new ArrayList<>(Math.max(limit, askOrders.size()));
+        List<MarketDepthInfo> asks = new ArrayList<>(askOrders.size());
         chart.setAsks(asks);
         chart.setBids(bids);
 
-        // TODO 计算深度
-        Order order;
-        int bidCount = 0;
+        // 获取买卖盘
         Iterator<Order> bidIt = this.bidOrders.iterator();
-        while (bidIt.hasNext() && bidCount <= limit) {
+        while (bidIt.hasNext() ) {
             Order bid = bidIt.next();
-            // 忽略市价买单
+            // 忽略市价订单
             if (OrderType.MARKET.equals(bid.getType())) {
+                continue;
+            }
+            MarketDepthInfo dep = new MarketDepthInfo();
+            // 已经成交量
+            dep.setDeal(bid.getExecutedQuantity());
+
+            // 总量 = 总金额 / 单价
+            dep.setTotal(bid.getTotalAmount().divide(bid.getPrice(),RoundingMode.DOWN));
+
+            // 单价
+            dep.setPrice(bid.getPrice());
+
+            // 剩余量 = 剩余金额 / 单价
+            dep.setLeaves(bid.getLeavesAmount().divide(bid.getPrice(),RoundingMode.DOWN));
+            bids.add(dep);
+        }
+
+        Iterator<Order> askIt = this.askOrders.iterator();
+        while(askIt.hasNext()) {
+            Order ask = askIt.next();
+
+            // 忽略市价订单
+            if (OrderType.MARKET.equals(ask.getType())) {
                 continue;
             }
 
             MarketDepthInfo dep = new MarketDepthInfo();
+
+            // 成交量
+            dep.setDeal(ask.getExecutedQuantity());
+
+            // 总数量
+            dep.setTotal(ask.getQuantity());
+
+            // 单价
+            dep.setPrice(ask.getPrice());
+
+            // 剩余量
+            dep.setLeaves(ask.getLeavesQuantity());
+            asks.add(dep);
         }
         return chart;
     }

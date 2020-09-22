@@ -2,6 +2,8 @@ package com.trader.market.entity;
 
 import lombok.Data;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -14,10 +16,10 @@ public class MarketDepthChart {
     /**
      * 买盘
      */
-    private List<MarketDepthInfo> bids;
+    private Collection<MarketDepthInfo> bids;
 
     /**
      * 卖盘
      */
-    private List<MarketDepthInfo> asks;
+    private Collection<MarketDepthInfo> asks;
 }

@@ -121,9 +121,15 @@ public class Order {
     private Date createDateTime;
 
     /**
+     * 结束标志
+     */
+    private boolean finishFlag = false;
+
+    /**
      * 版本 (预留)
      */
     private long version;
+
 
     public boolean isBuy () {
         return OrderSide.BUY.equals(side);
@@ -266,6 +272,8 @@ public class Order {
         order.type = type;
         order.timeInForce = timeInForce;
         order.version = version;
+
+        order.finishFlag = finishFlag;
         return order;
     }
 
@@ -296,6 +304,8 @@ public class Order {
         this.type = o.type;
         this.timeInForce = o.timeInForce;
         this.version = o.version;
+
+        this.finishFlag = o.finishFlag;
     }
 
     @Override

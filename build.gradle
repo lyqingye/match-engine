@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'idea' // optional (to generate IntelliJ IDEA project files)
 }
 
 group 'org.example'
@@ -17,17 +18,12 @@ ext {
 dependencies {
     annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
     compileOnly "org.projectlombok:lombok:${lombokVersion}"
-    testImplementation(platform('org.junit:junit-bom:5.7.0'))
-    testImplementation('org.junit.jupiter:junit-jupiter')
+    testCompile group: 'junit', name: 'junit', version: '4.12'
 
     // 方便调试
     compile 'de.vandermeer:asciitable:0.3.2'
-}
 
+    // 方便测试
+    compile 'com.opencsv:opencsv:4.4'
 
-test {
-    useJUnitPlatform()
-    testLogging {
-        events "passed", "skipped", "failed"
-    }
 }

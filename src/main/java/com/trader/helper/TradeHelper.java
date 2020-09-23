@@ -181,6 +181,7 @@ public class TradeHelper {
      * @return
      */
     public static boolean isFinished (Order order) {
+
         switch (order.getType()) {
             case MARKET:
             case STOP:

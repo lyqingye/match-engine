@@ -100,7 +100,8 @@ public class OrderBook {
     /**
      * 从账本移除一个订单
      *
-     * @param o 需要移除的订单
+     * @param o
+     *         需要移除的订单
      */
     public void removeOrder(Order o) {
         TreeSet<Order> orders = null;
@@ -147,14 +148,14 @@ public class OrderBook {
         MarketDepthChart chart = new MarketDepthChart();
 
         // 买盘
-        List<MarketDepthInfo> bids = new ArrayList<>( bidOrders.size());
+        List<MarketDepthInfo> bids = new ArrayList<>(bidOrders.size());
 
         // 卖盘
         List<MarketDepthInfo> asks = new ArrayList<>(askOrders.size());
 
         // 获取买卖盘
         Iterator<Order> bidIt = this.bidOrders.iterator();
-        while (bidIt.hasNext() ) {
+        while (bidIt.hasNext()) {
             Order bid = bidIt.next();
             // 忽略市价订单
             if (OrderType.MARKET.equals(bid.getType())) {
@@ -165,18 +166,18 @@ public class OrderBook {
             dep.setExecuted(bid.getExecutedQuantity());
 
             // 总量 = 总金额 / 单价
-            dep.setTotal(bid.getTotalAmount().divide(bid.getPrice(),RoundingMode.DOWN));
+            dep.setTotal(bid.getTotalAmount().divide(bid.getPrice(), RoundingMode.DOWN));
 
             // 单价
             dep.setPrice(bid.getPrice());
 
             // 剩余量 = 剩余金额 / 单价
-            dep.setLeaves(bid.getLeavesAmount().divide(bid.getPrice(),RoundingMode.DOWN));
+            dep.setLeaves(bid.getLeavesAmount().divide(bid.getPrice(), RoundingMode.DOWN));
             bids.add(dep);
         }
 
         Iterator<Order> askIt = this.askOrders.iterator();
-        while(askIt.hasNext()) {
+        while (askIt.hasNext()) {
             Order ask = askIt.next();
 
             // 忽略市价订单
@@ -201,10 +202,10 @@ public class OrderBook {
         }
 
         // 卖单升序
-        chart.setAsks(MarketDepthHelper.fastRender(asks,depth,limit,MarketDepthInfo::compareTo));
+        chart.setAsks(MarketDepthHelper.fastRender(asks, depth, limit, MarketDepthInfo::compareTo));
 
         // 买单降序
-        chart.setBids(MarketDepthHelper.fastRender(bids,depth,limit,MarketDepthInfo::reverseCompare));
+        chart.setBids(MarketDepthHelper.fastRender(bids, depth, limit, MarketDepthInfo::reverseCompare));
         return chart;
     }
 
@@ -214,9 +215,8 @@ public class OrderBook {
         AsciiTable at = new AsciiTable();
 
 
-
         at.addRule();
-        at.addRow("BID","Price","Executed","Leaves","Total","-","ASK","Price","Executed","Leaves","Total");
+        at.addRow("BID", "Price", "Executed", "Leaves", "Total", "-", "ASK", "Price", "Executed", "Leaves", "Total");
         at.addRule();
 
         Iterator<MarketDepthInfo> askIt = chart.getAsks().iterator();
@@ -317,7 +317,8 @@ public class OrderBook {
                 }
 
                 if (ask.getPriceLowerBound().compareTo(BigDecimal.ZERO) != 0) {
-                    row[11] += " (-" + ask.getPriceLowerBound().multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.DOWN).toPlainString() + "%)";;
+                    row[11] += " (-" + ask.getPriceLowerBound().multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.DOWN).toPlainString() + "%)";
+                    ;
                 }
 
                 row[12] = ask.getQuantity().toPlainString();

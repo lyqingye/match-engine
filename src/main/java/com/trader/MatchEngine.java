@@ -139,7 +139,7 @@ public class MatchEngine {
         }
 
         // 构建上下文
-//        this.buildMatchingContext(book);
+        this.buildMatchingContext(book);
 
         while (opponentIt.hasNext()) {
             Order best = opponentIt.next();
@@ -152,7 +152,7 @@ public class MatchEngine {
             }
 
             // 将查找到的匹配器设置到匹配上下文中
-//            this.resetMatcherContext(matcher);
+            this.resetMatcherContext(matcher);
 
             if (matcher.isFinished(order) || matcher.isFinished(best)) {
                 return;
@@ -192,7 +192,6 @@ public class MatchEngine {
             // 移除已经结束的订单
             if (matcher.isFinished(best)) {
                 book.removeOrder(best);
-
                 if (order.isBuy()) {
                     opponentIt = book.getAskOrders().iterator();
                 } else {

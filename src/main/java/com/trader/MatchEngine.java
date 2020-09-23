@@ -191,7 +191,7 @@ public class MatchEngine {
 
             // 移除已经结束的订单
             if (matcher.isFinished(best)) {
-//                book.removeOrder(best);
+                // 直接使用
                 opponentIt.remove();
                 if (order.isBuy()) {
                     opponentIt = book.getAskOrders().iterator();

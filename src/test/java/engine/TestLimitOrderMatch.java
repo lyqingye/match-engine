@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Repeatable;
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.TreeSet;
@@ -185,20 +186,20 @@ public class TestLimitOrderMatch  {
 //            long insertEnd = System.currentTimeMillis();
 //            long sec = TimeUnit.MILLISECONDS.toSeconds(insertEnd - insertStart);
             System.out.println("read complete start process orders count: " + orderList.size());
+            Collections.shuffle(orderList);
             long start = System.currentTimeMillis();
-//            int count = 0;
+            int count = 0;
+
             for (Order order : orderList) {
                 engine.addOrder(order);
 //                System.out.println(++count);
             }
-
             long end = System.currentTimeMillis();
             System.out.println("process " + orderList.size() + " orders using " + TimeUnit.MILLISECONDS.toSeconds(end - start) + "s");
             System.out.println();
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
     @After

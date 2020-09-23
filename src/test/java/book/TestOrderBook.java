@@ -4,7 +4,7 @@ import com.trader.def.OrderSide;
 import com.trader.def.OrderType;
 import com.trader.entity.Order;
 import com.trader.entity.OrderBook;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.util.Date;

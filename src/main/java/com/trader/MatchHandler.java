@@ -1,9 +1,14 @@
 package com.trader;
 
+import com.trader.context.MatchingContext;
+import com.trader.context.ThreadLocalContext;
 import com.trader.entity.Order;
 import com.trader.entity.OrderBook;
 import com.trader.entity.Product;
 import com.trader.matcher.TradeResult;
+import com.trader.utils.ThreadLocalUtils;
+
+import java.util.Objects;
 
 /**
  * 撮合引擎事件处理器
@@ -78,4 +83,14 @@ public interface MatchHandler {
      * @throws Exception
      */
     default void onExecuteOrder(Order order, Order opponentOrder, TradeResult tradeResult) throws Exception {}
+
+    /**
+     * 获取上下文
+     *
+     * @return 上下文对象
+     */
+    default MatchingContext ctx () {
+        return Objects.requireNonNull(ThreadLocalUtils.get(ThreadLocalContext.NAME_OF_CONTEXT),
+                                      "无法获取上下文");
+    }
 }

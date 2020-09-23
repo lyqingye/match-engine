@@ -139,7 +139,7 @@ public class MatchEngine {
         }
 
         // 构建上下文
-        this.buildMatchingContext(book);
+//        this.buildMatchingContext(book);
 
         while (opponentIt.hasNext()) {
             Order best = opponentIt.next();
@@ -152,7 +152,7 @@ public class MatchEngine {
             }
 
             // 将查找到的匹配器设置到匹配上下文中
-            this.resetMatcherContext(matcher);
+//            this.resetMatcherContext(matcher);
 
             if (matcher.isFinished(order) || matcher.isFinished(best)) {
                 return;
@@ -168,8 +168,8 @@ public class MatchEngine {
             Order snap_best = best.snap();
 
             // NOTE TEST ONLY
-            System.out.println(book.render_bid_ask());
-            System.out.println(book.render_depth_chart());
+//            System.out.println(book.render_bid_ask());
+//            System.out.println(book.render_depth_chart());
 
             //
             // 处理订单撮合结果

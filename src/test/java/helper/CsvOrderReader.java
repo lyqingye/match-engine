@@ -22,7 +22,8 @@ public class CsvOrderReader {
     public static List<Order> read (File file) throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader(file));
         String line;
-        List<Order> result = new ArrayList<>(64);
+        List<Order> result = new ArrayList<>(2000000);
+
         while((line = reader.readLine())!= null){
             // 忽略注释
             if (line.startsWith("#")) {

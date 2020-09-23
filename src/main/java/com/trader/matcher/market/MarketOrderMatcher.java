@@ -35,7 +35,7 @@ public class MarketOrderMatcher implements Matcher {
         }
 
         // TODO 市场价格的获取
-        MarketManager marketMgr = this.ctx().getMarketMgr();
+//        MarketManager marketMgr = this.ctx().getMarketMgr();
         BigDecimal marketPrice = BigDecimal.TEN;
 
         //

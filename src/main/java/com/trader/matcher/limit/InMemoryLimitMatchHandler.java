@@ -60,13 +60,16 @@ public class InMemoryLimitMatchHandler implements MatchHandler {
     public static void updateOrder (Order order,
                                     BigDecimal executePrice,
                                     BigDecimal executeQuantity) {
+        BigDecimal executeAmount = executePrice
+                .multiply(executeQuantity)
+                .setScale(8, RoundingMode.DOWN);
         if (order.isBuy()) {
             // 限价买单
-            BigDecimal executeAmount = executePrice
-                                         .multiply(executeQuantity)
-                                         .setScale(8, RoundingMode.DOWN);
+
             order.decLeavesAmount(executeAmount);
             order.incExecutedAmount(executeAmount);
+
+            // 买单需要记录已经获得的数量
             order.incExecutedQuality(executeQuantity);
         } else {
             //
@@ -74,6 +77,9 @@ public class InMemoryLimitMatchHandler implements MatchHandler {
             //
             order.incExecutedQuality(executeQuantity);
             order.decLeavesQuality(executeQuantity);
+
+            // 卖单需要记录已经获得的金钱
+            order.incExecutedAmount(executeAmount);
         }
     }
 }

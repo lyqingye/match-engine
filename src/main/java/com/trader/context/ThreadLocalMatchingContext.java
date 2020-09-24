@@ -10,12 +10,12 @@ import com.trader.utils.ThreadLocalUtils;
  * @author yjt
  * @since 2020/9/22 上午9:27
  */
-public class ThreadLocalContext implements MatchingContext {
+public class ThreadLocalMatchingContext implements MatchingContext {
 
     /**
      * 静态实例
      */
-    public static final ThreadLocalContext INSTANCE = new ThreadLocalContext();
+    public static final ThreadLocalMatchingContext INSTANCE = new ThreadLocalMatchingContext();
 
     /**
      * 该对象在本地线程缓存中的名称

@@ -1,6 +1,6 @@
 package com.trader;
 
-import com.trader.context.ThreadLocalContext;
+import com.trader.context.ThreadLocalMatchingContext;
 import com.trader.entity.Order;
 import com.trader.entity.OrderBook;
 import com.trader.exception.TradeException;
@@ -218,10 +218,10 @@ public class MatchEngine {
      * @param book book
      */
     private void buildMatchingContext(OrderBook book) {
-        ThreadLocalUtils.set(ThreadLocalContext.NAME_OF_CONTEXT, ThreadLocalContext.INSTANCE);
-        ThreadLocalUtils.set(ThreadLocalContext.NAME_OF_MARKET_MANAGER,marketMgr);
-        ThreadLocalUtils.set(ThreadLocalContext.NAME_OF_ORDER_BOOK,book);
-        ThreadLocalUtils.set(ThreadLocalContext.NAME_OF_MATCH_ENGINE,this);
+        ThreadLocalUtils.set(ThreadLocalMatchingContext.NAME_OF_CONTEXT, ThreadLocalMatchingContext.INSTANCE);
+        ThreadLocalUtils.set(ThreadLocalMatchingContext.NAME_OF_MARKET_MANAGER, marketMgr);
+        ThreadLocalUtils.set(ThreadLocalMatchingContext.NAME_OF_ORDER_BOOK, book);
+        ThreadLocalUtils.set(ThreadLocalMatchingContext.NAME_OF_MATCH_ENGINE, this);
     }
 
     /**
@@ -230,7 +230,7 @@ public class MatchEngine {
      * @param matcher 匹配器
      */
     private void resetMatcherContext(Matcher matcher) {
-        ThreadLocalUtils.set(ThreadLocalContext.NAME_OF_MATCHER,matcher);
+        ThreadLocalUtils.set(ThreadLocalMatchingContext.NAME_OF_MATCHER, matcher);
     }
 
     /**

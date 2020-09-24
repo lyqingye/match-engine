@@ -1,4 +1,4 @@
-package com.trader;
+package com.trader.utils;
 
 import java.util.concurrent.*;
 
@@ -6,7 +6,7 @@ import java.util.concurrent.*;
  * @author yjt
  * @since 2020/9/24 上午9:29
  */
-public class ThreadPool {
+public class ThreadPoolUtils {
 
     private static final ExecutorService EXECUTOR_SERVICE ;
 

@@ -44,7 +44,7 @@ public class TestLimitOrderMatch  {
         engine = new MatchEngine();
         engine.addHandler(new InMemoryLimitMatchHandler());
         engine.addHandler(new InMemoryMarketMatchHandler());
-//        engine.addHandler(new ExampleLoggerHandler());
+        engine.addHandler(new ExampleLoggerHandler());
 
         engine.addMatcher(new LimitOrderMatcher());
         engine.addMatcher(new MarketOrderMatcher());

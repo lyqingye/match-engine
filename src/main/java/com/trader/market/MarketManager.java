@@ -1,11 +1,9 @@
 package com.trader.market;
 
 import com.trader.MatchHandler;
-import com.trader.ThreadPool;
-import com.trader.entity.Currency;
+import com.trader.utils.ThreadPoolUtils;
 import com.trader.entity.Order;
 import com.trader.entity.OrderBook;
-import com.trader.entity.Product;
 import com.trader.matcher.TradeResult;
 import com.trader.support.OrderBookManager;
 
@@ -81,7 +79,7 @@ public class MarketManager implements MatchHandler{
      * @param hConsumer 处理器消费者 {@link MarketEventHandler}
      */
     private void asyncExecuteHandler(Consumer<MarketEventHandler> hConsumer) {
-        ThreadPool.submit(() -> {
+        ThreadPoolUtils.submit(() -> {
             this.handlers.forEach(hConsumer);
         });
     }
@@ -92,7 +90,7 @@ public class MarketManager implements MatchHandler{
      * @param hConsumer 处理器消费者 {@link MarketEventHandler}
      */
     private void syncExecuteHandler(Consumer<MarketEventHandler> hConsumer) {
-        ThreadPool.submit(() -> {
+        ThreadPoolUtils.submit(() -> {
             this.handlers.forEach(hConsumer);
         });
     }

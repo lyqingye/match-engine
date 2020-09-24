@@ -2,6 +2,8 @@ package com.trader.entity;
 
 import com.trader.comprator.AskComparator;
 import com.trader.comprator.BidComparator;
+import com.trader.comprator.StopAskComparator;
+import com.trader.comprator.StopBidComparator;
 import com.trader.def.OrderType;
 import com.trader.helper.MarketDepthHelper;
 import com.trader.market.entity.MarketDepthChart;
@@ -40,12 +42,12 @@ public class OrderBook {
     /**
      * 止盈止损 (买入)
      */
-    private TreeSet<Order> buyStopOrders = new TreeSet<>(AskComparator.getInstance());
+    private TreeSet<Order> buyStopOrders = new TreeSet<>(StopBidComparator.getInstance());
 
     /**
      * 止盈止损 (卖出)
      */
-    private TreeSet<Order> sellStopOrders = new TreeSet<>(BidComparator.getInstance());
+    private TreeSet<Order> sellStopOrders = new TreeSet<>(StopAskComparator.getInstance());
 
     /**
      * 止盈止损订单锁
@@ -68,7 +70,7 @@ public class OrderBook {
     private volatile long lastTradeTime = 0;
 
     /**
-     * 增加订单
+     * 下单
      *
      * @param o
      */
@@ -118,6 +120,19 @@ public class OrderBook {
     }
 
     /**
+     * 激活一个止盈止损订单
+     *
+     * @param order 止盈止损订单
+     */
+    public void activeStopOrder(Order order) {
+        if (order.isBuy()) {
+            bidOrders.add(order);
+        }else {
+            askOrders.add(order);
+        }
+    }
+
+    /**
      * 从账本移除一个订单
      *
      * @param o
@@ -141,7 +156,7 @@ public class OrderBook {
 
             case STOP: {
                 // 不处理止盈止损订单
-                return;
+                break;
             }
             default: {
                 throw new IllegalArgumentException("invalid order type");
@@ -149,6 +164,24 @@ public class OrderBook {
         }
 
         orders.removeIf(v -> v.getId().equals(o.getId()));
+    }
+
+    /**
+     * 移除已经已经激活的止盈止损订单
+     *
+     * @param stopOrder 止盈止损订单
+     */
+    public void removeActiveStopOrder (Order stopOrder) {
+        if (OrderType.STOP.equals(stopOrder)) {
+            TreeSet<Order> orders = null;
+
+            if (stopOrder.isBuy()) {
+                orders = buyStopOrders;
+            }else {
+                orders = sellStopOrders;
+            }
+            orders.removeIf(v -> v.getId().equals(stopOrder.getId()));
+        }
     }
 
     /**

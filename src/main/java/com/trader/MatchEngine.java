@@ -1,7 +1,6 @@
 package com.trader;
 
 import com.trader.context.ThreadLocalMatchingContext;
-import com.trader.def.OrderSide;
 import com.trader.entity.Order;
 import com.trader.entity.OrderBook;
 import com.trader.exception.TradeException;
@@ -10,6 +9,9 @@ import com.trader.market.MarketManager;
 import com.trader.matcher.TradeResult;
 import com.trader.support.*;
 import com.trader.utils.ThreadLocalUtils;
+import com.trader.utils.disruptor.AbstractDisruptorConsumer;
+import com.trader.utils.disruptor.DisruptorQueue;
+import com.trader.utils.disruptor.DisruptorQueueFactory;
 import lombok.Getter;
 import lombok.Synchronized;
 
@@ -78,6 +80,16 @@ public class MatchEngine {
      */
     private MarketManager marketMgr;
 
+    /**
+     * 下单队列
+     */
+    private DisruptorQueue<Order> addOrderQueue;
+
+    /**
+     * 激活止盈止损订单队列
+     */
+    private DisruptorQueue<Order> activeStopOrderQueue;
+
     public MatchEngine() {
         this.currencyMgr = new CurrencyManager();
         this.productMgr = new ProductManager();
@@ -88,7 +100,11 @@ public class MatchEngine {
         // 将行情管理器的撮合监听事件添加进撮合引擎
         this.addHandler(this.marketMgr.getMatchHandler());
 
+        //
         // 设置市价变动事件
+        // 止盈止损订单需要监听市场价格变动的事件
+        // 为了提高吞吐量, 需要引入队列, 当市场止盈止损订单被触发的时候将需要下单的订单
+        //
         marketMgr.addHandler(new MarketEventHandler() {
             @Override
             public void onMarketPriceChange(String symbol,
@@ -98,9 +114,53 @@ public class MatchEngine {
                 // 锁住止盈止损订单
                 book.lockStopOrders();
 
-//                book.getBuyStopOrders().iterator().
+                try {
+                    Iterator<Order> bidIt = book.getBuyStopOrders().iterator();
+                    while (bidIt.hasNext()) {
+                        Order bid = bidIt.next();
+
+                        if (bid.getTriggerPrice().compareTo(latestPrice) >= 0) {
+                            activeStopOrderQueue.add(bid);
+                            bidIt.remove();
+                        }else {break;}
+                    }
+
+                    Iterator<Order> askIt = book.getSellStopOrders().iterator();
+                    while (askIt.hasNext()) {
+                        Order ask = askIt.next();
+
+                        if (ask.getTriggerPrice().compareTo(latestPrice) <= 0) {
+                            activeStopOrderQueue.add(ask);
+                            askIt.remove();
+                        }else {break;}
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                } finally {
+                    //
+                    // 释放止盈止损单锁
+                    //
+                    book.unlockStopOrders();
+                }
             }
         });
+
+
+        // 创建下单队列
+       this.addOrderQueue = DisruptorQueueFactory.createQueue(2 << 16, new AbstractDisruptorConsumer<Order>() {
+            @Override
+            public void process(Order order) {
+                addOrder(order);
+            }
+        });
+
+       // 创建激活止盈止损订单队列
+       this.activeStopOrderQueue = DisruptorQueueFactory.createQueue(2 << 10, new AbstractDisruptorConsumer<Order>() {
+           @Override
+           public void process(Order order) {
+               activeStopOrder(order);
+           }
+       });
     }
 
     /**
@@ -148,13 +208,44 @@ public class MatchEngine {
     }
 
     /**
-     * 激活一个止盈止损订单
+     * 止盈止损订单激活
      *
-     * @param stopOrder
-     *         止盈止损订单
+     * @param stopOrder 止盈止损订单
      */
-    private void activeStopOrder(Order stopOrder) {
+    @Synchronized
+    private void activeStopOrder (Order stopOrder) {
+        OrderBook book = this.bookMgr.getBook(stopOrder);
 
+        if (book == null) {
+            return ;
+        }
+
+        // 账本激活止盈止损订单
+        // 也就是将止盈利止损订单放入撮合买卖盘
+        book.activeStopOrder(stopOrder);
+
+        // 添加订单
+        this.executeHandler(h -> {
+            try {
+                h.onActiveStopOrder(stopOrder);
+            } catch (Exception e) {
+                //
+                // 如果激活止盈止损订单失败, 则直接重新将订单放入止盈止损列表中
+                //
+                book.addOrder(stopOrder);
+
+                //
+                // 并且移除改止盈止损订单
+                //
+                book.removeActiveStopOrder(stopOrder);
+                throw new TradeException(e.getMessage());
+            }
+        });
+
+        // 立马执行撮合
+        if (this.isMatching()) {
+            matchOrder(book, stopOrder);
+        }
     }
 
     /**
@@ -165,6 +256,7 @@ public class MatchEngine {
      * @param order
      *         订单
      */
+    @Synchronized
     private void matchOrder(OrderBook book, Order order) {
         //
         // 根据订单类型确定对手盘
@@ -248,7 +340,6 @@ public class MatchEngine {
                 // 处理已经结束的订单并且结束撮合
                 //
                 book.removeOrder(order);
-
                 return;
             }
         }

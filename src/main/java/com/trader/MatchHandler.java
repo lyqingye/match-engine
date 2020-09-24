@@ -73,7 +73,7 @@ public interface MatchHandler {
      * @param stopOrder 止盈止损订单
      * @throws Exception
      */
-    default void activeStopOrder(Order stopOrder) throws Exception {}
+    default void onActiveStopOrder(Order stopOrder) throws Exception {}
 
     /**
      * 更新订单事件

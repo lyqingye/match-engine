@@ -29,4 +29,5 @@ public enum OrderType {
      * 优先级
      */
     private int priority;
+
 }

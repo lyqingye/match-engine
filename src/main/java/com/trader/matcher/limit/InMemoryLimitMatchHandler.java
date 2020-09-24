@@ -12,6 +12,19 @@ import java.math.RoundingMode;
  * @since 2020/9/17 下午7:00
  */
 public class InMemoryLimitMatchHandler implements MatchHandler {
+
+    /**
+     * 优先级,优先级越高越先执行
+     *
+     * @return 优先级
+     */
+    @Override
+    public int getPriority() {
+
+        // 内存撮合优先级最高
+        return Integer.MAX_VALUE;
+    }
+
     /**
      * 撮合订单事件
      *

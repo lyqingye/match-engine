@@ -50,8 +50,20 @@ public class OrderBookManager {
     public OrderBook getBook (Order order) {
         return bookMap.computeIfAbsent(order.getSymbol(), key -> {
             OrderBook newBook = new OrderBook();
-            newBook.setProduct(productMgr.getProduct(order.getProductId()));
-            newBook.setCurrency(currencyMgr.getCurrency(order.getCurrencyId()));
+            newBook.setSymbolId(key);
+            return newBook;
+        });
+    }
+    /**
+     * 根据订单获取该订单所在的账本
+     *
+     * @param symbolId 交易对
+     * @return 账本
+     */
+    public OrderBook getBook (String symbolId) {
+        return bookMap.computeIfAbsent(symbolId, key -> {
+            OrderBook newBook = new OrderBook();
+            newBook.setSymbolId(key);
             return newBook;
         });
     }

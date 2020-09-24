@@ -1,9 +1,11 @@
 package com.trader;
 
 import com.trader.context.ThreadLocalMatchingContext;
+import com.trader.def.OrderSide;
 import com.trader.entity.Order;
 import com.trader.entity.OrderBook;
 import com.trader.exception.TradeException;
+import com.trader.market.MarketEventHandler;
 import com.trader.market.MarketManager;
 import com.trader.matcher.TradeResult;
 import com.trader.support.*;
@@ -11,6 +13,7 @@ import com.trader.utils.ThreadLocalUtils;
 import lombok.Getter;
 import lombok.Synchronized;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -84,6 +87,31 @@ public class MatchEngine {
 
         // 将行情管理器的撮合监听事件添加进撮合引擎
         this.addHandler(this.marketMgr.getMatchHandler());
+
+        // 设置市价变动事件
+        marketMgr.addHandler(new MarketEventHandler() {
+            @Override
+            public void onMarketPriceChange(String symbol,
+                                            BigDecimal latestPrice) {
+                OrderBook book = bookMgr.getBook(symbol);
+
+                // 锁住止盈止损订单
+                book.lockStopOrders();
+
+//                book.getBuyStopOrders().iterator().
+            }
+        });
+    }
+
+    /**
+     * 添加订单
+     *
+     * @param order
+     *         订单
+     */
+    public void addOrder(Order order) {
+        Order newOrder = order.snap();
+        this.addOrderInternal(newOrder);
     }
 
     /**
@@ -93,31 +121,40 @@ public class MatchEngine {
      *         订单
      */
     @Synchronized
-    public void addOrder(Order order) {
+    private void addOrderInternal(Order order) {
         OrderBook book = this.bookMgr.getBook(order);
 
         if (book == null) {
             return;
         }
+        this.orderMgr.addOrder(order);
+        book.addOrder(order);
 
-        Order newOrder = order.snap();
-        this.orderMgr.addOrder(newOrder);
-        book.addOrder(newOrder);
         // 添加订单
         this.executeHandler(h -> {
             try {
-                h.onAddOrder(newOrder);
+                h.onAddOrder(order);
             } catch (Exception e) {
                 this.orderMgr.removeOrder(order);
-                book.removeOrder(newOrder);
+                book.removeOrder(order);
                 throw new TradeException(e.getMessage());
             }
         });
 
         // 立马执行撮合
         if (this.isMatching()) {
-            matchOrder(book, newOrder);
+            matchOrder(book, order);
         }
+    }
+
+    /**
+     * 激活一个止盈止损订单
+     *
+     * @param stopOrder
+     *         止盈止损订单
+     */
+    private void activeStopOrder(Order stopOrder) {
+
     }
 
     /**
@@ -171,8 +208,10 @@ public class MatchEngine {
             Order snap_best = best.snap();
 
             // NOTE TEST ONLY
-//            System.out.println(book.render_bid_ask());
-//            System.out.println(book.render_depth_chart());
+            if (this.isEnableLog) {
+                System.out.println(book.render_bid_ask());
+                System.out.println(book.render_depth_chart());
+            }
 
             //
             // 处理订单撮合结果
@@ -218,7 +257,8 @@ public class MatchEngine {
     /**
      * 构建匹配上下文
      *
-     * @param book book
+     * @param book
+     *         book
      */
     private void buildMatchingContext(OrderBook book) {
         ThreadLocalUtils.set(ThreadLocalMatchingContext.NAME_OF_CONTEXT, ThreadLocalMatchingContext.INSTANCE);
@@ -230,7 +270,8 @@ public class MatchEngine {
     /**
      * 设置上下文的匹配器
      *
-     * @param matcher 匹配器
+     * @param matcher
+     *         匹配器
      */
     private void resetMatcherContext(Matcher matcher) {
         ThreadLocalUtils.set(ThreadLocalMatchingContext.NAME_OF_MATCHER, matcher);
@@ -272,6 +313,9 @@ public class MatchEngine {
     public void addHandler(MatchHandler h) {
         Objects.requireNonNull(h, "handler is null");
         this.handlers.add(h);
+
+        // 排序
+        this.handlers.sort(Comparator.comparing(MatchHandler::getPriority).reversed());
     }
 
     /**

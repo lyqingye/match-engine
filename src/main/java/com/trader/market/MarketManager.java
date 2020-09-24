@@ -76,11 +76,22 @@ public class MarketManager implements MatchHandler{
     }
 
     /**
-     * 执行事件处理器
+     * (异步) 执行事件处理器
      *
      * @param hConsumer 处理器消费者 {@link MarketEventHandler}
      */
     private void asyncExecuteHandler(Consumer<MarketEventHandler> hConsumer) {
+        ThreadPool.submit(() -> {
+            this.handlers.forEach(hConsumer);
+        });
+    }
+
+    /**
+     * (同步) 执行事件处理器
+     *
+     * @param hConsumer 处理器消费者 {@link MarketEventHandler}
+     */
+    private void syncExecuteHandler(Consumer<MarketEventHandler> hConsumer) {
         ThreadPool.submit(() -> {
             this.handlers.forEach(hConsumer);
         });
@@ -134,10 +145,24 @@ public class MarketManager implements MatchHandler{
 
         // 异步处理市场管理器事件
         this.asyncExecuteHandler((h) -> {
+
+            // 推送交易数据
             h.onTrade(order.getSymbol(),
                       order.getSide(),
                       ts.getQuantity(),
                       ts.getExecutePrice());
+
+
+        });
+
+        // 上面这个事件和下面这个事件不应该放在一起推送
+        // 因为上面这个影响的是市场数据
+        // 下面这个会影响止盈止损挂单的数据
+        // 所以分开触发
+        this.asyncExecuteHandler((h) -> {
+            // 推送市价变动事件
+            h.onMarketPriceChange(order.getSymbol(),
+                                  ts.getExecutePrice());
         });
     }
 }

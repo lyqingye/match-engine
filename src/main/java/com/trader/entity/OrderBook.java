@@ -8,12 +8,11 @@ import com.trader.market.entity.MarketDepthChart;
 import com.trader.market.entity.MarketDepthInfo;
 import de.vandermeer.asciitable.AsciiTable;
 import lombok.Data;
-
-import javax.swing.plaf.basic.BasicInternalFrameTitlePane;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
 import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
@@ -24,14 +23,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class OrderBook {
 
     /**
-     * 该账本所记录的商品
+     * 交易对
      */
-    private Product product;
-
-    /**
-     * 该账本所支持的货币
-     */
-    private Currency currency;
+    private String symbolId;
 
     /**
      * 买入订单
@@ -52,6 +46,11 @@ public class OrderBook {
      * 止盈止损 (卖出)
      */
     private TreeSet<Order> sellStopOrders = new TreeSet<>(BidComparator.getInstance());
+
+    /**
+     * 止盈止损订单锁
+     */
+    private ReentrantLock stopOrdersLock = new ReentrantLock();
 
     /**
      * 读写锁 (预留)
@@ -91,13 +90,23 @@ public class OrderBook {
             }
 
             case STOP: {
-                /**
-                 * 止盈止损单
-                 */
-                if (o.isBuy()) {
-                    buyStopOrders.add(o);
-                } else {
-                    sellStopOrders.add(o);
+                //
+                // 止盈止损单需要加锁
+                //
+                this.lockStopOrders();
+                try {
+                    /**
+                     * 止盈止损单
+                     */
+                    if (o.isBuy()) {
+                        buyStopOrders.add(o);
+                    } else {
+                        sellStopOrders.add(o);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }finally {
+                    this.unlockStopOrders();
                 }
                 break;
             }
@@ -131,15 +140,8 @@ public class OrderBook {
             }
 
             case STOP: {
-                /**
-                 * 止盈止损单
-                 */
-                if (o.isBuy()) {
-                    orders = buyStopOrders;
-                } else {
-                    orders = sellStopOrders;
-                }
-                break;
+                // 不处理止盈止损订单
+                return;
             }
             default: {
                 throw new IllegalArgumentException("invalid order type");
@@ -147,6 +149,20 @@ public class OrderBook {
         }
 
         orders.removeIf(v -> v.getId().equals(o.getId()));
+    }
+
+    /**
+     * 锁定止盈止损订单列表
+     */
+    public void lockStopOrders () {
+        this.stopOrdersLock.lock();
+    }
+
+    /**
+     * 解锁止盈止损订单
+     */
+    public void unlockStopOrders () {
+        this.stopOrdersLock.unlock();
     }
 
     /**
@@ -224,17 +240,19 @@ public class OrderBook {
      *
      * @return 成交价格
      */
-    public BigDecimal getLastTradePrice () {
+    public BigDecimal getLastTradePrice() {
         return this.lastTradePrice;
     }
 
     /**
      * 更新最后一条成交价格
      *
-     * @param newPrice 最后一条成交价格
+     * @param newPrice
+     *         最后一条成交价格
+     *
      * @return 成交价格
      */
-    public BigDecimal updateLastTradePrice (BigDecimal newPrice) {
+    public BigDecimal updateLastTradePrice(BigDecimal newPrice) {
         BigDecimal old = this.lastTradePrice;
         this.lastTradePrice = Objects.requireNonNull(newPrice);
         this.lastTradeTime = System.currentTimeMillis();

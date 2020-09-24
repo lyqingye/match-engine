@@ -19,6 +19,15 @@ import java.util.Objects;
 public interface MatchHandler {
 
     /**
+     * 优先级,优先级越高越先执行
+     *
+     * @return 优先级
+     */
+    default int getPriority () {
+        return Integer.MIN_VALUE;
+    }
+
+    /**
      * 商品添加事件处理器
      *
      * @param product 商品
@@ -59,6 +68,14 @@ public interface MatchHandler {
     default void onAddOrder (Order newOrder) throws Exception {}
 
     /**
+     * 激活止盈止损订单事件
+     *
+     * @param stopOrder 止盈止损订单
+     * @throws Exception
+     */
+    default void activeStopOrder(Order stopOrder) throws Exception {}
+
+    /**
      * 更新订单事件
      *
      * @param order 订单
@@ -79,10 +96,10 @@ public interface MatchHandler {
      *
      * @param order 订单
      * @param opponentOrder 对手订单
-     * @param tradeResult 撮合结果
+     * @param ts 撮合结果
      * @throws Exception
      */
-    default void onExecuteOrder(Order order, Order opponentOrder, TradeResult tradeResult) throws Exception {}
+    default void onExecuteOrder(Order order, Order opponentOrder, TradeResult ts) throws Exception {}
 
     /**
      * 获取上下文

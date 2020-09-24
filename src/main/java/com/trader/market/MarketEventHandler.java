@@ -16,11 +16,10 @@ public interface MarketEventHandler {
     /**
      * 市价价格变动事件
      *
-     * @param productId 产品ID
-     * @param currencyId 货币ID
+     * @param symbol 交易对
      * @param latestPrice 最新价格
      */
-    void onMarketPriceChange(String productId, String currencyId, BigDecimal latestPrice);
+    default void onMarketPriceChange(String symbol, BigDecimal latestPrice) {}
 
     /**
      * 交易成功事件
@@ -30,5 +29,5 @@ public interface MarketEventHandler {
      * @param quantity 成交数量
      * @param price 成交价格
      */
-    void onTrade (String symbolId, OrderSide side, BigDecimal quantity,BigDecimal price);
+    default void onTrade (String symbolId, OrderSide side, BigDecimal quantity,BigDecimal price) {}
 }

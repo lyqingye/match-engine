@@ -186,15 +186,21 @@ public class TestBidComparator {
         o1.setCreateDateTime(timeOfO2);
         o1.setType(typeOfO2);
 
-        ConcurrentSkipListSet<Order> orders = new ConcurrentSkipListSet<>(new BidComparator());
-        orders.add(o2);
-        orders.add(o1);
 
-//        TreeSet<Order> set = new TreeSet<>(new BidComparator());
-//        set.add(o2);
-//        set.add(o1);
-        Assert.assertTrue(orders.first().getId().equals(exceptedFirstObjName));
-        Assert.assertTrue(orders.last().getId().equals(exceptedSecondObjName));
+
+//        ConcurrentSkipListSet<Order> orders = new ConcurrentSkipListSet<>(new BidComparator());
+//        orders.add(o2);
+//        orders.add(o1);
+
+//        TreeSet<Order> set = new TreeSet<>(
+//                Comparator.comparing(o1.getType()::getPriority).reversed()
+//                  .thenComparing(Order::getCreateDateTime));
+
+        TreeSet<Order> set = new TreeSet<>(new BidComparator());
+        set.add(o2);
+        set.add(o1);
+        Assert.assertTrue(set.first().getId().equals(exceptedFirstObjName));
+        Assert.assertTrue(set.last().getId().equals(exceptedSecondObjName));
     }
 
 

@@ -15,6 +15,18 @@ import java.math.BigDecimal;
 public class InMemoryMarketMatchHandler implements MatchHandler {
 
     /**
+     * 优先级,优先级越高越先执行
+     *
+     * @return 优先级
+     */
+    @Override
+    public int getPriority() {
+
+        // 内存撮合优先级最高
+        return Integer.MAX_VALUE;
+    }
+
+    /**
      * 撮合订单事件
      *
      * @param order

@@ -29,8 +29,10 @@ public class LimitOrderMatcher implements Matcher {
     public boolean isSupport(Order order, Order opponentOrder) {
 
         //
-        // 不处理市价撮合
-        // 只处理限价和止盈止损
+        // 处理以下类型的订单
+        //
+        // STOP <-> LIMIT   （止盈止损单和限价单）
+        // LIMIT <-> LIMIT  （限价单和限价单）
         //
 
         if (order.isMarketOrder() || opponentOrder.isMarketOrder()) {

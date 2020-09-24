@@ -83,12 +83,18 @@ public class InMemoryMarketMatchHandler implements MatchHandler {
                 if (order.isBuy()) {
                     order.incExecutedAmount(totalAmount);
                     order.decLeavesAmount(totalAmount);
+
+                    // 记录已经成交的数量
+                    order.incExecutedQuality(executeQuantity);
                 }
 
                 // 如果是卖出单则扣除成交量
                 if (order.isSell()) {
                     order.incExecutedQuality(executeQuantity);
                     order.decLeavesQuality(executeQuantity);
+
+                    // 记录已经获得的金额
+                    order.incExecutedAmount(totalAmount);
                 }
                 break;
             }

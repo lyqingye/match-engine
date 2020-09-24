@@ -44,7 +44,7 @@ public class TestLimitOrderMatch  {
         engine = new MatchEngine();
         engine.addHandler(new InMemoryLimitMatchHandler());
         engine.addHandler(new InMemoryMarketMatchHandler());
-        engine.addHandler(new ExampleLoggerHandler());
+//        engine.addHandler(new ExampleLoggerHandler());
 
         engine.addMatcher(new LimitOrderMatcher());
         engine.addMatcher(new MarketOrderMatcher());
@@ -189,6 +189,8 @@ public class TestLimitOrderMatch  {
             Collections.shuffle(orderList);
             long start = System.currentTimeMillis();
             int count = 0;
+
+
 
             for (Order order : orderList) {
                 engine.addOrder(order);

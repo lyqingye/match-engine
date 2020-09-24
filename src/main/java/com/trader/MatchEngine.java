@@ -150,7 +150,7 @@ public class MatchEngine {
        this.addOrderQueue = DisruptorQueueFactory.createQueue(2 << 16, new AbstractDisruptorConsumer<Order>() {
             @Override
             public void process(Order order) {
-                addOrder(order);
+                addOrderInternal(order);
             }
         });
 
@@ -171,7 +171,7 @@ public class MatchEngine {
      */
     public void addOrder(Order order) {
         Order newOrder = order.snap();
-        this.addOrderInternal(newOrder);
+        this.addOrderQueue.add(newOrder);
     }
 
     /**
@@ -180,7 +180,6 @@ public class MatchEngine {
      * @param order
      *         订单
      */
-    @Synchronized
     private void addOrderInternal(Order order) {
         OrderBook book = this.bookMgr.getBook(order);
 
@@ -212,7 +211,6 @@ public class MatchEngine {
      *
      * @param stopOrder 止盈止损订单
      */
-    @Synchronized
     private void activeStopOrder (Order stopOrder) {
         OrderBook book = this.bookMgr.getBook(stopOrder);
 

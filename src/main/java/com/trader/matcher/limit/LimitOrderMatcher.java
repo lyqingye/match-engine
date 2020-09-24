@@ -28,8 +28,12 @@ public class LimitOrderMatcher implements Matcher {
     @Override
     public boolean isSupport(Order order, Order opponentOrder) {
 
-        if (!order.getType().equals(OrderType.LIMIT) ||
-                !opponentOrder.getType().equals(OrderType.LIMIT)) {
+        //
+        // 不处理市价撮合
+        // 只处理限价和止盈止损
+        //
+
+        if (order.isMarketOrder() || opponentOrder.isMarketOrder()) {
             return false;
         }
 

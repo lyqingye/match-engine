@@ -80,7 +80,10 @@ public class MatchEngine {
         this.productMgr = new ProductManager();
         this.orderMgr = new OrderManager();
         this.bookMgr = new OrderBookManager(currencyMgr, productMgr);
-        this.marketMgr = new MarketManager();
+        this.marketMgr = new MarketManager(bookMgr);
+
+        // 将行情管理器的撮合监听事件添加进撮合引擎
+        this.addHandler(this.marketMgr.getMatchHandler());
     }
 
     /**

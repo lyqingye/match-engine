@@ -6,6 +6,7 @@ import com.trader.entity.OrderBook;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author yjt
@@ -25,8 +26,10 @@ public class OrderBookManager {
 
     /**
      * 账本映射MAP
+     *
+     * 在这里使用并发集合是为了做懒加载,并且用于后续支持多线程
      */
-    private Map<String,OrderBook> bookMap = new HashMap<>(16);
+    private Map<String,OrderBook> bookMap = new ConcurrentHashMap<>(16);
 
     /**
      * hide default constructor
@@ -45,14 +48,11 @@ public class OrderBookManager {
      * @return 账本
      */
     public OrderBook getBook (Order order) {
-        OrderBook book = bookMap.get(order.getSymbol());
-        if (book == null) {
+        return bookMap.computeIfAbsent(order.getSymbol(), key -> {
             OrderBook newBook = new OrderBook();
             newBook.setProduct(productMgr.getProduct(order.getProductId()));
             newBook.setCurrency(currencyMgr.getCurrency(order.getCurrencyId()));
-            book = newBook;
-            bookMap.put(order.getSymbol(), newBook);
-        }
-        return book;
+            return newBook;
+        });
     }
 }

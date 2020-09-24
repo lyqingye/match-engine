@@ -9,6 +9,7 @@ import com.trader.market.entity.MarketDepthInfo;
 import de.vandermeer.asciitable.AsciiTable;
 import lombok.Data;
 
+import javax.swing.plaf.basic.BasicInternalFrameTitlePane;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
@@ -56,6 +57,16 @@ public class OrderBook {
      * 读写锁 (预留)
      */
     private ReadWriteLock reserve = new ReentrantReadWriteLock();
+
+    /**
+     * 最后一条成交价
+     */
+    private volatile BigDecimal lastTradePrice = BigDecimal.ZERO;
+
+    /**
+     * 最后一次更新的时间
+     */
+    private volatile long lastTradeTime = 0;
 
     /**
      * 增加订单
@@ -138,7 +149,6 @@ public class OrderBook {
         orders.removeIf(v -> v.getId().equals(o.getId()));
     }
 
-
     /**
      * 快照买卖盘
      *
@@ -209,7 +219,33 @@ public class OrderBook {
         return chart;
     }
 
+    /**
+     * 获取最后一条成交价格
+     *
+     * @return 成交价格
+     */
+    public BigDecimal getLastTradePrice () {
+        return this.lastTradePrice;
+    }
 
+    /**
+     * 更新最后一条成交价格
+     *
+     * @param newPrice 最后一条成交价格
+     * @return 成交价格
+     */
+    public BigDecimal updateLastTradePrice (BigDecimal newPrice) {
+        BigDecimal old = this.lastTradePrice;
+        this.lastTradePrice = Objects.requireNonNull(newPrice);
+        this.lastTradeTime = System.currentTimeMillis();
+        return old;
+    }
+
+    /**
+     * 可视化深度图
+     *
+     * @return 深度图可视化字符串
+     */
     public String render_depth_chart() {
         MarketDepthChart chart = this.snapDepthChart(0, 20);
         AsciiTable at = new AsciiTable();

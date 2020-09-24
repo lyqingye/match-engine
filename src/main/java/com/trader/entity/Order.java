@@ -1,6 +1,7 @@
 package com.trader.entity;
 
 import com.trader.def.*;
+import com.trader.utils.SymbolUtils;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -254,6 +255,7 @@ public class Order {
         order.id = id;
         order.uid = uid;
         order.productId = productId;
+        order.currencyId = currencyId;
         order.price = price;
 
         order.totalAmount = totalAmount;
@@ -286,6 +288,7 @@ public class Order {
         this.id = o.id;
         this.uid = o.uid;
         this.productId = o.productId;
+        this.currencyId = o.currencyId;
         this.price = o.price;
         this.createDateTime = o.createDateTime;
 
@@ -327,6 +330,6 @@ public class Order {
     }
 
     public String getSymbol() {
-        return productId + "-" +currencyId;
+        return SymbolUtils.makeSymbol(this.productId,this.currencyId);
     }
 }

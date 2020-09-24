@@ -1,6 +1,5 @@
 package com.trader.support;
 
-import com.trader.entity.Currency;
 import com.trader.entity.Product;
 
 import java.util.HashMap;
@@ -21,9 +20,10 @@ public class ProductManager {
     /**
      * 添加一个商品
      *
-     * @param product 商品对象
+     * @param product
+     *         商品对象
      */
-    public void addProduct (Product product) {
+    public void addProduct(Product product) {
         Objects.requireNonNull(product);
         productMap.put(product.getId(), product);
     }
@@ -31,10 +31,12 @@ public class ProductManager {
     /**
      * 根据商品ID获取商品对象
      *
-     * @param productId 商品ID
+     * @param productId
+     *         商品ID
+     *
      * @return 商品对象
      */
-    public Product getProduct (String productId) {
+    public Product getProduct(String productId) {
         return this.productMap.get(productId);
     }
 }

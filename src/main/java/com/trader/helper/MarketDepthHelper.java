@@ -4,8 +4,10 @@ import com.trader.market.entity.MarketDepthChart;
 import com.trader.market.entity.MarketDepthInfo;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.*;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -18,7 +20,9 @@ public class MarketDepthHelper {
     /**
      * 深度图
      *
-     * @param chart 买卖盘
+     * @param chart
+     *         买卖盘
+     *
      * @return 深度数据
      */
     public static MarketDepthChart render(MarketDepthChart chart, int depth, int limit) {
@@ -32,10 +36,15 @@ public class MarketDepthHelper {
     /**
      * 处理深度
      *
-     * @param unProcessDataList 需要处理的数据
-     * @param depth 深度
-     * @param limit 总条数
-     * @param comparator 比较器
+     * @param unProcessDataList
+     *         需要处理的数据
+     * @param depth
+     *         深度
+     * @param limit
+     *         总条数
+     * @param comparator
+     *         比较器
+     *
      * @return 深度数据
      */
     public static Collection<MarketDepthInfo> render(Collection<MarketDepthInfo> unProcessDataList,
@@ -49,8 +58,8 @@ public class MarketDepthHelper {
             if (info == null) {
                 MarketDepthInfo newAsk = unProcess.clone();
                 newAsk.setPrice(trx);
-                trxMap.put(trx,newAsk);
-            }else {
+                trxMap.put(trx, newAsk);
+            } else {
                 info.setPrice(trx);
                 info.setTotal(info.getTotal().add(unProcess.getTotal()));
                 info.setLeaves(info.getLeaves().add(unProcess.getLeaves()));
@@ -58,24 +67,29 @@ public class MarketDepthHelper {
             }
         }
         return trxMap.values()
-                  .stream()
-                  .limit(limit)
-                  .collect(Collectors.toList());
+                     .stream()
+                     .limit(limit)
+                     .collect(Collectors.toList());
     }
 
     /**
      * 处理深度 (使用流)
      *
-     * @param unProcessDataList 需要处理的数据
-     * @param depth 深度
-     * @param limit 总条数
-     * @param comparator 比较器
+     * @param unProcessDataList
+     *         需要处理的数据
+     * @param depth
+     *         深度
+     * @param limit
+     *         总条数
+     * @param comparator
+     *         比较器
+     *
      * @return 深度数据
      */
     public static Collection<MarketDepthInfo> fastRender(Collection<MarketDepthInfo> unProcessDataList,
-                                                     int depth,
-                                                     int limit,
-                                                     Comparator<MarketDepthInfo> comparator) {
+                                                         int depth,
+                                                         int limit,
+                                                         Comparator<MarketDepthInfo> comparator) {
         return unProcessDataList.parallelStream()
                                 .collect(Collectors.groupingBy(d -> calcTrx(d.getPrice(), depth)))
                                 .entrySet()
@@ -86,21 +100,23 @@ public class MarketDepthHelper {
                                 .collect(Collectors.toList());
     }
 
-    private static MarketDepthInfo combineTrx (BigDecimal trx,List<MarketDepthInfo> ls) {
+    private static MarketDepthInfo combineTrx(BigDecimal trx, List<MarketDepthInfo> ls) {
         MarketDepthInfo result = MarketDepthInfo.empty();
         ls.forEach(result::add);
         result.setPrice(trx);
         return result;
     }
 
-    private static BigDecimal calcTrx(BigDecimal price,int depth) {
+    private static BigDecimal calcTrx(BigDecimal price, int depth) {
         return price.setScale(getNumberOfDecimalPlaces(price) - depth, BigDecimal.ROUND_DOWN);
     }
 
     /**
      * 获取小数位数
      *
-     * @param bigDecimal decimal
+     * @param bigDecimal
+     *         decimal
+     *
      * @return 小数位数
      */
     private static int getNumberOfDecimalPlaces(BigDecimal bigDecimal) {

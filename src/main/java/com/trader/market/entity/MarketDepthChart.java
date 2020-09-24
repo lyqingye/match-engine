@@ -3,8 +3,6 @@ package com.trader.market.entity;
 import lombok.Data;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * @author yjt

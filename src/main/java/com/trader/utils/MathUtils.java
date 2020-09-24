@@ -16,6 +16,7 @@ public final class MathUtils {
      *
      * @param a
      * @param b
+     *
      * @return 最小值
      */
     public static BigDecimal min(BigDecimal a, BigDecimal b) {
@@ -30,6 +31,7 @@ public final class MathUtils {
      *
      * @param a
      * @param b
+     *
      * @return 最大值
      */
     public static BigDecimal max(BigDecimal a, BigDecimal b) {
@@ -52,7 +54,7 @@ public final class MathUtils {
     public static BigDecimal random(BigDecimal startInclusive,
                                     BigDecimal endInclusive) {
         double randomDouble = RandomUtils.nextDouble(startInclusive.doubleValue(),
-                                          endInclusive.doubleValue());
+                                                     endInclusive.doubleValue());
         return BigDecimal.valueOf(randomDouble)
                          .setScale(8, RoundingMode.DOWN);
     }

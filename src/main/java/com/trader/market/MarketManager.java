@@ -1,11 +1,11 @@
 package com.trader.market;
 
 import com.trader.MatchHandler;
-import com.trader.utils.ThreadPoolUtils;
 import com.trader.entity.Order;
 import com.trader.entity.OrderBook;
 import com.trader.matcher.TradeResult;
 import com.trader.support.OrderBookManager;
+import com.trader.utils.ThreadPoolUtils;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -19,7 +19,7 @@ import java.util.function.Consumer;
  * @author yjt
  * @since 2020/9/18 下午4:34
  */
-public class MarketManager implements MatchHandler{
+public class MarketManager implements MatchHandler {
 
     /**
      * 账本管理器
@@ -34,10 +34,11 @@ public class MarketManager implements MatchHandler{
     /**
      * hide default constructor
      */
-    private MarketManager () {}
+    private MarketManager() {
+    }
 
 
-    public MarketManager (OrderBookManager orderBookManager) {
+    public MarketManager(OrderBookManager orderBookManager) {
         this.orderBookManager = Objects.requireNonNull(orderBookManager);
     }
 
@@ -69,14 +70,15 @@ public class MarketManager implements MatchHandler{
      *
      * @return 交易事件处理器
      */
-    public MatchHandler getMatchHandler () {
+    public MatchHandler getMatchHandler() {
         return this;
     }
 
     /**
      * (异步) 执行事件处理器
      *
-     * @param hConsumer 处理器消费者 {@link MarketEventHandler}
+     * @param hConsumer
+     *         处理器消费者 {@link MarketEventHandler}
      */
     private void asyncExecuteHandler(Consumer<MarketEventHandler> hConsumer) {
         ThreadPoolUtils.submit(() -> {
@@ -87,7 +89,8 @@ public class MarketManager implements MatchHandler{
     /**
      * (同步) 执行事件处理器
      *
-     * @param hConsumer 处理器消费者 {@link MarketEventHandler}
+     * @param hConsumer
+     *         处理器消费者 {@link MarketEventHandler}
      */
     private void syncExecuteHandler(Consumer<MarketEventHandler> hConsumer) {
         ThreadPoolUtils.submit(() -> {

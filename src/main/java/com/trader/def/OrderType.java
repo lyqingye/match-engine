@@ -13,17 +13,17 @@ public enum OrderType {
     /**
      * 市价交易
      */
-    MARKET (3),
+    MARKET(3),
 
     /**
      * 限价交易
      */
-    LIMIT (2),
+    LIMIT(2),
 
     /**
      * 止盈止损
      */
-    STOP (1);
+    STOP(1);
 
     /**
      * 优先级

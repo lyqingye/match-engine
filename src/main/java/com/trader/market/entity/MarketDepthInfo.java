@@ -32,7 +32,7 @@ public class MarketDepthInfo {
     private BigDecimal total;
 
     @Override
-    public MarketDepthInfo clone(){
+    public MarketDepthInfo clone() {
         MarketDepthInfo c = new MarketDepthInfo();
         c.setExecuted(this.executed);
         c.setLeaves(this.leaves);
@@ -41,13 +41,13 @@ public class MarketDepthInfo {
         return c;
     }
 
-    public void add (MarketDepthInfo a) {
+    public void add(MarketDepthInfo a) {
         this.setExecuted(this.getExecuted().add(a.getExecuted()));
         this.setTotal(this.getTotal().add(a.getTotal()));
         this.setLeaves(this.getLeaves().add(a.getLeaves()));
     }
 
-    public static MarketDepthInfo add (MarketDepthInfo o1,MarketDepthInfo o2) {
+    public static MarketDepthInfo add(MarketDepthInfo o1, MarketDepthInfo o2) {
         MarketDepthInfo sum = new MarketDepthInfo();
         sum.setPrice(o1.getPrice());
         sum.setExecuted(o1.getExecuted().add(o2.getExecuted()));
@@ -56,7 +56,7 @@ public class MarketDepthInfo {
         return sum;
     }
 
-    public static MarketDepthInfo empty () {
+    public static MarketDepthInfo empty() {
         MarketDepthInfo e = new MarketDepthInfo();
         e.setExecuted(BigDecimal.ZERO);
         e.setTotal(BigDecimal.ZERO);
@@ -65,11 +65,11 @@ public class MarketDepthInfo {
         return e;
     }
 
-    public int compareTo (MarketDepthInfo target) {
+    public int compareTo(MarketDepthInfo target) {
         return this.getPrice().compareTo(target.getPrice());
     }
 
-    public int reverseCompare (MarketDepthInfo target) {
+    public int reverseCompare(MarketDepthInfo target) {
         return target.getPrice().compareTo(this.getPrice());
     }
 

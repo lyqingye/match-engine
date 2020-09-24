@@ -1,6 +1,9 @@
 package com.trader.entity;
 
-import com.trader.def.*;
+import com.trader.def.DifferencePriceStrategy;
+import com.trader.def.OrderSide;
+import com.trader.def.OrderTimeInForce;
+import com.trader.def.OrderType;
 import com.trader.utils.SymbolUtils;
 import lombok.Getter;
 import lombok.Setter;
@@ -132,39 +135,39 @@ public class Order {
     private long version;
 
 
-    public boolean isBuy () {
+    public boolean isBuy() {
         return OrderSide.BUY.equals(side);
     }
 
-    public boolean isSell () {
+    public boolean isSell() {
         return OrderSide.SELL.equals(side);
     }
 
-    public boolean isFOK () {
+    public boolean isFOK() {
         return OrderTimeInForce.FOK.equals(this.timeInForce);
     }
 
-    public boolean isAON () {
+    public boolean isAON() {
         return OrderTimeInForce.AON.equals(this.timeInForce);
     }
 
-    public boolean isLimitOrder () {
+    public boolean isLimitOrder() {
         return OrderType.LIMIT.equals(this.type);
     }
 
-    public boolean isMarketOrder () {
+    public boolean isMarketOrder() {
         return OrderType.MARKET.equals(this.type);
     }
 
-    public boolean isStopOrder () {
+    public boolean isStopOrder() {
         return OrderType.STOP.equals(this.type);
     }
 
-    public boolean isBuyMarketOrder () {
+    public boolean isBuyMarketOrder() {
         return this.isBuy() && this.isMarketOrder();
     }
 
-    public boolean isSellMarketOrder () {
+    public boolean isSellMarketOrder() {
         return this.isSell() && this.isMarketOrder();
     }
 
@@ -187,9 +190,9 @@ public class Order {
         if (this.isBuy()) {
             return price.add(price.multiply(this.priceUpperBound))
                         .setScale(8, RoundingMode.DOWN);
-        }else {
+        } else {
             return price.subtract(price.multiply(this.priceLowerBound))
-                        .setScale(8,RoundingMode.DOWN);
+                        .setScale(8, RoundingMode.DOWN);
         }
     }
 
@@ -198,7 +201,7 @@ public class Order {
      *
      * @return 是否存在上界下限价格
      */
-    public boolean hasBoundPrice () {
+    public boolean hasBoundPrice() {
         // 市价单没有上界和下限
         if (isMarketOrder()) {
             throw new IllegalArgumentException("[市价]订单不存在上界下限的价格");
@@ -206,27 +209,27 @@ public class Order {
 
         if (this.isBuy()) {
             return this.priceUpperBound.compareTo(BigDecimal.ZERO) == 0;
-        }else {
+        } else {
             return this.priceLowerBound.compareTo(BigDecimal.ZERO) == 0;
         }
     }
 
-    public BigDecimal decLeavesQuality (BigDecimal q) {
+    public BigDecimal decLeavesQuality(BigDecimal q) {
         this.leavesQuantity = leavesQuantity.subtract(q);
         return this.leavesQuantity;
     }
 
-    public BigDecimal incExecutedQuality (BigDecimal q) {
+    public BigDecimal incExecutedQuality(BigDecimal q) {
         this.executedQuantity = executedQuantity.add(q);
         return this.executedQuantity;
     }
 
-    public BigDecimal decLeavesAmount (BigDecimal q) {
+    public BigDecimal decLeavesAmount(BigDecimal q) {
         this.leavesAmount = leavesAmount.subtract(q);
         return this.leavesAmount;
     }
 
-    public BigDecimal incExecutedAmount (BigDecimal q) {
+    public BigDecimal incExecutedAmount(BigDecimal q) {
         this.executedAmount = executedAmount.add(q);
         return this.executedAmount;
     }
@@ -241,12 +244,12 @@ public class Order {
         }
         Order order = (Order) o;
         return Objects.equals(id, order.id) &&
-                Objects.equals(version,order.version);
+                Objects.equals(version, order.version);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id,version);
+        return Objects.hash(id, version);
     }
 
     @Override
@@ -279,7 +282,7 @@ public class Order {
         return order;
     }
 
-    public Order snap () {
+    public Order snap() {
         return this.clone();
     }
 
@@ -330,6 +333,6 @@ public class Order {
     }
 
     public String getSymbol() {
-        return SymbolUtils.makeSymbol(this.productId,this.currencyId);
+        return SymbolUtils.makeSymbol(this.productId, this.currencyId);
     }
 }

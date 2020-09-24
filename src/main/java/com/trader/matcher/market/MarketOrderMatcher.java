@@ -4,8 +4,8 @@ import com.trader.Matcher;
 import com.trader.def.OrderType;
 import com.trader.entity.Order;
 import com.trader.helper.TradeHelper;
-import com.trader.matcher.TradeResult;
 import com.trader.market.MarketManager;
+import com.trader.matcher.TradeResult;
 
 import java.math.BigDecimal;
 
@@ -57,8 +57,8 @@ public class MarketOrderMatcher implements Matcher {
         //
         // 判断是否有足够的钱进行购买
         //
-        if (!TradeHelper.isHasEnoughAmount(order,opponentPrice) ||
-        !TradeHelper.isHasEnoughAmount(opponentOrder,price)) {
+        if (!TradeHelper.isHasEnoughAmount(order, opponentPrice) ||
+                !TradeHelper.isHasEnoughAmount(opponentOrder, price)) {
             return false;
         }
 

@@ -15,25 +15,28 @@ public class CurrencyManager {
     /**
      * 货币映射MAP
      */
-    private Map<String,Currency> currencyMap = new HashMap<>(16);
+    private Map<String, Currency> currencyMap = new HashMap<>(16);
 
     /**
      * 添加一个货币
      *
-     * @param currency 货币对象
+     * @param currency
+     *         货币对象
      */
-    public void addCurrency (Currency currency) {
+    public void addCurrency(Currency currency) {
         Objects.requireNonNull(currency);
-        currencyMap.put(currency.getId(),currency);
+        currencyMap.put(currency.getId(), currency);
     }
 
     /**
      * 根据货币ID获取货币对象
      *
-     * @param currencyId 货币ID
+     * @param currencyId
+     *         货币ID
+     *
      * @return 货币对象
      */
-    public Currency getCurrency (String currencyId) {
+    public Currency getCurrency(String currencyId) {
         return this.currencyMap.get(currencyId);
     }
 }

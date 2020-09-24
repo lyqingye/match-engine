@@ -8,13 +8,14 @@ public class ObjectEvent<T> {
 
     private T obj;
 
-    public ObjectEvent () {}
+    public ObjectEvent() {
+    }
 
     public T getObj() {
         return this.obj;
     }
 
-    public void setObj (T obj) {
+    public void setObj(T obj) {
         this.obj = obj;
     }
 }

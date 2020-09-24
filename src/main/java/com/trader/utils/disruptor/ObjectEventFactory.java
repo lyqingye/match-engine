@@ -7,7 +7,8 @@ import com.lmax.disruptor.EventFactory;
  * @since 2020/9/24 下午3:27
  */
 public class ObjectEventFactory<T> implements EventFactory<ObjectEvent<T>> {
-    public ObjectEventFactory() { }
+    public ObjectEventFactory() {
+    }
 
     @Override
     public ObjectEvent<T> newInstance() {

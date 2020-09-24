@@ -32,6 +32,7 @@ public class InMemoryMarketMatchHandler implements MatchHandler {
      * @param order
      * @param opponentOrder
      * @param ts
+     *
      * @throws Exception
      */
     @Override
@@ -55,9 +56,12 @@ public class InMemoryMarketMatchHandler implements MatchHandler {
     /**
      * 扣除订单
      *
-     * @param order 订单
-     * @param executePrice 成交价
-     * @param executeQuantity 成交量
+     * @param order
+     *         订单
+     * @param executePrice
+     *         成交价
+     * @param executeQuantity
+     *         成交量
      */
     public static void updateOrder(Order order,
                                    BigDecimal executePrice,

@@ -7,7 +7,10 @@ import com.trader.exception.TradeException;
 import com.trader.market.MarketEventHandler;
 import com.trader.market.MarketManager;
 import com.trader.matcher.TradeResult;
-import com.trader.support.*;
+import com.trader.support.CurrencyManager;
+import com.trader.support.OrderBookManager;
+import com.trader.support.OrderManager;
+import com.trader.support.ProductManager;
 import com.trader.utils.ThreadLocalUtils;
 import com.trader.utils.disruptor.AbstractDisruptorConsumer;
 import com.trader.utils.disruptor.DisruptorQueue;
@@ -122,7 +125,9 @@ public class MatchEngine {
                         if (bid.getTriggerPrice().compareTo(latestPrice) >= 0) {
                             activeStopOrderQueue.add(bid);
                             bidIt.remove();
-                        }else {break;}
+                        } else {
+                            break;
+                        }
                     }
 
                     Iterator<Order> askIt = book.getSellStopOrders().iterator();
@@ -132,7 +137,9 @@ public class MatchEngine {
                         if (ask.getTriggerPrice().compareTo(latestPrice) <= 0) {
                             activeStopOrderQueue.add(ask);
                             askIt.remove();
-                        }else {break;}
+                        } else {
+                            break;
+                        }
                     }
                 } catch (Exception ex) {
                     ex.printStackTrace();
@@ -147,20 +154,20 @@ public class MatchEngine {
 
 
         // 创建下单队列
-       this.addOrderQueue = DisruptorQueueFactory.createQueue(2 << 16, new AbstractDisruptorConsumer<Order>() {
+        this.addOrderQueue = DisruptorQueueFactory.createQueue(2 << 16, new AbstractDisruptorConsumer<Order>() {
             @Override
             public void process(Order order) {
                 addOrderInternal(order);
             }
         });
 
-       // 创建激活止盈止损订单队列
-       this.activeStopOrderQueue = DisruptorQueueFactory.createQueue(2 << 10, new AbstractDisruptorConsumer<Order>() {
-           @Override
-           public void process(Order order) {
-               activeStopOrder(order);
-           }
-       });
+        // 创建激活止盈止损订单队列
+        this.activeStopOrderQueue = DisruptorQueueFactory.createQueue(2 << 10, new AbstractDisruptorConsumer<Order>() {
+            @Override
+            public void process(Order order) {
+                activeStopOrder(order);
+            }
+        });
     }
 
     /**
@@ -209,13 +216,14 @@ public class MatchEngine {
     /**
      * 止盈止损订单激活
      *
-     * @param stopOrder 止盈止损订单
+     * @param stopOrder
+     *         止盈止损订单
      */
-    private void activeStopOrder (Order stopOrder) {
+    private void activeStopOrder(Order stopOrder) {
         OrderBook book = this.bookMgr.getBook(stopOrder);
 
         if (book == null) {
-            return ;
+            return;
         }
 
         // 账本激活止盈止损订单

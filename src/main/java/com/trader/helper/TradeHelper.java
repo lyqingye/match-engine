@@ -1,6 +1,5 @@
 package com.trader.helper;
 
-import com.trader.def.ExecutePriceType;
 import com.trader.entity.Order;
 import com.trader.matcher.TradeResult;
 import com.trader.utils.MathUtils;
@@ -18,17 +17,21 @@ public class TradeHelper {
     /**
      * 计算成交价
      *
-     * @param order 订单
-     * @param opponentOrder 对手订单
-     * @param marketPrice 市场价格（可以为空）
+     * @param order
+     *         订单
+     * @param opponentOrder
+     *         对手订单
+     * @param marketPrice
+     *         市场价格（可以为空）
+     *
      * @return 成交价格
      */
-    public static TradeResult calcExecutePrice (Order order,
-                                                Order opponentOrder,
-                                                BigDecimal marketPrice) {
+    public static TradeResult calcExecutePrice(Order order,
+                                               Order opponentOrder,
+                                               BigDecimal marketPrice) {
 
-        BigDecimal price = order.isMarketOrder() ? marketPrice :order.getBoundPrice();
-        BigDecimal opponentPrice = opponentOrder.isMarketOrder() ? marketPrice :opponentOrder.getBoundPrice();
+        BigDecimal price = order.isMarketOrder() ? marketPrice : order.getBoundPrice();
+        BigDecimal opponentPrice = opponentOrder.isMarketOrder() ? marketPrice : opponentOrder.getBoundPrice();
 
         if (price == null || opponentPrice == null) {
             throw new IllegalArgumentException("计算成交价失败, 非法价格");
@@ -57,7 +60,7 @@ public class TradeHelper {
                 if (order.getCreateDateTime().before(opponentOrder.getCreateDateTime())) {
                     ts.setExecutePrice(opponentPrice);
                     ts.setOpponentExecutePrice(opponentPrice);
-                }else {
+                } else {
                     ts.setExecutePrice(price);
                     ts.setOpponentExecutePrice(price);
                 }
@@ -70,7 +73,7 @@ public class TradeHelper {
                 if (order.isBuy()) {
                     ts.setExecutePrice(opponentPrice);
                     ts.setOpponentExecutePrice(opponentPrice);
-                }else {
+                } else {
                     ts.setExecutePrice(price);
                     ts.setOpponentExecutePrice(price);
                 }
@@ -83,7 +86,7 @@ public class TradeHelper {
                 if (order.isSell()) {
                     ts.setExecutePrice(opponentPrice);
                     ts.setOpponentExecutePrice(opponentPrice);
-                }else {
+                } else {
                     ts.setExecutePrice(price);
                     ts.setOpponentExecutePrice(price);
                 }
@@ -102,17 +105,18 @@ public class TradeHelper {
      * 通用的撮合, 所有的订单必须遵循以下规定:
      * 1. 买入单, 无论是限价还是市价还是止盈止损单, 都只用总金额进行计算
      * 2. 卖出单, 无论是限价还是市价还是止盈止损单, 都只用总数量进行计算
-     *
+     * <p>
      * 满足以上条件, 就可以统一成一个撮合规则
      *
      * @param order
      * @param opponentOrder
      * @param marketPrice
+     *
      * @return
      */
     public static TradeResult genericTrade(Order order,
-                                    Order opponentOrder,
-                                    BigDecimal marketPrice) {
+                                           Order opponentOrder,
+                                           BigDecimal marketPrice) {
         //
         // 计算成交价
         //
@@ -134,13 +138,13 @@ public class TradeHelper {
         if (order.isBuy()) {
             quantity = order.getLeavesAmount()
                             .divide(executePrice, RoundingMode.DOWN)
-                            .setScale(8,RoundingMode.DOWN);
+                            .setScale(8, RoundingMode.DOWN);
         }
 
         if (opponentOrder.isBuy()) {
             opponentQuantity = opponentOrder.getLeavesAmount()
                                             .divide(opponentExecutePrice, RoundingMode.DOWN)
-                                            .setScale(8,RoundingMode.DOWN);
+                                            .setScale(8, RoundingMode.DOWN);
 
         }
 
@@ -153,11 +157,14 @@ public class TradeHelper {
 
     /**
      * 判断买家的钱是否能够买得起最少的数量
-     *
+     * <p>
      * 参考: {@link #genericTrade}
      *
-     * @param order 订单
-     * @param unitPrice 单价
+     * @param order
+     *         订单
+     * @param unitPrice
+     *         单价
+     *
      * @return 是否能够买得起最少的数量
      */
     public static boolean isHasEnoughAmount(Order order, BigDecimal unitPrice) {
@@ -174,13 +181,15 @@ public class TradeHelper {
 
     /**
      * 判断一个订单是否已经结束
-     *
+     * <p>
      * 参考: {@link #genericTrade}
      *
-     * @param order 订单
+     * @param order
+     *         订单
+     *
      * @return
      */
-    public static boolean isFinished (Order order) {
+    public static boolean isFinished(Order order) {
 
         switch (order.getType()) {
             case MARKET:

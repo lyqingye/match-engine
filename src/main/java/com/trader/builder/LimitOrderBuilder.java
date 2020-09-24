@@ -10,14 +10,14 @@ import com.trader.entity.Order;
 public class LimitOrderBuilder {
     private Order order;
 
-    public static LimitOrderBuilder buy () {
+    public static LimitOrderBuilder buy() {
         LimitOrderBuilder builder = new LimitOrderBuilder();
         builder.order = new Order();
         builder.order.setSide(OrderSide.BUY);
         return builder;
     }
 
-    public static LimitOrderBuilder sell () {
+    public static LimitOrderBuilder sell() {
         LimitOrderBuilder builder = new LimitOrderBuilder();
         builder.order = new Order();
         builder.order.setSide(OrderSide.SELL);

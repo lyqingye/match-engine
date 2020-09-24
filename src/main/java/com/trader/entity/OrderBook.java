@@ -10,6 +10,7 @@ import com.trader.market.entity.MarketDepthChart;
 import com.trader.market.entity.MarketDepthInfo;
 import de.vandermeer.asciitable.AsciiTable;
 import lombok.Data;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
@@ -107,7 +108,7 @@ public class OrderBook {
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
-                }finally {
+                } finally {
                     this.unlockStopOrders();
                 }
                 break;
@@ -122,12 +123,13 @@ public class OrderBook {
     /**
      * 激活一个止盈止损订单
      *
-     * @param order 止盈止损订单
+     * @param order
+     *         止盈止损订单
      */
     public void activeStopOrder(Order order) {
         if (order.isBuy()) {
             bidOrders.add(order);
-        }else {
+        } else {
             askOrders.add(order);
         }
     }
@@ -169,15 +171,16 @@ public class OrderBook {
     /**
      * 移除已经已经激活的止盈止损订单
      *
-     * @param stopOrder 止盈止损订单
+     * @param stopOrder
+     *         止盈止损订单
      */
-    public void removeActiveStopOrder (Order stopOrder) {
+    public void removeActiveStopOrder(Order stopOrder) {
         if (OrderType.STOP.equals(stopOrder)) {
             TreeSet<Order> orders = null;
 
             if (stopOrder.isBuy()) {
                 orders = buyStopOrders;
-            }else {
+            } else {
                 orders = sellStopOrders;
             }
             orders.removeIf(v -> v.getId().equals(stopOrder.getId()));
@@ -187,14 +190,14 @@ public class OrderBook {
     /**
      * 锁定止盈止损订单列表
      */
-    public void lockStopOrders () {
+    public void lockStopOrders() {
         this.stopOrdersLock.lock();
     }
 
     /**
      * 解锁止盈止损订单
      */
-    public void unlockStopOrders () {
+    public void unlockStopOrders() {
         this.stopOrdersLock.unlock();
     }
 

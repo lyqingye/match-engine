@@ -44,17 +44,20 @@ public class InMemoryLimitMatchHandler implements MatchHandler {
      * 处理限价和止盈止损单
      * 根据撮合结果,更新订单数据
      *
-     * @param order 订单
-     * @param opponentOrder 对手订单
-     * @param ts 撮合结果
+     * @param order
+     *         订单
+     * @param opponentOrder
+     *         对手订单
+     * @param ts
+     *         撮合结果
      */
     public static void executeOrder(Order order,
                                     Order opponentOrder, TradeResult ts) {
         switch (order.getType()) {
             case STOP:
             case LIMIT: {
-                InMemoryLimitMatchHandler.updateOrder(order,ts.getExecutePrice(),ts.getQuantity());
-                InMemoryLimitMatchHandler.updateOrder(opponentOrder,ts.getOpponentExecutePrice(),ts.getQuantity());
+                InMemoryLimitMatchHandler.updateOrder(order, ts.getExecutePrice(), ts.getQuantity());
+                InMemoryLimitMatchHandler.updateOrder(opponentOrder, ts.getOpponentExecutePrice(), ts.getQuantity());
                 break;
             }
             default: {
@@ -66,13 +69,16 @@ public class InMemoryLimitMatchHandler implements MatchHandler {
     /**
      * 更新订单
      *
-     * @param order 订单
-     * @param executePrice 成交价格
-     * @param executeQuantity 成交数量
+     * @param order
+     *         订单
+     * @param executePrice
+     *         成交价格
+     * @param executeQuantity
+     *         成交数量
      */
-    public static void updateOrder (Order order,
-                                    BigDecimal executePrice,
-                                    BigDecimal executeQuantity) {
+    public static void updateOrder(Order order,
+                                   BigDecimal executePrice,
+                                   BigDecimal executeQuantity) {
         BigDecimal executeAmount = executePrice
                 .multiply(executeQuantity)
                 .setScale(8, RoundingMode.DOWN);

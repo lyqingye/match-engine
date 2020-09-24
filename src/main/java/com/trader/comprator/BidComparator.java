@@ -2,7 +2,8 @@ package com.trader.comprator;
 
 import com.trader.entity.Order;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.Objects;
 
 /**
  * 价格和事件优先原则比较器
@@ -31,7 +32,7 @@ public class BidComparator implements Comparator<Order> {
 
             if (cmp == 0) {
                 // 同等价格下时间优先
-                cmp = - (o1.getCreateDateTime().compareTo(o2.getCreateDateTime()));
+                cmp = -(o1.getCreateDateTime().compareTo(o2.getCreateDateTime()));
 
                 // 时间和价格同等情况下, 保留默认顺序
                 if (cmp == 0) {

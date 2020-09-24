@@ -12,22 +12,27 @@ public final class SymbolUtils {
     /**
      * 生成交易对
      *
-     * @param productId 产品Id
-     * @param currencyId 货币Id
+     * @param productId
+     *         产品Id
+     * @param currencyId
+     *         货币Id
+     *
      * @return 交易对
      */
-    public static String makeSymbol (String productId,String currencyId) {
-        return productId.toUpperCase() + "-" +currencyId.toUpperCase();
+    public static String makeSymbol(String productId, String currencyId) {
+        return productId.toUpperCase() + "-" + currencyId.toUpperCase();
     }
 
 
     /**
      * 生成交易对
      *
-     * @param order 订单
+     * @param order
+     *         订单
+     *
      * @return 交易对
      */
-    public static String makeSymbol (Order order) {
+    public static String makeSymbol(Order order) {
         return order.getSymbol();
     }
 }

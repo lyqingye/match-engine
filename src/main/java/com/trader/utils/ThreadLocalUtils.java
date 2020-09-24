@@ -16,18 +16,23 @@ public final class ThreadLocalUtils {
     /**
      * 设置值
      *
-     * @param key key
-     * @param value value
+     * @param key
+     *         key
+     * @param value
+     *         value
      */
-    public static void set(String key,Object value) {
+    public static void set(String key, Object value) {
         STORAGE.get().put(key, value);
     }
 
     /**
      * 获取一个值
      *
-     * @param key key
-     * @param <T> 目标值类型
+     * @param key
+     *         key
+     * @param <T>
+     *         目标值类型
+     *
      * @return 目标值
      */
     @SuppressWarnings("unchecked")

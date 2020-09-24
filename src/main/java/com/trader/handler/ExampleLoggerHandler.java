@@ -19,10 +19,9 @@ public class ExampleLoggerHandler implements MatchHandler {
         BigDecimal quantity = ts.getQuantity();
 
 
-
         if (!opponentOrder.isMarketOrder()) {
 
-            System.out.println(String.format("订单: %s %s 成交数量: %s 成交价格: %s 剩余数量: %s 剩余金额: %s" ,
+            System.out.println(String.format("订单: %s %s 成交数量: %s 成交价格: %s 剩余数量: %s 剩余金额: %s",
                                              order.getId(),
                                              order.isBuy() ? "买入" : "卖出",
                                              quantity.toPlainString(),
@@ -38,7 +37,7 @@ public class ExampleLoggerHandler implements MatchHandler {
                                              ts.getOpponentExecutePrice().toPlainString(),
                                              opponentOrder.getLeavesQuantity().toPlainString(),
                                              opponentOrder.getLeavesAmount().toPlainString()));
-        }else {
+        } else {
 
             System.out.println(String.format("订单: %s %s 成交数量: %s 成交价格: %s 剩余数量: %s 剩余金额: %s",
                                              order.getId(),

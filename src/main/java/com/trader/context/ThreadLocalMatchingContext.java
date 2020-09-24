@@ -105,6 +105,6 @@ public class ThreadLocalMatchingContext implements MatchingContext {
      */
     @Override
     public void setAttribute(String key, Object value) {
-        ThreadLocalUtils.set(key,value);
+        ThreadLocalUtils.set(key, value);
     }
 }

@@ -1,6 +1,7 @@
 package com.trader.utils;
 
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * @author yjt
@@ -8,13 +9,13 @@ import java.util.concurrent.*;
  */
 public class ThreadPoolUtils {
 
-    private static final ExecutorService EXECUTOR_SERVICE ;
+    private static final ExecutorService EXECUTOR_SERVICE;
 
     static {
         EXECUTOR_SERVICE = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() << 1);
     }
 
-    public static void submit (Runnable runnable) {
+    public static void submit(Runnable runnable) {
         EXECUTOR_SERVICE.submit(runnable);
     }
 }

@@ -25,7 +25,7 @@ public class DisruptorQueue<T> {
             long sequence = this.ringBuffer.next();
 
             try {
-                ObjectEvent<T> event = (ObjectEvent)this.ringBuffer.get(sequence);
+                ObjectEvent<T> event = (ObjectEvent) this.ringBuffer.get(sequence);
                 event.setObj(t);
             } finally {
                 this.ringBuffer.publish(sequence);
@@ -37,7 +37,7 @@ public class DisruptorQueue<T> {
         if (ts != null) {
             Iterator<T> var2 = ts.iterator();
 
-            while(var2.hasNext()) {
+            while (var2.hasNext()) {
                 T t = var2.next();
                 if (t != null) {
                     this.add(t);

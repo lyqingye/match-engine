@@ -18,28 +18,36 @@ public interface Matcher {
     /**
      * 判断是否支持目标订单的匹配
      *
-     * @param order 当前订单
-     * @param opponentOrder 对手订单
+     * @param order
+     *         当前订单
+     * @param opponentOrder
+     *         对手订单
+     *
      * @return 是否支持匹配
      */
-    boolean isSupport (Order order, Order opponentOrder);
+    boolean isSupport(Order order, Order opponentOrder);
 
     /**
      * 进行撮合交易
      *
-     * @param order 当前订单
-     * @param opponentOrder 对手订单
+     * @param order
+     *         当前订单
+     * @param opponentOrder
+     *         对手订单
+     *
      * @return 交易结果
      */
-    TradeResult doTrade (Order order, Order opponentOrder);
+    TradeResult doTrade(Order order, Order opponentOrder);
 
     /**
      * 目标订单是否已经结束
      *
-     * @param order order
+     * @param order
+     *         order
+     *
      * @return 是否已经结束
      */
-    default boolean isFinished (Order order) {
+    default boolean isFinished(Order order) {
         return TradeHelper.isFinished(order);
     }
 
@@ -48,7 +56,7 @@ public interface Matcher {
      *
      * @return 上下文对象
      */
-    default MatchingContext ctx () {
+    default MatchingContext ctx() {
         return Objects.requireNonNull(ThreadLocalUtils.get(ThreadLocalMatchingContext.NAME_OF_CONTEXT),
                                       "无法获取上下文");
     }

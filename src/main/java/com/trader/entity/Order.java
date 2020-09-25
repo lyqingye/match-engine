@@ -34,14 +34,9 @@ public class Order {
     private String uid;
 
     /**
-     * 产品ID
+     * 交易对ID
      */
-    private String productId;
-
-    /**
-     * 货币ID
-     */
-    private String currencyId;
+    private String symbol;
 
     /**
      * 订单类型:
@@ -257,8 +252,7 @@ public class Order {
         Order order = new Order();
         order.id = id;
         order.uid = uid;
-        order.productId = productId;
-        order.currencyId = currencyId;
+        order.symbol = symbol;
         order.price = price;
 
         order.totalAmount = totalAmount;
@@ -290,8 +284,7 @@ public class Order {
         Objects.requireNonNull(o);
         this.id = o.id;
         this.uid = o.uid;
-        this.productId = o.productId;
-        this.currencyId = o.currencyId;
+        this.symbol = o.symbol;
         this.price = o.price;
         this.createDateTime = o.createDateTime;
 
@@ -319,7 +312,6 @@ public class Order {
         return "Order{" +
                 "id='" + id + '\'' +
                 ", uid='" + uid + '\'' +
-                ", productId='" + productId + '\'' +
                 ", type=" + type +
                 ", side=" + side +
                 ", price=" + price +
@@ -330,9 +322,5 @@ public class Order {
                 ", createDateTime=" + createDateTime +
                 ", version=" + version +
                 '}';
-    }
-
-    public String getSymbol() {
-        return SymbolUtils.makeSymbol(this.productId, this.currencyId);
     }
 }

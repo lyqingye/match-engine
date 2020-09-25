@@ -7,10 +7,8 @@ import com.trader.exception.TradeException;
 import com.trader.market.MarketEventHandler;
 import com.trader.market.MarketManager;
 import com.trader.matcher.TradeResult;
-import com.trader.support.CurrencyManager;
 import com.trader.support.OrderBookManager;
 import com.trader.support.OrderManager;
-import com.trader.support.ProductManager;
 import com.trader.utils.ThreadLocalUtils;
 import com.trader.utils.disruptor.AbstractDisruptorConsumer;
 import com.trader.utils.disruptor.DisruptorQueue;
@@ -55,18 +53,6 @@ public class MatchEngine {
     private List<Matcher> matchers = new ArrayList<>(16);
 
     /**
-     * 货币管理器
-     */
-    @Getter
-    private CurrencyManager currencyMgr;
-
-    /**
-     * 产品管理器
-     */
-    @Getter
-    private ProductManager productMgr;
-
-    /**
      * 账本管理器
      */
     @Getter
@@ -94,10 +80,8 @@ public class MatchEngine {
     private DisruptorQueue<Order> activeStopOrderQueue;
 
     public MatchEngine() {
-        this.currencyMgr = new CurrencyManager();
-        this.productMgr = new ProductManager();
         this.orderMgr = new OrderManager();
-        this.bookMgr = new OrderBookManager(currencyMgr, productMgr);
+        this.bookMgr = new OrderBookManager();
         this.marketMgr = new MarketManager(bookMgr);
 
         // 将行情管理器的撮合监听事件添加进撮合引擎

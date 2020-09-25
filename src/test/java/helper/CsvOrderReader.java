@@ -37,11 +37,9 @@ public class CsvOrderReader {
             Order order = new Order();
             order.setId(SnowflakeIdWorker.nextId());
             order.setUid("1");
-            order.setProductId("BTC");
-            order.setCurrencyId("USDT");
             order.setPrice(new BigDecimal(args[0]).setScale(8, RoundingMode.DOWN));
             order.setExecutedAmount(BigDecimal.ZERO);
-
+            order.setSymbol("BTC-USDT");
 
             order.setPriceUpperBound(new BigDecimal(args[1]).setScale(8, RoundingMode.DOWN));
             order.setPriceLowerBound(new BigDecimal(args[2]).setScale(8, RoundingMode.DOWN));

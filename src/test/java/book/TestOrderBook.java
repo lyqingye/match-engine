@@ -30,7 +30,6 @@ public class TestOrderBook {
         o1.setType(OrderType.MARKET);
         o1.setPrice(BigDecimal.TEN);
         o1.setSide(OrderSide.BUY);
-        o1.setProductId("1");
         o1.setCreateDateTime(d1);
 
 
@@ -39,7 +38,6 @@ public class TestOrderBook {
         o2.setSide(OrderSide.BUY);
         o2.setType(OrderType.MARKET);
         o2.setPrice(BigDecimal.TEN);
-        o2.setProductId("1");
         o2.setCreateDateTime(d3);
 
         Order o3 = new Order();
@@ -47,7 +45,6 @@ public class TestOrderBook {
         o3.setSide(OrderSide.BUY);
         o3.setType(OrderType.MARKET);
         o3.setPrice(BigDecimal.valueOf(11));
-        o3.setProductId("1");
         o3.setCreateDateTime(d3);
 
         book.addOrder(o2);

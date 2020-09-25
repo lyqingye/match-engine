@@ -59,6 +59,7 @@ public class OrderManager {
      *         订单
      */
     private void orderCheck(Order order) {
+        this.genericCheck(order);
         switch (order.getType()) {
             case LIMIT: {
                 this.checkLimitOrder(order);
@@ -148,6 +149,21 @@ public class OrderManager {
     private void checkStopOrder(Order order) {
         if (order.getTriggerPrice().compareTo(BigDecimal.ZERO) == 0) {
             throw new IllegalArgumentException("[止盈止损][买入/卖出]订单没有设置触发价格");
+        }
+    }
+
+    /**
+     * 常规检查
+     *
+     * @param order 订单
+     */
+    private void genericCheck (Order order) {
+        if (order == null) {
+            throw new IllegalArgumentException("订单不能为空");
+        }
+
+        if (order.getSymbol() == null || order.getSymbol().isEmpty()) {
+            throw new IllegalArgumentException("交易对不能为空");
         }
     }
 }

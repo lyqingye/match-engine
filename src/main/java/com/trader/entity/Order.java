@@ -4,7 +4,6 @@ import com.trader.def.DifferencePriceStrategy;
 import com.trader.def.OrderSide;
 import com.trader.def.OrderTimeInForce;
 import com.trader.def.OrderType;
-import com.trader.utils.SymbolUtils;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -120,9 +119,9 @@ public class Order {
     private Date createDateTime;
 
     /**
-     * 结束标志
+     * 止盈止损激活标志
      */
-    private boolean finishFlag = false;
+    private boolean activated = false;
 
     /**
      * 版本 (预留)
@@ -272,7 +271,7 @@ public class Order {
         order.timeInForce = timeInForce;
         order.version = version;
 
-        order.finishFlag = finishFlag;
+        order.activated = activated;
         return order;
     }
 
@@ -304,7 +303,7 @@ public class Order {
         this.timeInForce = o.timeInForce;
         this.version = o.version;
 
-        this.finishFlag = o.finishFlag;
+        this.activated = o.activated;
     }
 
     @Override

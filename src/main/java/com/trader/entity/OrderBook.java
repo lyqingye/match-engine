@@ -123,15 +123,19 @@ public class OrderBook {
     /**
      * 激活一个止盈止损订单
      *
-     * @param order
+     * @param stopOrder
      *         止盈止损订单
      */
-    public void activeStopOrder(Order order) {
-        if (order.isBuy()) {
-            bidOrders.add(order);
+    public void activeStopOrder(Order stopOrder) {
+        if (stopOrder.isBuy()) {
+            bidOrders.add(stopOrder);
         } else {
-            askOrders.add(order);
+            askOrders.add(stopOrder);
         }
+        this.removeWaitActiveStopOrder(stopOrder);
+
+        // 设置订单已经被激活
+        stopOrder.setActivated(true);
     }
 
     /**
@@ -142,39 +146,21 @@ public class OrderBook {
      */
     public void removeOrder(Order o) {
         TreeSet<Order> orders = null;
-        switch (o.getType()) {
-            /**
-             * 市价单和限价单
-             */
-            case MARKET:
-            case LIMIT: {
-                if (o.isBuy()) {
-                    orders = bidOrders;
-                } else {
-                    orders = askOrders;
-                }
-                break;
-            }
-
-            case STOP: {
-                // 不处理止盈止损订单
-                break;
-            }
-            default: {
-                throw new IllegalArgumentException("invalid order type");
-            }
+        if (o.isBuy()) {
+            orders = bidOrders;
+        } else {
+            orders = askOrders;
         }
-
         orders.removeIf(v -> v.getId().equals(o.getId()));
     }
 
     /**
-     * 移除已经已经激活的止盈止损订单
+     * 移除已经待激活的止盈止损订单
      *
      * @param stopOrder
      *         止盈止损订单
      */
-    public void removeActiveStopOrder(Order stopOrder) {
+    public void removeWaitActiveStopOrder(Order stopOrder) {
         if (OrderType.STOP.equals(stopOrder)) {
             TreeSet<Order> orders = null;
 

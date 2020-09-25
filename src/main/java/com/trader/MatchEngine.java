@@ -216,6 +216,7 @@ public class MatchEngine {
      */
     private void activeStopOrder(Order stopOrder) {
         OrderBook book = Objects.requireNonNull(this.bookMgr.getBook(stopOrder));
+
         // 账本激活止盈止损订单
         // 也就是将止盈利止损订单放入撮合买卖盘
         book.activeStopOrder(stopOrder);
@@ -226,14 +227,14 @@ public class MatchEngine {
                 h.onActiveStopOrder(stopOrder);
             } catch (Exception e) {
                 //
+                // 从买卖盘中移除该订单
+                //
+                book.removeOrder(stopOrder);
+
+                //
                 // 如果激活止盈止损订单失败, 则直接重新将订单放入止盈止损列表中
                 //
                 book.addOrder(stopOrder);
-
-                //
-                // 并且移除改止盈止损订单
-                //
-                book.removeActiveStopOrder(stopOrder);
                 throw new TradeException(e.getMessage());
             }
         });
@@ -280,7 +281,7 @@ public class MatchEngine {
             }
 
             // 将查找到的匹配器设置到匹配上下文中
-            this.resetMatcherContext(matcher);
+            this.resetMatcherToContext(matcher);
 
             if (matcher.isFinished(order) || matcher.isFinished(best)) {
                 return;
@@ -360,7 +361,7 @@ public class MatchEngine {
      * @param matcher
      *         匹配器
      */
-    private void resetMatcherContext(Matcher matcher) {
+    private void resetMatcherToContext(Matcher matcher) {
         ThreadLocalUtils.set(ThreadLocalMatchingContext.NAME_OF_MATCHER, matcher);
     }
 

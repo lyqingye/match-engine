@@ -191,6 +191,10 @@ public class TradeHelper {
      */
     public static boolean isFinished(Order order) {
 
+        if (order.isFinished() || order.isCanceled()) {
+            return true;
+        }
+
         switch (order.getType()) {
             case MARKET:
             case STOP:

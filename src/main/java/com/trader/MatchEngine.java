@@ -181,6 +181,29 @@ public class MatchEngine {
     }
 
     /**
+     * 取消一个订单
+     *
+     * @param orderId 订单ID
+     */
+    public void cancelOrder (String orderId) {
+        if (orderId == null || orderId.isEmpty()) {
+            throw new TradeException("非法订单ID");
+        }
+        Order order = this.orderMgr.getOrder(orderId);
+        synchronized (order) {
+            if (order.isCanceled()) {
+                throw new TradeException("该订单已经取消");
+            }
+            if (order.isFinished()) {
+                throw new TradeException("该订单已经结束");
+            }
+
+            // 设置订单取消标记位
+            order.markCanceled();
+        }
+    }
+
+    /**
      * 添加订单
      *
      * @param order
@@ -189,7 +212,6 @@ public class MatchEngine {
     private void addOrderInternal(Order order) {
         OrderBook book = Objects.requireNonNull(this.bookMgr.getBook(order));
         this.orderMgr.addOrder(order);
-        book.addOrder(order);
 
         // 添加订单
         this.executeHandler(h -> {
@@ -197,7 +219,6 @@ public class MatchEngine {
                 h.onAddOrder(order);
             } catch (Exception e) {
                 this.orderMgr.removeOrder(order);
-                book.removeOrder(order);
                 throw new TradeException(e.getMessage());
             }
         });
@@ -205,6 +226,14 @@ public class MatchEngine {
         // 立马执行撮合
         if (this.isMatching()) {
             matchOrder(book, order);
+        }
+
+        //
+        // 这里做了一个优化, 如果当前订单经过一轮撮合后并没有结束
+        // 那么才将这个订单放入买卖盘
+        //
+        if (!order.isFinished()) {
+            book.addOrder(order);
         }
     }
 
@@ -217,20 +246,15 @@ public class MatchEngine {
     private void activeStopOrder(Order stopOrder) {
         OrderBook book = Objects.requireNonNull(this.bookMgr.getBook(stopOrder));
 
-        // 账本激活止盈止损订单
-        // 也就是将止盈利止损订单放入撮合买卖盘
-        book.activeStopOrder(stopOrder);
+        // 设置订单激活标记
+        stopOrder.setActivated(true);
 
         // 添加订单
         this.executeHandler(h -> {
             try {
                 h.onActiveStopOrder(stopOrder);
             } catch (Exception e) {
-                //
-                // 从买卖盘中移除该订单
-                //
-                book.removeOrder(stopOrder);
-
+                stopOrder.setActivated(false);
                 //
                 // 如果激活止盈止损订单失败, 则直接重新将订单放入止盈止损列表中
                 //
@@ -242,6 +266,16 @@ public class MatchEngine {
         // 立马执行撮合
         if (this.isMatching()) {
             matchOrder(book, stopOrder);
+        }
+
+        //
+        // 这里做了一个优化, 如果当前订单经过一轮撮合后并没有结束
+        // 那么才将这个订单放入买卖盘
+        //
+        if (!stopOrder.isFinished()) {
+            // 账本激活止盈止损订单
+            // 也就是将止盈利止损订单放入撮合买卖盘
+            book.activeStopOrder(stopOrder);
         }
     }
 
@@ -283,8 +317,23 @@ public class MatchEngine {
             // 将查找到的匹配器设置到匹配上下文中
             this.resetMatcherToContext(matcher);
 
-            if (matcher.isFinished(order) || matcher.isFinished(best)) {
+            //
+            // 订单结束状态补偿
+            //
+            if (matcher.isFinished(order)) {
+                order.markFinished();
                 return;
+            }
+
+            if (matcher.isFinished(best)) {
+                best.markFinished();
+                opponentIt.remove();
+                if (order.isBuy()) {
+                    opponentIt = book.getAskOrders().iterator();
+                } else {
+                    opponentIt = book.getBidOrders().iterator();
+                }
+                continue;
             }
 
             // 执行撮合
@@ -322,6 +371,10 @@ public class MatchEngine {
 
             // 移除已经结束的订单
             if (matcher.isFinished(best)) {
+
+                // 标记订单已结束
+                best.markFinished();
+
                 // 直接使用
                 opponentIt.remove();
                 if (order.isBuy()) {
@@ -334,9 +387,9 @@ public class MatchEngine {
             // 撮合结束
             if (matcher.isFinished(order)) {
                 //
-                // 处理已经结束的订单并且结束撮合
+                // 标记已经结束的订单并且结束撮合
                 //
-                book.removeOrder(order);
+                order.markFinished();
                 return;
             }
         }

@@ -11,6 +11,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Date;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * 订单的定义
@@ -121,7 +122,17 @@ public class Order {
     /**
      * 止盈止损激活标志
      */
-    private boolean activated = false;
+    private volatile boolean activated = false;
+
+    /**
+     * 是否已经被标记为订单已经结束
+     */
+    private volatile boolean finished = false;
+
+    /**
+     * 是否已经被标记为订单已经取消
+     */
+    private volatile boolean canceled = false;
 
     /**
      * 版本 (预留)
@@ -228,6 +239,14 @@ public class Order {
         return this.executedAmount;
     }
 
+    public void markFinished () {
+        this.finished = true;
+    }
+
+    public void markCanceled () {
+        this.canceled = true;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -272,6 +291,7 @@ public class Order {
         order.version = version;
 
         order.activated = activated;
+        order.finished = finished;
         return order;
     }
 
@@ -304,6 +324,7 @@ public class Order {
         this.version = o.version;
 
         this.activated = o.activated;
+        this.finished = o.finished;
     }
 
     @Override

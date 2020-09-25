@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author yjt
@@ -16,7 +17,7 @@ public class OrderManager {
     /**
      * 订单映射MAP
      */
-    private Map<String, Order> orderMap = new HashMap<>(64);
+    private Map<String, Order> orderMap = new ConcurrentHashMap<>(4096);
 
     /**
      * 添加一个订单

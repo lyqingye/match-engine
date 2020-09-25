@@ -132,7 +132,6 @@ public class OrderBook {
         } else {
             askOrders.add(stopOrder);
         }
-        this.removeWaitActiveStopOrder(stopOrder);
 
         // 设置订单已经被激活
         stopOrder.setActivated(true);

@@ -152,12 +152,19 @@ public class MatchEngine {
             }
         });
 
-
         // 创建下单队列
         this.addOrderQueue = DisruptorQueueFactory.createQueue(2 << 16, new AbstractDisruptorConsumer<Order>() {
             @Override
             public void process(Order order) {
-                addOrderInternal(order);
+
+                //
+                // 确保每一个订单的撮合都是独立的
+                //
+                try {
+                    addOrderInternal(order);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         });
 
@@ -165,7 +172,15 @@ public class MatchEngine {
         this.activeStopOrderQueue = DisruptorQueueFactory.createQueue(2 << 10, new AbstractDisruptorConsumer<Order>() {
             @Override
             public void process(Order order) {
-                activeStopOrder(order);
+
+                //
+                // 确保每一个订单的撮合都是独立的
+                //
+                try {
+                    activeStopOrder(order);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         });
     }

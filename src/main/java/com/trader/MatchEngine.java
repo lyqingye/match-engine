@@ -92,11 +92,12 @@ public class MatchEngine {
         // 止盈止损订单需要监听市场价格变动的事件
         // 为了提高吞吐量, 需要引入队列, 当市场止盈止损订单被触发的时候将需要下单的订单
         //
+        final MatchEngine that = this;
         marketMgr.addHandler(new MarketEventHandler() {
             @Override
             public void onMarketPriceChange(String symbol,
                                             BigDecimal latestPrice) {
-                OrderBook book = bookMgr.getBook(symbol);
+                OrderBook book = that.bookMgr.getBook(symbol);
 
                 // 锁住止盈止损订单
                 book.lockStopOrders();
@@ -107,7 +108,7 @@ public class MatchEngine {
                         Order bid = bidIt.next();
 
                         if (bid.getTriggerPrice().compareTo(latestPrice) >= 0) {
-                            activeStopOrderQueue.add(bid);
+                            that.activeStopOrderQueue.add(bid);
                             bidIt.remove();
                         } else {
                             break;
@@ -119,7 +120,7 @@ public class MatchEngine {
                         Order ask = askIt.next();
 
                         if (ask.getTriggerPrice().compareTo(latestPrice) <= 0) {
-                            activeStopOrderQueue.add(ask);
+                            that.activeStopOrderQueue.add(ask);
                             askIt.remove();
                         } else {
                             break;
@@ -137,7 +138,7 @@ public class MatchEngine {
         });
 
         // 创建下单队列
-        this.addOrderQueue = DisruptorQueueFactory.createQueue(2 << 16, new AbstractDisruptorConsumer<Order>() {
+        this.addOrderQueue = DisruptorQueueFactory.createQueue(4096, new AbstractDisruptorConsumer<Order>() {
             @Override
             public void process(Order order) {
 
@@ -145,7 +146,7 @@ public class MatchEngine {
                 // 确保每一个订单的撮合都是独立的
                 //
                 try {
-                    addOrderInternal(order);
+                    that.addOrderInternal(order);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -153,7 +154,7 @@ public class MatchEngine {
         });
 
         // 创建激活止盈止损订单队列
-        this.activeStopOrderQueue = DisruptorQueueFactory.createQueue(2 << 10, new AbstractDisruptorConsumer<Order>() {
+        this.activeStopOrderQueue = DisruptorQueueFactory.createQueue(4096, new AbstractDisruptorConsumer<Order>() {
             @Override
             public void process(Order order) {
 
@@ -161,7 +162,7 @@ public class MatchEngine {
                 // 确保每一个订单的撮合都是独立的
                 //
                 try {
-                    activeStopOrder(order);
+                    that.activeStopOrder(order);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

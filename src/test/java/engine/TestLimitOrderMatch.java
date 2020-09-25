@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -55,6 +56,7 @@ public class TestLimitOrderMatch  {
     @Test
 
     public void addOrder () {
+        ConcurrentSkipListSet<Order> skipListSet = new ConcurrentSkipListSet<>();
         try {
             List<Order> orderList = CsvOrderReader.read(new File("/home/ex/桌面/order3.csv"));
             System.out.println("read complete start process orders count: " + orderList.size());

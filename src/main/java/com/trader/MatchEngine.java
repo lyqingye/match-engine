@@ -177,8 +177,7 @@ public class MatchEngine {
      *         订单
      */
     public void addOrder(Order order) {
-        Order newOrder = order.snap();
-        this.addOrderQueue.add(newOrder);
+        this.addOrderQueue.add(order);
     }
 
     /**

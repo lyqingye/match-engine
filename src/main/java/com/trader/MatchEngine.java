@@ -188,11 +188,7 @@ public class MatchEngine {
      *         订单
      */
     private void addOrderInternal(Order order) {
-        OrderBook book = this.bookMgr.getBook(order);
-
-        if (book == null) {
-            return;
-        }
+        OrderBook book = Objects.requireNonNull(this.bookMgr.getBook(order));
         this.orderMgr.addOrder(order);
         book.addOrder(order);
 
@@ -220,12 +216,7 @@ public class MatchEngine {
      *         止盈止损订单
      */
     private void activeStopOrder(Order stopOrder) {
-        OrderBook book = this.bookMgr.getBook(stopOrder);
-
-        if (book == null) {
-            return;
-        }
-
+        OrderBook book = Objects.requireNonNull(this.bookMgr.getBook(stopOrder));
         // 账本激活止盈止损订单
         // 也就是将止盈利止损订单放入撮合买卖盘
         book.activeStopOrder(stopOrder);

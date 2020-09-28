@@ -3,8 +3,6 @@ package com.trader;
 import com.trader.context.MatchingContext;
 import com.trader.context.ThreadLocalMatchingContext;
 import com.trader.entity.Order;
-import com.trader.entity.OrderBook;
-import com.trader.entity.Product;
 import com.trader.matcher.TradeResult;
 import com.trader.utils.ThreadLocalUtils;
 
@@ -27,49 +25,6 @@ public interface MatchHandler {
         return Integer.MIN_VALUE;
     }
 
-    /**
-     * 商品添加事件处理器
-     *
-     * @param product
-     *         商品
-     *
-     * @throws Exception
-     */
-    default void onAddProduct(Product product) throws Exception {
-    }
-
-    /**
-     * 商品事件处理器
-     *
-     * @param product
-     *         商品
-     *
-     * @throws Exception
-     */
-    default void onDelProduct(Product product) throws Exception {
-    }
-
-    /**
-     * 委托账本添加事件
-     *
-     * @param book
-     *         账本
-     *
-     * @throws Exception
-     */
-    default void onAddOrderBook(OrderBook book) throws Exception {
-    }
-
-    /**
-     * 委托账本删除事件
-     *
-     * @param book
-     *         账本
-     *
-     * @throws Exception
-     */
-    default void onDelOrderBook(OrderBook book) throws Exception {
-    }
 
     /**
      * 添加订单事件
@@ -93,27 +48,7 @@ public interface MatchHandler {
     default void onActiveStopOrder(Order stopOrder) throws Exception {
     }
 
-    /**
-     * 更新订单事件
-     *
-     * @param order
-     *         订单
-     *
-     * @throws Exception
-     */
-    default void onUpdateOrder(Order order) throws Exception {
-    }
 
-    /**
-     * 删除订单事件
-     *
-     * @param order
-     *         订单
-     *
-     * @throws Exception
-     */
-    default void onDelOrder(Order order) throws Exception {
-    }
 
     /**
      * 撮合订单事件

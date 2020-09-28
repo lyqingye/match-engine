@@ -16,8 +16,8 @@ public class DisruptorTest {
     public void test() throws InterruptedException {
         DisruptorQueue<Order> queue = DisruptorQueueFactory.createQueue(1024, new AbstractDisruptorConsumer<Order>() {
             @Override
-            public void process(Order order) {
-                System.out.println(order.getId());
+            public void process(Order event) {
+                System.out.println(event.getId());
             }
         });
 

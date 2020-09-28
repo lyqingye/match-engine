@@ -140,13 +140,13 @@ public class MatchEngine {
         // 创建下单队列
         this.addOrderQueue = DisruptorQueueFactory.createQueue(4096, new AbstractDisruptorConsumer<Order>() {
             @Override
-            public void process(Order order) {
+            public void process(Order event) {
 
                 //
                 // 确保每一个订单的撮合都是独立的
                 //
                 try {
-                    that.addOrderInternal(order);
+                    that.addOrderInternal(event);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -156,13 +156,13 @@ public class MatchEngine {
         // 创建激活止盈止损订单队列
         this.activeStopOrderQueue = DisruptorQueueFactory.createQueue(4096, new AbstractDisruptorConsumer<Order>() {
             @Override
-            public void process(Order order) {
+            public void process(Order event) {
 
                 //
                 // 确保每一个订单的撮合都是独立的
                 //
                 try {
-                    that.activeStopOrder(order);
+                    that.activeStopOrder(event);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

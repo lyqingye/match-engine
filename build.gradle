@@ -3,8 +3,12 @@ plugins {
     id 'idea' // optional (to generate IntelliJ IDEA project files)
 }
 
-group 'org.example'
-version '1.0-SNAPSHOT'
+
+group 'com.trader'
+version '1.0'
+
+apply plugin: 'maven-publish'
+apply plugin: 'maven'
 
 sourceCompatibility = 1.8
 
@@ -12,9 +16,44 @@ repositories {
     maven { url "http://maven.aliyun.com/nexus/content/groups/public/" }
     mavenCentral()
 }
+
+task sourceJar(type: Jar) {
+    from sourceSets.main.allJava
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId project.group
+            artifactId project.name
+            version project.version
+            from components.java
+
+            //配置上传源码
+            artifact sourceJar {
+                classifier "sources"
+            }
+            project.logger.debug('my debug message')
+
+        }
+    }
+    repositories {
+        maven {
+            //指定要上传的maven私服仓库
+            url = "http://192.168.1.2:8899/repository/wzj"
+            //认证用户和密码
+            credentials {
+                username 'commit'
+                password '123123123'
+            }
+        }
+    }
+}
+
 ext {
     lombokVersion = '1.18.10'
 }
+
 dependencies {
     annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
     compileOnly "org.projectlombok:lombok:${lombokVersion}"

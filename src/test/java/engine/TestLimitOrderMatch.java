@@ -5,6 +5,7 @@ import com.trader.def.OrderSide;
 import com.trader.def.OrderTimeInForce;
 import com.trader.def.OrderType;
 import com.trader.entity.Order;
+import com.trader.factory.OrderFactory;
 import com.trader.matcher.limit.InMemoryLimitMatchHandler;
 import com.trader.handler.ExampleLoggerHandler;
 import com.trader.matcher.limit.LimitOrderMatcher;
@@ -43,7 +44,8 @@ public class TestLimitOrderMatch  {
         engine = new MatchEngine();
         engine.addHandler(new InMemoryLimitMatchHandler());
         engine.addHandler(new InMemoryMarketMatchHandler());
-//        engine.addHandler(new ExampleLoggerHandler());
+        engine.addHandler(new ExampleLoggerHandler());
+//        engine.enableLog();
 
         engine.addMatcher(new LimitOrderMatcher());
         engine.addMatcher(new MarketOrderMatcher());
@@ -54,21 +56,47 @@ public class TestLimitOrderMatch  {
     @Test
 
     public void addOrder () {
-        ConcurrentSkipListSet<Order> skipListSet = new ConcurrentSkipListSet<>();
+        Order buyLimitOrder = OrderFactory.limit()
+                                  .buy("1", "BTC-USDT")
+                                  .spent(BigDecimal.valueOf(100))
+                                  .withUnitPriceOf(BigDecimal.TEN)
+                                  .quantity(BigDecimal.TEN)
+                                  .withUnitPriceCap(BigDecimal.valueOf(0.1))
+                                  .GTC()
+                                  .build();
+
+        Order sellLimitOrder = OrderFactory.limit()
+                                  .sell("1", "BTC-USDT")
+                                  .quantity(BigDecimal.valueOf(100))
+                                  .withUnitPriceOf(BigDecimal.TEN)
+                                  .GTC()
+                                  .build();
+
+
+        engine.addOrder(buyLimitOrder);
+        engine.addOrder(sellLimitOrder);
+
         try {
-            List<Order> orderList = CsvOrderReader.read(new File("/home/ex/桌面/order3.csv"));
-            System.out.println("read complete start process orders count: " + orderList.size());
-            Collections.shuffle(orderList);
-            long start = System.currentTimeMillis();
-            for (Order order : orderList) {
-                engine.addOrder(order);
-            }
-            long end = System.currentTimeMillis();
-            System.out.println("process " + orderList.size() + " orders using " + TimeUnit.MILLISECONDS.toSeconds(end - start) + "s");
-            System.out.println();
-        } catch (IOException e) {
+            Thread.sleep(1000000);
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        System.out.println();
+//        ConcurrentSkipListSet<Order> skipListSet = new ConcurrentSkipListSet<>();
+//        try {
+//            List<Order> orderList = CsvOrderReader.read(new File("/home/ex/桌面/order.csv"));
+//                System.out.println("read complete start process orders count: " + orderList.size());
+//            Collections.shuffle(orderList);
+//            long start = System.currentTimeMillis();
+//            for (Order order : orderList) {
+//                engine.addOrder(order);
+//            }
+//            long end = System.currentTimeMillis();
+//            System.out.println("process " + orderList.size() + " orders using " + TimeUnit.MILLISECONDS.toSeconds(end - start) + "s");
+//            System.out.println();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
     }
 
     @After

@@ -177,7 +177,7 @@ public class MarketManager implements MatchHandler {
         this.asyncExecuteHandler((h) -> {
             // 推送市价变动事件
             h.onMarketPriceChange(order.getSymbol(),
-                                  ts.getExecutePrice());
+                                  ts.getExecutePrice(), false);
         });
     }
 }

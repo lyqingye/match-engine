@@ -14,13 +14,12 @@ public interface MarketEventHandler {
 
     /**
      * 市价价格变动事件
-     *
-     * @param symbol
+     *  @param symbol
      *         交易对
      * @param latestPrice
-     *         最新价格
+     * @param third
      */
-    default void onMarketPriceChange(String symbol, BigDecimal latestPrice) {
+    default void onMarketPriceChange(String symbol, BigDecimal latestPrice, boolean third) {
     }
 
     /**

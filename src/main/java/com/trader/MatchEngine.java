@@ -97,7 +97,7 @@ public class MatchEngine {
         marketMgr.addHandler(new MarketEventHandler() {
             @Override
             public void onMarketPriceChange(String symbol,
-                                            BigDecimal latestPrice) {
+                                            BigDecimal latestPrice, boolean third) {
                 OrderBook book = that.bookMgr.getBook(symbol);
 
                 // 锁住止盈止损订单

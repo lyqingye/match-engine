@@ -67,6 +67,7 @@ public class MatchEngine {
     /**
      * 市场管理器
      */
+    @Getter
     private MarketManager marketMgr;
 
     /**

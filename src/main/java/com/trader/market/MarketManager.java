@@ -56,6 +56,19 @@ public class MarketManager implements MatchHandler {
     }
 
     /**
+     * 获取产品对货币的市场价格
+     *
+     * @param symbol
+     *         交易对
+     *
+     * @return 市场价格
+     */
+    public BigDecimal getMarketPrice (String symbol) {
+        OrderBook book = orderBookManager.getBook(symbol);
+        return book.getLastTradePrice();
+    }
+
+    /**
      * 添加一个处理器
      *
      * @param handler

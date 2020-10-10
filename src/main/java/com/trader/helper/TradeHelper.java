@@ -152,6 +152,7 @@ public class TradeHelper {
         BigDecimal executeQuantity = MathUtils.min(quantity,
                                                    opponentQuantity);
         ts.setQuantity(executeQuantity);
+        ts.setTimestamp(System.currentTimeMillis());
         return ts;
     }
 

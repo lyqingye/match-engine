@@ -164,7 +164,8 @@ public class MarketManager implements MatchHandler {
             h.onTrade(order.getSymbol(),
                       order.getSide(),
                       ts.getQuantity(),
-                      ts.getExecutePrice());
+                      ts.getExecutePrice(),
+                      ts.getTimestamp());
 
 
         });

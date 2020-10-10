@@ -34,7 +34,9 @@ public interface MarketEventHandler {
      *         成交数量
      * @param price
      *         成交价格
+     * @param ts
+     *          成交时间
      */
-    default void onTrade(String symbolId, OrderSide side, BigDecimal quantity, BigDecimal price) {
+    default void onTrade(String symbolId, OrderSide side, BigDecimal quantity, BigDecimal price,long ts) {
     }
 }

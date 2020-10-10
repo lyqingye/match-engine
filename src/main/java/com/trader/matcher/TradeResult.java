@@ -24,4 +24,9 @@ public class TradeResult {
      * 成交量
      */
     private BigDecimal quantity;
+
+    /**
+     * 交易时间
+     */
+    private long timestamp;
 }

@@ -91,10 +91,10 @@ public class MarketDepthHelper {
                                                          DepthLevel depth,
                                                          int limit,
                                                          Comparator<MarketDepthInfo> comparator) {
-        return unProcessDataList.parallelStream()
+        return unProcessDataList.stream()
                                 .collect(Collectors.groupingBy(d -> calcTrx(d.getPrice(), depth)))
                                 .entrySet()
-                                .parallelStream()
+                                .stream()
                                 .flatMap((entry) -> Stream.of(combineTrx(entry.getKey(), entry.getValue())))
                                 .limit(limit)
                                 .sorted(comparator)

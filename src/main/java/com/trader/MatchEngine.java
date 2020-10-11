@@ -100,9 +100,6 @@ public class MatchEngine {
                                             BigDecimal latestPrice, boolean third) {
                 OrderBook book = that.bookMgr.getBook(symbol);
 
-                // 锁住止盈止损订单
-                book.lockStopOrders();
-
                 try {
                     Iterator<Order> bidIt = book.getBuyStopOrders().iterator();
                     while (bidIt.hasNext()) {
@@ -129,17 +126,12 @@ public class MatchEngine {
                     }
                 } catch (Exception ex) {
                     ex.printStackTrace();
-                } finally {
-                    //
-                    // 释放止盈止损单锁
-                    //
-                    book.unlockStopOrders();
                 }
             }
         });
 
         // 创建下单队列
-        this.addOrderQueue = DisruptorQueueFactory.createQueue(4096, new AbstractDisruptorConsumer<Order>() {
+        this.addOrderQueue = DisruptorQueueFactory.createQueue(2 << 16, new AbstractDisruptorConsumer<Order>() {
             @Override
             public void process(Order event) {
 
@@ -191,7 +183,7 @@ public class MatchEngine {
             throw new TradeException("非法订单ID");
         }
         Order order = this.orderMgr.getOrder(orderId);
-        synchronized (order) {
+        synchronized (order.getId()) {
             if (order.isCanceled()) {
                 throw new TradeException("该订单已经取消");
             }

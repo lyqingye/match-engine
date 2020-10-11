@@ -1,5 +1,6 @@
 package com.trader.market.entity;
 
+import com.trader.market.def.DepthLevel;
 import lombok.Data;
 
 import java.util.Collection;
@@ -10,15 +11,11 @@ import java.util.Collection;
  */
 @Data
 public class MarketDepthChart {
-    /**
-     * 交易对
-     */
-    private String symbol;
 
     /**
      * 深度
      */
-    private Integer depth;
+    private Byte depth;
 
     /**
      * 买盘

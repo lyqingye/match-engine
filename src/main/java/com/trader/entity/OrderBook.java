@@ -8,6 +8,7 @@ import com.trader.def.OrderType;
 import com.trader.helper.MarketDepthHelper;
 import com.trader.market.def.DepthLevel;
 import com.trader.market.entity.MarketDepthChart;
+import com.trader.market.entity.MarketDepthChartSeries;
 import com.trader.market.entity.MarketDepthInfo;
 import de.vandermeer.asciitable.AsciiTable;
 import lombok.Data;
@@ -18,6 +19,8 @@ import java.util.*;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import static com.trader.helper.MarketDepthHelper.render;
 
 /**
  * @author yjt
@@ -194,8 +197,7 @@ public class OrderBook {
      */
     public MarketDepthChart snapDepthChart(DepthLevel depth, int limit) {
         MarketDepthChart chart = new MarketDepthChart();
-        chart.setSymbol(this.symbolId);
-        chart.setDepth(depth);
+        chart.setDepth((byte) depth.ordinal());
 
         // 买盘
         List<MarketDepthInfo> bids = new ArrayList<>(bidOrders.size());
@@ -252,6 +254,82 @@ public class OrderBook {
         // 买单降序
         chart.setBids(MarketDepthHelper.fastRender(bids, depth, limit, MarketDepthInfo::reverseCompare));
         return chart;
+    }
+
+    /**
+     * 快照买卖盘 （全部深度）
+     *
+     * @param limit 大小
+     * @return 买卖盘
+     */
+    public MarketDepthChartSeries snapSeries (int limit) {
+        final MarketDepthChartSeries series = new MarketDepthChartSeries();
+        final DepthLevel[] levels = DepthLevel.values();
+        series.setSymbol(this.symbolId);
+        series.setSeries(new ArrayList<>(levels.length));
+
+        // 买盘
+        List<MarketDepthInfo> bids = new ArrayList<>(bidOrders.size());
+
+        // 卖盘
+        List<MarketDepthInfo> asks = new ArrayList<>(askOrders.size());
+
+        // 获取买卖盘
+        for (Order bid : this.bidOrders) {
+            // 忽略市价订单
+            if (OrderType.MARKET.equals(bid.getType())) {
+                continue;
+            }
+            MarketDepthInfo dep = new MarketDepthInfo();
+            // 已经成交量
+            dep.setExecuted(bid.getExecutedQuantity());
+
+            // 总量 = 总金额 / 单价
+            dep.setTotal(bid.getTotalAmount().divide(bid.getPrice(), RoundingMode.DOWN));
+
+            // 单价
+            dep.setPrice(bid.getPrice());
+
+            // 剩余量 = 剩余金额 / 单价
+            dep.setLeaves(bid.getLeavesAmount().divide(bid.getPrice(), RoundingMode.DOWN));
+            bids.add(dep);
+        }
+
+        for (Order ask : this.askOrders) {
+            // 忽略市价订单
+            if (OrderType.MARKET.equals(ask.getType())) {
+                continue;
+            }
+
+            MarketDepthInfo dep = new MarketDepthInfo();
+
+            // 成交量
+            dep.setExecuted(ask.getExecutedQuantity());
+
+            // 总数量
+            dep.setTotal(ask.getQuantity());
+
+            // 单价
+            dep.setPrice(ask.getPrice());
+
+            // 剩余量
+            dep.setLeaves(ask.getLeavesQuantity());
+            asks.add(dep);
+        }
+        for (DepthLevel depth : levels) {
+            MarketDepthChart chart = new MarketDepthChart();
+            chart.setDepth((byte) depth.ordinal());
+
+
+
+            // 卖单升序
+            chart.setAsks(MarketDepthHelper.fastRender(asks, depth, limit, MarketDepthInfo::compareTo));
+
+            // 买单降序
+            chart.setBids(MarketDepthHelper.fastRender(bids, depth, limit, MarketDepthInfo::reverseCompare));
+            series.getSeries().add(chart);
+        }
+        return series;
     }
 
     /**

@@ -10,6 +10,15 @@ import java.util.Collection;
  */
 @Data
 public class MarketDepthChart {
+    /**
+     * 交易对
+     */
+    private String symbol;
+
+    /**
+     * 深度
+     */
+    private Integer depth;
 
     /**
      * 买盘

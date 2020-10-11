@@ -12,5 +12,5 @@ import lombok.Getter;
 public enum MessageType {
     MARKET_PRICE,
     DEPTH_CHART,
-    TRADE
+    TRADE_RESULT
 }

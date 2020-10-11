@@ -6,6 +6,7 @@ import com.trader.comprator.StopAskComparator;
 import com.trader.comprator.StopBidComparator;
 import com.trader.def.OrderType;
 import com.trader.helper.MarketDepthHelper;
+import com.trader.market.def.DepthLevel;
 import com.trader.market.entity.MarketDepthChart;
 import com.trader.market.entity.MarketDepthInfo;
 import de.vandermeer.asciitable.AsciiTable;
@@ -191,7 +192,7 @@ public class OrderBook {
      *
      * @return 买卖盘
      */
-    public MarketDepthChart snapDepthChart(int depth, int limit) {
+    public MarketDepthChart snapDepthChart(DepthLevel depth, int limit) {
         MarketDepthChart chart = new MarketDepthChart();
         chart.setSymbol(this.symbolId);
         chart.setDepth(depth);
@@ -283,7 +284,7 @@ public class OrderBook {
      * @return 深度图可视化字符串
      */
     public String render_depth_chart() {
-        MarketDepthChart chart = this.snapDepthChart(0, 20);
+        MarketDepthChart chart = this.snapDepthChart(DepthLevel._0, 20);
         AsciiTable at = new AsciiTable();
 
 

@@ -1,5 +1,6 @@
 package com.trader.helper;
 
+import com.trader.market.def.DepthLevel;
 import com.trader.market.entity.MarketDepthChart;
 import com.trader.market.entity.MarketDepthInfo;
 
@@ -25,7 +26,7 @@ public class MarketDepthHelper {
      *
      * @return 深度数据
      */
-    public static MarketDepthChart render(MarketDepthChart chart, int depth, int limit) {
+    public static MarketDepthChart render(MarketDepthChart chart, DepthLevel depth, int limit) {
         // 卖盘价格低到高
         MarketDepthChart result = new MarketDepthChart();
         result.setAsks(render(chart.getAsks(), depth, limit, BigDecimal::compareTo));
@@ -48,7 +49,7 @@ public class MarketDepthHelper {
      * @return 深度数据
      */
     public static Collection<MarketDepthInfo> render(Collection<MarketDepthInfo> unProcessDataList,
-                                                     int depth,
+                                                     DepthLevel depth,
                                                      int limit,
                                                      Comparator<BigDecimal> comparator) {
         TreeMap<BigDecimal, MarketDepthInfo> trxMap = new TreeMap<>(comparator);
@@ -87,7 +88,7 @@ public class MarketDepthHelper {
      * @return 深度数据
      */
     public static Collection<MarketDepthInfo> fastRender(Collection<MarketDepthInfo> unProcessDataList,
-                                                         int depth,
+                                                         DepthLevel depth,
                                                          int limit,
                                                          Comparator<MarketDepthInfo> comparator) {
         return unProcessDataList.parallelStream()
@@ -107,8 +108,8 @@ public class MarketDepthHelper {
         return result;
     }
 
-    private static BigDecimal calcTrx(BigDecimal price, int depth) {
-        return price.setScale(getNumberOfDecimalPlaces(price) - depth, BigDecimal.ROUND_DOWN);
+    private static BigDecimal calcTrx(BigDecimal price, DepthLevel depth) {
+        return price.setScale(getNumberOfDecimalPlaces(price) - depth.ordinal(), BigDecimal.ROUND_DOWN);
     }
 
     /**

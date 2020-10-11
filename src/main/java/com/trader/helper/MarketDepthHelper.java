@@ -17,62 +17,6 @@ import java.util.stream.Stream;
  * @since 2020/9/22 下午1:41
  */
 public class MarketDepthHelper {
-
-    /**
-     * 深度图
-     *
-     * @param chart
-     *         买卖盘
-     *
-     * @return 深度数据
-     */
-    public static MarketDepthChart render(MarketDepthChart chart, DepthLevel depth, int limit) {
-        // 卖盘价格低到高
-        MarketDepthChart result = new MarketDepthChart();
-        result.setAsks(render(chart.getAsks(), depth, limit, BigDecimal::compareTo));
-        result.setBids(render(chart.getBids(), depth, limit, Comparator.reverseOrder()));
-        return result;
-    }
-
-    /**
-     * 处理深度
-     *
-     * @param unProcessDataList
-     *         需要处理的数据
-     * @param depth
-     *         深度
-     * @param limit
-     *         总条数
-     * @param comparator
-     *         比较器
-     *
-     * @return 深度数据
-     */
-    public static Collection<MarketDepthInfo> render(Collection<MarketDepthInfo> unProcessDataList,
-                                                     DepthLevel depth,
-                                                     int limit,
-                                                     Comparator<BigDecimal> comparator) {
-        TreeMap<BigDecimal, MarketDepthInfo> trxMap = new TreeMap<>(comparator);
-        for (MarketDepthInfo unProcess : unProcessDataList) {
-            BigDecimal trx = calcTrx(unProcess.getPrice(), depth);
-            MarketDepthInfo info = trxMap.get(trx);
-            if (info == null) {
-                MarketDepthInfo newAsk = unProcess.clone();
-                newAsk.setPrice(trx);
-                trxMap.put(trx, newAsk);
-            } else {
-                info.setPrice(trx);
-                info.setTotal(info.getTotal().add(unProcess.getTotal()));
-                info.setLeaves(info.getLeaves().add(unProcess.getLeaves()));
-                info.setExecuted(info.getExecuted().add(unProcess.getExecuted()));
-            }
-        }
-        return trxMap.values()
-                     .stream()
-                     .limit(limit)
-                     .collect(Collectors.toList());
-    }
-
     /**
      * 处理深度 (使用流)
      *

@@ -160,7 +160,7 @@ public class OrderBook {
      *         止盈止损订单
      */
     public void removeWaitActiveStopOrder(Order stopOrder) {
-        if (OrderType.STOP.equals(stopOrder)) {
+        if (stopOrder.isStopOrder()) {
             TreeSet<Order> orders = null;
 
             if (stopOrder.isBuy()) {
@@ -193,6 +193,8 @@ public class OrderBook {
      */
     public MarketDepthChart snapDepthChart(int depth, int limit) {
         MarketDepthChart chart = new MarketDepthChart();
+        chart.setSymbol(this.symbolId);
+        chart.setDepth(depth);
 
         // 买盘
         List<MarketDepthInfo> bids = new ArrayList<>(bidOrders.size());
@@ -201,9 +203,7 @@ public class OrderBook {
         List<MarketDepthInfo> asks = new ArrayList<>(askOrders.size());
 
         // 获取买卖盘
-        Iterator<Order> bidIt = this.bidOrders.iterator();
-        while (bidIt.hasNext()) {
-            Order bid = bidIt.next();
+        for (Order bid : this.bidOrders) {
             // 忽略市价订单
             if (OrderType.MARKET.equals(bid.getType())) {
                 continue;
@@ -223,10 +223,7 @@ public class OrderBook {
             bids.add(dep);
         }
 
-        Iterator<Order> askIt = this.askOrders.iterator();
-        while (askIt.hasNext()) {
-            Order ask = askIt.next();
-
+        for (Order ask : this.askOrders) {
             // 忽略市价订单
             if (OrderType.MARKET.equals(ask.getType())) {
                 continue;

@@ -34,6 +34,11 @@ public class MarketOrderMatcher implements Matcher {
             return false;
         }
 
+        // 不允许自身撮合
+        if (order.getUid().equals(opponentOrder.getUid())) {
+            return false;
+        }
+
         MarketManager marketMgr = this.ctx().getMarketMgr();
         BigDecimal marketPrice = marketMgr.getMarketPrice(order);
 

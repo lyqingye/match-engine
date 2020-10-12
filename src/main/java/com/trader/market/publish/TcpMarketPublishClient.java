@@ -1,6 +1,8 @@
 package com.trader.market.publish;
 
 import com.trader.utils.ThreadPoolUtils;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.buffer.Buffer;
@@ -65,7 +67,7 @@ public class TcpMarketPublishClient implements MarketPublishClient {
      * @param consumer 消息消费者
      */
     @Override
-    public void conn(String host, int port, Consumer<Buffer> consumer)  {
+    public void conn(String host, int port, Consumer<Buffer> consumer, Handler<AsyncResult<NetSocket>> connectHandler)  {
         this.host = host;
         this.port = port;
         this.consumer = consumer;
@@ -97,7 +99,7 @@ public class TcpMarketPublishClient implements MarketPublishClient {
                          // 如果目标关闭则进行重连
                          client.closeHandler(close -> {
                              this.client = null;
-                            conn(host,port,consumer);
+                            conn(host,port,consumer,connectHandler);
                          });
                      }
                  });

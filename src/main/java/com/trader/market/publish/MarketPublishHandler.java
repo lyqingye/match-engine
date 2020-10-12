@@ -8,10 +8,13 @@ import com.trader.market.publish.msg.TradeMessage;
 import com.trader.matcher.TradeResult;
 import com.trader.utils.GZIPUtils;
 import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonObject;
 import lombok.Getter;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -21,6 +24,12 @@ import java.util.Objects;
  * @since 2020/10/10 下午5:45
  */
 public class MarketPublishHandler implements MarketEventHandler {
+
+    /**
+     * 深度图缓存, 用于连接到服务后推送
+     */
+    private Map<String, String> latestChartCache = new HashMap<>(16);
+
     /**
      * 发布客户端
      */
@@ -29,13 +38,19 @@ public class MarketPublishHandler implements MarketEventHandler {
 
     public MarketPublishHandler (MarketPublishClient client) {
         this.client = Objects.requireNonNull(client);
-        this.client.conn(client.host(),client.port(),client.consumer());
+        this.client.conn(client.host(),client.port(),client.consumer(),ar -> {
+            if (ar.succeeded()) {
+                latestChartCache.values().forEach(this.client::send);
+            }
+        });
     }
 
     @Override
     public void onDepthChartChange(MarketDepthChartSeries series) {
         if(client.isOpen()) {
-            client.send(Json.encode(DepthChartMessage.of(series)));
+            String obj = Json.encode(DepthChartMessage.of(series));
+            latestChartCache.put(series.getSymbol(),obj);
+            client.send(obj);
         }
     }
 

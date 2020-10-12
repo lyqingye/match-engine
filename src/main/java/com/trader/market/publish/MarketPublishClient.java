@@ -1,8 +1,11 @@
 package com.trader.market.publish;
 
 import com.trader.utils.ThreadPoolUtils;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.net.NetClientOptions;
+import io.vertx.core.net.NetSocket;
 
 import java.nio.charset.StandardCharsets;
 import java.util.function.Consumer;
@@ -19,7 +22,7 @@ public interface MarketPublishClient {
      * @param port 端口
      * @param consumer 消息消费者
      */
-    void conn(String host, int port, Consumer<Buffer> consumer) ;
+    void conn(String host, int port, Consumer<Buffer> consumer, Handler<AsyncResult<NetSocket>> connectHandler) ;
 
     /**
      * 推送消息

@@ -205,6 +205,7 @@ public class MatchEngine {
     private void addOrderInternal(Order order) {
         OrderBook book = Objects.requireNonNull(this.bookMgr.getBook(order));
         this.orderMgr.addOrder(order);
+        book.addOrder(order);
 
         // 添加订单
         this.executeHandler(h -> {
@@ -220,14 +221,6 @@ public class MatchEngine {
         if (this.isMatching()) {
             matchOrder(book, order);
         }
-
-        //
-        // 这里做了一个优化, 如果当前订单经过一轮撮合后并没有结束
-        // 那么才将这个订单放入买卖盘
-        //
-        if (!order.isFinished()) {
-            book.addOrder(order);
-        }
     }
 
     /**
@@ -241,6 +234,10 @@ public class MatchEngine {
 
         // 设置订单激活标记
         stopOrder.setActivated(true);
+
+        // 账本激活止盈止损订单
+        // 也就是将止盈利止损订单放入撮合买卖盘
+        book.activeStopOrder(stopOrder);
 
         // 添加订单
         this.executeHandler(h -> {
@@ -259,16 +256,6 @@ public class MatchEngine {
         // 立马执行撮合
         if (this.isMatching()) {
             matchOrder(book, stopOrder);
-        }
-
-        //
-        // 这里做了一个优化, 如果当前订单经过一轮撮合后并没有结束
-        // 那么才将这个订单放入买卖盘
-        //
-        if (!stopOrder.isFinished()) {
-            // 账本激活止盈止损订单
-            // 也就是将止盈利止损订单放入撮合买卖盘
-            book.activeStopOrder(stopOrder);
         }
     }
 

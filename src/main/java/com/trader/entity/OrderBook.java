@@ -276,7 +276,7 @@ public class OrderBook {
         // 获取买卖盘
         for (Order bid : this.bidOrders) {
             // 忽略市价订单
-            if (OrderType.MARKET.equals(bid.getType())) {
+            if (bid.isFinished() || bid.isCanceled() || OrderType.MARKET.equals(bid.getType())) {
                 continue;
             }
             MarketDepthInfo dep = new MarketDepthInfo();
@@ -296,7 +296,7 @@ public class OrderBook {
 
         for (Order ask : this.askOrders) {
             // 忽略市价订单
-            if (OrderType.MARKET.equals(ask.getType())) {
+            if (ask.isFinished() || ask.isCanceled() || OrderType.MARKET.equals(ask.getType())) {
                 continue;
             }
 

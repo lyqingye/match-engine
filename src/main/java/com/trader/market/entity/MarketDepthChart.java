@@ -15,7 +15,7 @@ public class MarketDepthChart {
     /**
      * 深度
      */
-    private Byte depth;
+    private DepthLevel depth;
 
     /**
      * 买盘

@@ -10,10 +10,10 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public enum DepthLevel {
-    _0,
-    _1,
-    _2,
-    _3,
-    _4,
-    _5
+    step0,
+    step1,
+    step2,
+    step3,
+    step4,
+    step5
 }

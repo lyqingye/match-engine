@@ -69,6 +69,11 @@ public class TestLimitOrderMatch  {
 
         final long start = System.currentTimeMillis();
         for (int i = 0; i < 10000; i++) {
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             System.out.println("process " + i);
             Order buyLimitOrder = OrderFactory.limit()
                                               .buy("1", "BTC-USDT")

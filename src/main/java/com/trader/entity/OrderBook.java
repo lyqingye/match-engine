@@ -196,7 +196,7 @@ public class OrderBook {
      */
     public MarketDepthChart snapDepthChart(DepthLevel depth, int limit) {
         MarketDepthChart chart = new MarketDepthChart();
-        chart.setDepth((byte) depth.ordinal());
+        chart.setDepth(depth);
 
         // 买盘
         List<MarketDepthInfo> bids = new ArrayList<>(bidOrders.size());
@@ -317,9 +317,7 @@ public class OrderBook {
         }
         for (DepthLevel depth : levels) {
             MarketDepthChart chart = new MarketDepthChart();
-            chart.setDepth((byte) depth.ordinal());
-
-
+            chart.setDepth(depth);
 
             // 卖单升序
             chart.setAsks(MarketDepthHelper.fastRender(asks, depth, limit, MarketDepthInfo::compareTo));
@@ -361,7 +359,7 @@ public class OrderBook {
      * @return 深度图可视化字符串
      */
     public String render_depth_chart() {
-        MarketDepthChart chart = this.snapDepthChart(DepthLevel._0, 20);
+        MarketDepthChart chart = this.snapDepthChart(DepthLevel.step0, 20);
         AsciiTable at = new AsciiTable();
 
 

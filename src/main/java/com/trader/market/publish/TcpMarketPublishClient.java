@@ -70,6 +70,7 @@ public class TcpMarketPublishClient implements MarketPublishClient {
         this.port = port;
         this.consumer = consumer;
         ThreadPoolUtils.submit(() -> {
+
             final NetClientOptions options = new NetClientOptions();
 
             // 设置重试次数和重试间隔时间
@@ -78,13 +79,14 @@ public class TcpMarketPublishClient implements MarketPublishClient {
                    .setLogActivity(true)
                    // 保持长连接
                    .setTcpKeepAlive(true);
-
             // 开始创建 socket 链接
             vertx.createNetClient(options)
                  .connect(port, host, ar -> {
                      if (ar.succeeded()) {
                          // 连接成功
                          client = ar.result();
+
+                         System.out.println("success connection");
 
                          client.handler(buf -> {
                              if (consumer != null) {
@@ -110,7 +112,7 @@ public class TcpMarketPublishClient implements MarketPublishClient {
     @Override
     public void send (String textMsg) {
         if (this.client != null) {
-            this.client.write(textMsg, StandardCharsets.UTF_8.name());
+            this.client.write(textMsg + "\n", StandardCharsets.UTF_8.name());
             if (this.client.writeQueueFull()) {
                 this.client.pause();
                 this.client.drainHandler(done -> this.client.resume());

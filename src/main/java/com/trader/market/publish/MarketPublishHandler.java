@@ -3,6 +3,7 @@ package com.trader.market.publish;
 import com.trader.def.OrderSide;
 import com.trader.market.MarketEventHandler;
 import com.trader.market.entity.MarketDepthChartSeries;
+import com.trader.market.publish.msg.DepthChartMessage;
 import com.trader.market.publish.msg.TradeMessage;
 import com.trader.matcher.TradeResult;
 import com.trader.utils.GZIPUtils;
@@ -34,7 +35,7 @@ public class MarketPublishHandler implements MarketEventHandler {
     @Override
     public void onDepthChartChange(MarketDepthChartSeries series) {
         if(client.isOpen()) {
-            client.send(Json.encode(series));
+            client.send(Json.encode(DepthChartMessage.of(series)));
         }
     }
 

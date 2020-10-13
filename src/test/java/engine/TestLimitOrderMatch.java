@@ -16,6 +16,7 @@ import com.trader.matcher.market.MarketOrderMatcher;
 import com.trader.utils.SnowflakeIdWorker;
 import helper.CsvOrderReader;
 import junit.extensions.RepeatedTest;
+import org.apache.commons.lang3.RandomUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,7 +47,7 @@ public class TestLimitOrderMatch  {
         engine = new MatchEngine();
         engine.addHandler(new InMemoryLimitMatchHandler());
         engine.addHandler(new InMemoryMarketMatchHandler());
-//        engine.addHandler(new ExampleLoggerHandler());
+        engine.addHandler(new ExampleLoggerHandler());
 //        engine.enableLog();
 
         engine.addMatcher(new LimitOrderMatcher());
@@ -75,19 +76,20 @@ public class TestLimitOrderMatch  {
                 e.printStackTrace();
             }
             System.out.println("process " + i);
+            BigDecimal price = BigDecimal.valueOf(RandomUtils.nextDouble(0.1, 10));
             Order buyLimitOrder = OrderFactory.limit()
                                               .buy("1", "BTC-USDT")
-                                              .spent(BigDecimal.valueOf(100))
-                                              .withUnitPriceOf(BigDecimal.TEN)
+                                              .spent(BigDecimal.TEN.multiply(price))
+                                              .withUnitPriceOf(price)
                                               .quantity(BigDecimal.TEN)
                                               .withUnitPriceCap(BigDecimal.valueOf(0.1))
                                               .GTC()
                                               .build();
 
             Order sellLimitOrder = OrderFactory.limit()
-                                               .sell("1", "BTC-USDT")
+                                               .sell("2", "BTC-USDT")
                                                .quantity(BigDecimal.valueOf(100))
-                                               .withUnitPriceOf(BigDecimal.TEN)
+                                               .withUnitPriceOf(BigDecimal.valueOf(RandomUtils.nextDouble(0.1, 10)))
                                                .GTC()
                                                .build();
             engine.addOrder(buyLimitOrder);

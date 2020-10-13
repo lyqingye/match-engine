@@ -15,6 +15,8 @@ import com.trader.utils.disruptor.DisruptorQueue;
 import com.trader.utils.disruptor.DisruptorQueueFactory;
 import lombok.Getter;
 import lombok.Synchronized;
+import lombok.extern.java.Log;
+import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -30,6 +32,7 @@ import java.util.function.Consumer;
  * @author yjt
  * @since 2020/9/1 上午10:56
  */
+@Log
 public class MatchEngine {
 
     /**
@@ -327,8 +330,8 @@ public class MatchEngine {
 
             // NOTE TEST ONLY
             if (this.isEnableLog) {
-                System.out.println(book.render_bid_ask());
-                System.out.println(book.render_depth_chart());
+                log.info(book.render_bid_ask());
+                log.info(book.render_depth_chart());
             }
 
             //

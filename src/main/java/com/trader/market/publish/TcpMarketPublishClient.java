@@ -11,6 +11,8 @@ import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.NetSocket;
 import io.vertx.core.parsetools.RecordParser;
 import lombok.Setter;
+import lombok.extern.java.Log;
+import lombok.extern.slf4j.Slf4j;
 
 import java.nio.charset.StandardCharsets;
 import java.util.function.Consumer;
@@ -19,6 +21,7 @@ import java.util.function.Consumer;
  * @author yjt
  * @since 2020/10/10 下午6:51
  */
+@Slf4j
 public class TcpMarketPublishClient implements MarketPublishClient {
     /**
      * 域名
@@ -45,7 +48,6 @@ public class TcpMarketPublishClient implements MarketPublishClient {
      * socket
      */
     private NetSocket client;
-
 
 
     static {
@@ -87,8 +89,8 @@ public class TcpMarketPublishClient implements MarketPublishClient {
             if (json == null) {
                 return;
             }
-            if (consumer != null) {
-                consumer.accept(json);
+            if (consumer() != null) {
+                consumer().accept(json);
             }
         });
 
@@ -99,7 +101,6 @@ public class TcpMarketPublishClient implements MarketPublishClient {
             // 设置重试次数和重试间隔时间
             options.setReconnectInterval(1000)
                    .setReconnectAttempts(Integer.MAX_VALUE)
-                   .setLogActivity(true)
                    // 保持长连接
                    .setTcpKeepAlive(true);
             // 开始创建 socket 链接
@@ -109,9 +110,11 @@ public class TcpMarketPublishClient implements MarketPublishClient {
                          // 连接成功
                          client = ar.result();
 
-                         System.out.println("success connection");
+                         if (log.isDebugEnabled()) {
+                             log.debug("[MarketPublish]: success connection to the server");
+                         }
 
-                         client.handler(parser::handle);
+                         client.handler(parser);
 
                          // 如果目标关闭则进行重连
                          client.closeHandler(close -> {

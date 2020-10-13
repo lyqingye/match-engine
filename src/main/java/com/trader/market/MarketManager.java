@@ -12,6 +12,7 @@ import com.trader.matcher.TradeResult;
 import com.trader.support.OrderBookManager;
 import com.trader.utils.ThreadPoolUtils;
 import io.vertx.core.json.JsonObject;
+import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -25,6 +26,7 @@ import java.util.function.Consumer;
  * @author yjt
  * @since 2020/9/18 下午4:34
  */
+@Slf4j
 public class MarketManager implements MatchHandler {
 
     /**
@@ -100,7 +102,7 @@ public class MarketManager implements MatchHandler {
         if (json == null) return;
         MessageType type = Message.getTypeFromJson(json);
         if (type == null) return;
-
+        json = json.getJsonObject("data");
         switch (type) {
             //
             // 市价变动
@@ -109,6 +111,11 @@ public class MarketManager implements MatchHandler {
                 PriceChangeMessage msg = json.mapTo(PriceChangeMessage.class);
                 if (msg != null &&
                         Boolean.TRUE.equals(msg.getThird())) {
+
+                    if (log.isDebugEnabled()) {
+                        log.debug("[MarketEngine]: recv msg, [{}] {} {} {}",
+                                  type, msg.getSymbol(),msg.getPrice().toPlainString(),msg.getThird());
+                    }
 
                     //
                     // 更新最新市场价到订单簿

@@ -16,6 +16,7 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 /**
  * 消息推送
@@ -41,6 +42,15 @@ public class MarketPublishHandler implements MarketEventHandler {
         this.client.conn(client.host(),client.port(),client.consumer(),ar -> {
             if (ar.succeeded()) {
                 latestChartCache.values().forEach(this.client::send);
+            }
+        });
+    }
+
+    public MarketPublishHandler (MarketPublishClient client, Consumer<MarketPublishHandler> onConnection) {
+        this.client = Objects.requireNonNull(client);
+        this.client.conn(client.host(),client.port(),client.consumer(),ar -> {
+            if (ar.succeeded()) {
+                onConnection.accept(this);
             }
         });
     }

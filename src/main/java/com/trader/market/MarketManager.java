@@ -5,11 +5,13 @@ import com.trader.entity.Order;
 import com.trader.entity.OrderBook;
 import com.trader.market.entity.MarketDepthChartSeries;
 import com.trader.market.publish.MarketPublishHandler;
+import com.trader.market.publish.msg.Message;
+import com.trader.market.publish.msg.MessageType;
+import com.trader.market.publish.msg.PriceChangeMessage;
 import com.trader.matcher.TradeResult;
 import com.trader.support.OrderBookManager;
 import com.trader.utils.ThreadPoolUtils;
-import com.trader.utils.disruptor.DisruptorQueueFactory;
-import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.JsonObject;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -34,7 +36,6 @@ public class MarketManager implements MatchHandler {
      * 市场事件处理器
      */
     private List<MarketEventHandler> handlers = new ArrayList<>(16);
-
 
 
     /**
@@ -70,7 +71,7 @@ public class MarketManager implements MatchHandler {
      *
      * @return 市场价格
      */
-    public BigDecimal getMarketPrice (String symbol) {
+    public BigDecimal getMarketPrice(String symbol) {
         OrderBook book = orderBookManager.getBook(symbol);
         return book.getLastTradePrice();
     }
@@ -82,7 +83,7 @@ public class MarketManager implements MatchHandler {
      *         处理器
      */
     public void addHandler(MarketEventHandler handler) {
-        if(handler instanceof MarketPublishHandler) {
+        if (handler instanceof MarketPublishHandler) {
             ((MarketPublishHandler) handler).getClient()
                                             .setConsumer(this::onThirdMarketData);
         }
@@ -92,10 +93,42 @@ public class MarketManager implements MatchHandler {
     /**
      * 第三方市场数据
      *
-     * @param buf 缓冲区
+     * @param json
+     *         缓冲区
      */
-    private void onThirdMarketData (Buffer buf) {
+    private void onThirdMarketData(JsonObject json) {
+        if (json == null) return;
+        MessageType type = Message.getTypeFromJson(json);
+        if (type == null) return;
 
+        switch (type) {
+            //
+            // 市价变动
+            //
+            case MARKET_PRICE: {
+                PriceChangeMessage msg = json.mapTo(PriceChangeMessage.class);
+                if (msg != null &&
+                        Boolean.TRUE.equals(msg.getThird())) {
+
+                    //
+                    // 更新最新市场价到订单簿
+                    //
+                    this.orderBookManager.getBook(msg.getSymbol())
+                                         .updateLastTradePrice(msg.getPrice());
+
+                    // 触发事件
+                    this.syncExecuteHandler(h -> {
+                        h.onMarketPriceChange(msg.getSymbol(),
+                                              msg.getPrice(),
+                                              msg.getThird());
+                    });
+                }
+                break;
+            }
+            default: {
+                // ignored
+            }
+        }
     }
 
     /**
@@ -128,7 +161,6 @@ public class MarketManager implements MatchHandler {
     private void syncExecuteHandler(Consumer<MarketEventHandler> hConsumer) {
         this.handlers.forEach(hConsumer);
     }
-
 
 
     //

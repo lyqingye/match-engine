@@ -12,5 +12,14 @@ import lombok.Getter;
 public enum MessageType {
     MARKET_PRICE,
     DEPTH_CHART,
-    TRADE_RESULT
+    TRADE_RESULT;
+
+    public static MessageType ofName (String name) {
+        for (MessageType t : values()) {
+            if (t.name().equalsIgnoreCase(name)) {
+                return t;
+            }
+        }
+        return null;
+    }
 }

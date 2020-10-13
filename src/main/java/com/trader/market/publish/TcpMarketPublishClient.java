@@ -6,8 +6,10 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.NetSocket;
+import io.vertx.core.parsetools.RecordParser;
 import lombok.Setter;
 
 import java.nio.charset.StandardCharsets;
@@ -32,7 +34,7 @@ public class TcpMarketPublishClient implements MarketPublishClient {
      * 消费者
      */
     @Setter
-    private Consumer<Buffer> consumer;
+    private Consumer<JsonObject> consumer;
 
     /**
      * vertx 实例
@@ -67,10 +69,29 @@ public class TcpMarketPublishClient implements MarketPublishClient {
      * @param consumer 消息消费者
      */
     @Override
-    public void conn(String host, int port, Consumer<Buffer> consumer, Handler<AsyncResult<NetSocket>> connectHandler)  {
+    public void conn(String host, int port, Consumer<JsonObject> consumer, Handler<AsyncResult<NetSocket>> connectHandler)  {
         this.host = host;
         this.port = port;
         this.consumer = consumer;
+
+        //
+        // 解决黏包
+        //
+        RecordParser parser = RecordParser.newDelimited("\n", h -> {
+            JsonObject json = null;
+            try {
+                json = h.toJsonObject();
+            }catch (Exception e) {
+                e.printStackTrace();
+            }
+            if (json == null) {
+                return;
+            }
+            if (consumer != null) {
+                consumer.accept(json);
+            }
+        });
+
         ThreadPoolUtils.submit(() -> {
 
             final NetClientOptions options = new NetClientOptions();
@@ -90,11 +111,7 @@ public class TcpMarketPublishClient implements MarketPublishClient {
 
                          System.out.println("success connection");
 
-                         client.handler(buf -> {
-                             if (consumer != null) {
-                                 consumer.accept(buf);
-                             }
-                         });
+                         client.handler(parser::handle);
 
                          // 如果目标关闭则进行重连
                          client.closeHandler(close -> {
@@ -164,7 +181,7 @@ public class TcpMarketPublishClient implements MarketPublishClient {
     }
 
     @Override
-    public Consumer<Buffer> consumer() {
+    public Consumer<JsonObject> consumer() {
         return this.consumer;
     }
 }

@@ -1,5 +1,6 @@
 package com.trader.market.publish.msg;
 
+import io.vertx.core.json.JsonObject;
 import lombok.Data;
 
 /**
@@ -22,4 +23,11 @@ public class Message<T> {
      * 消息内容
      */
     private T data;
+
+    public static MessageType getTypeFromJson (JsonObject json) {
+        if (json == null) {
+            return null;
+        }
+        return MessageType.ofName(json.getString("type"));
+    }
 }

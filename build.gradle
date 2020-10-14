@@ -5,7 +5,7 @@ plugins {
 
 
 group 'com.trader'
-version '1.5'
+version '1.6'
 
 apply plugin: 'maven-publish'
 apply plugin: 'maven'

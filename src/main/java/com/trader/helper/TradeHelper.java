@@ -38,8 +38,10 @@ public class TradeHelper {
         }
 
         TradeResult ts = new TradeResult();
+
         switch (order.getDifferencePriceStrategy()) {
             case PLATFORM: {
+
                 // 平台通吃
                 if (!order.isMarketOrder()) {
                     price = order.getBoundPrice();
@@ -51,6 +53,17 @@ public class TradeHelper {
 
                 ts.setExecutePrice(price);
                 ts.setOpponentExecutePrice(opponentPrice);
+
+                // 平台差价
+                BigDecimal platformDiffPrice = BigDecimal.ZERO;
+                if (price.compareTo(opponentPrice) > 0) {
+                    platformDiffPrice = price.subtract(opponentPrice);
+                }
+
+                if (price.compareTo(opponentPrice) < 0) {
+                    platformDiffPrice = opponentPrice.subtract(price);
+                }
+                ts.setPlatformDiffPrice(platformDiffPrice);
                 break;
             }
 
@@ -96,6 +109,10 @@ public class TradeHelper {
                 throw new IllegalArgumentException("非法差价策略");
             }
         }
+
+        // 计算差价
+        ts.setDiffPrice(price.subtract(ts.getExecutePrice()));
+        ts.setOpponentDiffPrice(opponentPrice.subtract(ts.getOpponentExecutePrice()));
 
         return ts;
     }

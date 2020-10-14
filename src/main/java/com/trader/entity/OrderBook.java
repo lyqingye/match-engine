@@ -281,7 +281,7 @@ public class OrderBook {
             // 忽略市价订单
             if (bid.isFinished() || bid.isCanceled() ||
                     OrderType.MARKET.equals(bid.getType()) ||
-                    bid.getLeavesQuantity().compareTo(BigDecimal.ZERO) == 0) {
+                    bid.getLeavesAmount().compareTo(BigDecimal.ZERO) == 0) {
                 continue;
             }
             MarketDepthInfo dep = new MarketDepthInfo();

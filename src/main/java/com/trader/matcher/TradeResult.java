@@ -16,7 +16,7 @@ public class TradeResult {
     private BigDecimal executePrice;
 
     /**
-     * 对手订单最终的成交价 (市价订单没有对手订单最终成交价)
+     * 对手订单最终的成交价
      */
     private BigDecimal opponentExecutePrice = BigDecimal.ZERO;
 
@@ -29,4 +29,19 @@ public class TradeResult {
      * 交易时间
      */
     private long timestamp;
+
+    /**
+     * 差价
+     */
+    private BigDecimal diffPrice = BigDecimal.ZERO;
+
+    /**
+     * 对手订单差价
+     */
+    private BigDecimal opponentDiffPrice = BigDecimal.ZERO;
+
+    /**
+     * 平台吃到的差价
+     */
+    private BigDecimal platformDiffPrice = BigDecimal.ZERO;
 }

@@ -57,9 +57,9 @@ public class MarketPublishHandler implements MarketEventHandler {
 
     @Override
     public void onDepthChartChange(MarketDepthChartSeries series) {
+        String obj = Json.encode(DepthChartMessage.of(series));
+        latestChartCache.put(series.getSymbol(),obj);
         if(client.isOpen()) {
-            String obj = Json.encode(DepthChartMessage.of(series));
-            latestChartCache.put(series.getSymbol(),obj);
             client.send(obj);
         }
     }

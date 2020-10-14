@@ -40,9 +40,9 @@ public class LimitOrderMatcher implements Matcher {
         }
 
         // 不允许自身撮合
-        if (order.getUid().equals(opponentOrder.getUid())) {
-            return false;
-        }
+//        if (order.getUid().equals(opponentOrder.getUid())) {
+//            return false;
+//        }
 
         BigDecimal price = order.getBoundPrice();
         BigDecimal opponentPrice = opponentOrder.getBoundPrice();

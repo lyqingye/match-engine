@@ -110,6 +110,10 @@ public class TcpMarketPublishClient implements MarketPublishClient {
                          // 连接成功
                          client = ar.result();
 
+                         if (connectHandler != null) {
+                             connectHandler.handle(ar);
+                         }
+
                          if (log.isDebugEnabled()) {
                              log.debug("[MarketPublish]: success connection to the server");
                          }

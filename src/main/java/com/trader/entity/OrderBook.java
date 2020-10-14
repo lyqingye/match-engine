@@ -74,7 +74,6 @@ public class OrderBook {
     private volatile long lastTradeTime = 0;
 
 
-
     /**
      * 下单
      *
@@ -260,10 +259,12 @@ public class OrderBook {
     /**
      * 快照买卖盘 （全部深度）
      *
-     * @param limit 大小
+     * @param limit
+     *         大小
+     *
      * @return 买卖盘
      */
-    public MarketDepthChartSeries snapSeries (int limit) {
+    public MarketDepthChartSeries snapSeries(int limit) {
         final MarketDepthChartSeries series = new MarketDepthChartSeries();
         final DepthLevel[] levels = DepthLevel.values();
         series.setSymbol(this.symbolId);
@@ -278,7 +279,9 @@ public class OrderBook {
         // 获取买卖盘
         for (Order bid : this.bidOrders) {
             // 忽略市价订单
-            if (bid.isFinished() || bid.isCanceled() || OrderType.MARKET.equals(bid.getType())) {
+            if (bid.isFinished() || bid.isCanceled() ||
+                    OrderType.MARKET.equals(bid.getType()) ||
+                    bid.getLeavesQuantity().compareTo(BigDecimal.ZERO) == 0) {
                 continue;
             }
             MarketDepthInfo dep = new MarketDepthInfo();
@@ -298,7 +301,9 @@ public class OrderBook {
 
         for (Order ask : this.askOrders) {
             // 忽略市价订单
-            if (ask.isFinished() || ask.isCanceled() || OrderType.MARKET.equals(ask.getType())) {
+            if (ask.isFinished() || ask.isCanceled() ||
+                    OrderType.MARKET.equals(ask.getType()) ||
+                    ask.getLeavesQuantity().compareTo(BigDecimal.ZERO) == 0) {
                 continue;
             }
 

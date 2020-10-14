@@ -134,7 +134,7 @@ public class MatchEngine {
         });
 
         // 创建下单队列
-        this.addOrderQueue = DisruptorQueueFactory.createQueue(2 << 16, new AbstractDisruptorConsumer<Order>() {
+        this.addOrderQueue = DisruptorQueueFactory.createQueue(1024, new AbstractDisruptorConsumer<Order>() {
             @Override
             public void process(Order event) {
 
@@ -150,7 +150,7 @@ public class MatchEngine {
         });
 
         // 创建激活止盈止损订单队列
-        this.activeStopOrderQueue = DisruptorQueueFactory.createQueue(4096, new AbstractDisruptorConsumer<Order>() {
+        this.activeStopOrderQueue = DisruptorQueueFactory.createQueue(64, new AbstractDisruptorConsumer<Order>() {
             @Override
             public void process(Order event) {
 

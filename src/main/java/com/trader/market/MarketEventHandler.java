@@ -1,8 +1,8 @@
 package com.trader.market;
 
 import com.trader.def.OrderSide;
-import com.trader.entity.OrderBook;
 import com.trader.market.entity.MarketDepthChartSeries;
+import com.trader.matcher.TradeResult;
 
 import java.math.BigDecimal;
 
@@ -44,13 +44,9 @@ public interface MarketEventHandler {
      *         交易对
      * @param side
      *         买入 / 卖出
-     * @param quantity
-     *         成交数量
-     * @param price
-     *         成交价格
      * @param ts
-     *         成交时间
+     *         撮合结果
      */
-    default void onTrade(String symbolId, OrderSide side, BigDecimal quantity, BigDecimal price, long ts) {
+    default void onTrade(String symbolId, OrderSide side, TradeResult ts) {
     }
 }

@@ -47,7 +47,7 @@ public class TestLimitOrderMatch  {
         engine = new MatchEngine();
         engine.addHandler(new InMemoryLimitMatchHandler());
         engine.addHandler(new InMemoryMarketMatchHandler());
-        engine.addHandler(new ExampleLoggerHandler());
+//        engine.addHandler(new ExampleLoggerHandler());
 //        engine.enableLog();
 
         engine.addMatcher(new LimitOrderMatcher());
@@ -55,7 +55,7 @@ public class TestLimitOrderMatch  {
         engine.enableMatching();
 
         engine.getMarketMgr()
-              .addHandler(new MarketPublishHandler(new TcpMarketPublishClient("localhost",8888)));
+              .addHandler(new MarketPublishHandler(new TcpMarketPublishClient("192.168.1.61", 8888)));
 
         try {
             Thread.sleep(10000);
@@ -70,13 +70,14 @@ public class TestLimitOrderMatch  {
 
         final long start = System.currentTimeMillis();
         for (int i = 0; i < 10000; i++) {
-            try {
-                Thread.sleep(5000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+//            try {
+//                Thread.sleep(1000);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
             System.out.println("process " + i);
-            BigDecimal price = BigDecimal.valueOf(RandomUtils.nextDouble(0.1, 10));
+            BigDecimal price = BigDecimal.valueOf(RandomUtils.nextDouble(0.1, 10))
+                                         .setScale(8, BigDecimal.ROUND_DOWN);
             Order buyLimitOrder = OrderFactory.limit()
                                               .buy("1", "BTC-USDT")
                                               .spent(BigDecimal.TEN.multiply(price))
@@ -89,7 +90,7 @@ public class TestLimitOrderMatch  {
             Order sellLimitOrder = OrderFactory.limit()
                                                .sell("2", "BTC-USDT")
                                                .quantity(BigDecimal.valueOf(100))
-                                               .withUnitPriceOf(BigDecimal.valueOf(RandomUtils.nextDouble(0.1, 10)))
+                                               .withUnitPriceOf(BigDecimal.valueOf(RandomUtils.nextDouble(0.1, 10)).setScale(8, BigDecimal.ROUND_DOWN))
                                                .GTC()
                                                .build();
             engine.addOrder(buyLimitOrder);

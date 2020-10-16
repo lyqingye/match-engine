@@ -16,5 +16,9 @@ public enum OrderSide {
     /**
      * 卖出单
      */
-    SELL
+    SELL;
+
+    public String toDirection() {
+        return this.name().toLowerCase();
+    }
 }

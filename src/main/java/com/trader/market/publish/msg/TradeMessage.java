@@ -28,11 +28,17 @@ public class TradeMessage {
     private BigDecimal quantity;
 
     /**
+     * 成交主动方
+     */
+    private String direction;
+
+
+    /**
      * 交易时间
      */
     private Long ts;
 
-    public static Message<TradeMessage> of (TradeMessage ts) {
+    public static Message<TradeMessage> of(TradeMessage ts) {
         final Message<TradeMessage> msg = new Message<>();
         msg.setType(MessageType.TRADE_RESULT);
         msg.setData(ts);

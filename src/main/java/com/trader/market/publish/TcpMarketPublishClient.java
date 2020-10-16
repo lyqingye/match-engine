@@ -1,5 +1,6 @@
 package com.trader.market.publish;
 
+import com.trader.market.publish.config.MarketConfigHttpClient;
 import com.trader.utils.ThreadPoolUtils;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -11,7 +12,6 @@ import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.NetSocket;
 import io.vertx.core.parsetools.RecordParser;
 import lombok.Setter;
-import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
 
 import java.nio.charset.StandardCharsets;
@@ -52,13 +52,27 @@ public class TcpMarketPublishClient implements MarketPublishClient {
 
     static {
         final VertxOptions options = new VertxOptions();
-        options.setWorkerPoolSize(1)
-               .setEventLoopPoolSize(1);
+//        options.setWorkerPoolSize(20)
+//               .setEventLoopPoolSize(1);
         vertx = Vertx.vertx(options);
 
     }
 
-    public TcpMarketPublishClient (String host,int port) {
+    /**
+     * 创建市场管理器配置客户端
+     *
+     * @param host
+     *         host
+     * @param port
+     *         port
+     *
+     * @return client
+     */
+    public static MarketConfigHttpClient createConfigClient(String host, int port) {
+        return new MarketConfigHttpClient(vertx, host, port);
+    }
+
+    public TcpMarketPublishClient(String host, int port) {
         this.host = host;
         this.port = port;
     }
@@ -109,6 +123,7 @@ public class TcpMarketPublishClient implements MarketPublishClient {
                      if (ar.succeeded()) {
                          // 连接成功
                          client = ar.result();
+                         client.setWriteQueueMaxSize(4096);
 
                          if (connectHandler != null) {
                              connectHandler.handle(ar);

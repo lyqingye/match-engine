@@ -6,13 +6,9 @@ import com.trader.market.entity.MarketDepthChartSeries;
 import com.trader.market.publish.msg.DepthChartMessage;
 import com.trader.market.publish.msg.TradeMessage;
 import com.trader.matcher.TradeResult;
-import com.trader.utils.GZIPUtils;
 import io.vertx.core.json.Json;
-import io.vertx.core.json.JsonObject;
 import lombok.Getter;
 
-import java.io.IOException;
-import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -71,24 +67,19 @@ public class MarketPublishHandler implements MarketEventHandler {
      *         交易对
      * @param side
      *         买入 / 卖出
-     * @param quantity
-     *         成交数量
-     * @param price
-     *         成交价格
      * @param ts
      */
     @Override
     public void onTrade(String symbolId,
                         OrderSide side,
-                        BigDecimal quantity,
-                        BigDecimal price,
-                        long ts) {
+                        TradeResult ts) {
         final TradeMessage tradeResult = new TradeMessage();
         tradeResult.setSymbol(symbolId);
-        tradeResult.setQuantity(quantity);
-        tradeResult.setPrice(price);
-        tradeResult.setTs(ts);
-        if(client.isOpen()) {
+        tradeResult.setQuantity(ts.getQuantity());
+        tradeResult.setPrice(ts.getExecutePrice());
+        tradeResult.setTs(ts.getTimestamp());
+        tradeResult.setDirection(side.toDirection());
+        if (client.isOpen()) {
             client.send(Json.encode(TradeMessage.of(tradeResult)));
         }
     }

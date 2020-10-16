@@ -134,7 +134,7 @@ public class MatchEngine {
         });
 
         // 创建下单队列
-        this.addOrderQueue = DisruptorQueueFactory.createQueue(1024, new AbstractDisruptorConsumer<Order>() {
+        this.addOrderQueue = DisruptorQueueFactory.createQueue(2 << 16, new AbstractDisruptorConsumer<Order>() {
             @Override
             public void process(Order event) {
 

@@ -222,14 +222,13 @@ public class MarketManager implements MatchHandler {
         book.updateLastTradePrice(ts.getExecutePrice());
 
         // 异步处理市场管理器事件
-        this.syncExecuteHandler((h) -> {
+        this.asyncExecuteHandler((h) -> {
 
             // 推送交易数据
             h.onTrade(order.getSymbol(),
                       order.getSide(),
-                      ts.getQuantity(),
-                      ts.getExecutePrice(),
-                      ts.getTimestamp());
+                      ts
+            );
             h.onDepthChartChange(series);
         });
 

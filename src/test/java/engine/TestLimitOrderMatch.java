@@ -47,15 +47,15 @@ public class TestLimitOrderMatch  {
         engine = new MatchEngine();
         engine.addHandler(new InMemoryLimitMatchHandler());
         engine.addHandler(new InMemoryMarketMatchHandler());
-//        engine.addHandler(new ExampleLoggerHandler());
-//        engine.enableLog();
+        engine.addHandler(new ExampleLoggerHandler());
+        engine.enableLog();
 
         engine.addMatcher(new LimitOrderMatcher());
         engine.addMatcher(new MarketOrderMatcher());
         engine.enableMatching();
 
         engine.getMarketMgr()
-              .addHandler(new MarketPublishHandler(new TcpMarketPublishClient("192.168.1.61", 8888)));
+              .addHandler(new MarketPublishHandler(new TcpMarketPublishClient("119.23.49.169", 8888)));
 
         try {
             Thread.sleep(10000);
@@ -69,32 +69,29 @@ public class TestLimitOrderMatch  {
     public void addOrder () {
 
         final long start = System.currentTimeMillis();
-        for (int i = 0; i < 10000; i++) {
+        for (int i = 0; i < 1; i++) {
 //            try {
 //                Thread.sleep(1000);
 //            } catch (InterruptedException e) {
 //                e.printStackTrace();
 //            }
             System.out.println("process " + i);
-            BigDecimal price = BigDecimal.valueOf(RandomUtils.nextDouble(0.1, 10))
-                                         .setScale(8, BigDecimal.ROUND_DOWN);
+            BigDecimal price = engine.getMarketMgr().getMarketPrice("BTC-USDT").add(BigDecimal.ONE);
             Order buyLimitOrder = OrderFactory.limit()
                                               .buy("1", "BTC-USDT")
                                               .spent(BigDecimal.TEN.multiply(price))
                                               .withUnitPriceOf(price)
                                               .quantity(BigDecimal.TEN)
-                                              .withUnitPriceCap(BigDecimal.valueOf(0.1))
                                               .GTC()
                                               .build();
 
-            Order sellLimitOrder = OrderFactory.limit()
-                                               .sell("2", "BTC-USDT")
-                                               .quantity(BigDecimal.valueOf(100))
-                                               .withUnitPriceOf(BigDecimal.valueOf(RandomUtils.nextDouble(0.1, 10)).setScale(8, BigDecimal.ROUND_DOWN))
-                                               .GTC()
-                                               .build();
+            Order sellMarketOrder = OrderFactory.market()
+                                                .sell("1", "BTC-USDT")
+                                                .quantity(BigDecimal.TEN)
+                                                .GTC()
+                                                .build();
             engine.addOrder(buyLimitOrder);
-            engine.addOrder(sellLimitOrder);
+            engine.addOrder(sellMarketOrder);
 
         }
         try {

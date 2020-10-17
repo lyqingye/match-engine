@@ -41,6 +41,7 @@ public class MarketOrderMatcher implements Matcher {
 
         MarketManager marketMgr = this.ctx().getMarketMgr();
         BigDecimal marketPrice = marketMgr.getMarketPrice(order);
+        this.ctx().setAttribute(order.getId(), marketPrice);
 
         //
         // 支持以下类型的订单进行撮合
@@ -96,8 +97,10 @@ public class MarketOrderMatcher implements Matcher {
      */
     @Override
     public TradeResult doTrade(Order order, Order opponentOrder) {
-        MarketManager marketMgr = this.ctx().getMarketMgr();
-        BigDecimal marketPrice = marketMgr.getMarketPrice(order);
+        BigDecimal marketPrice = this.ctx().getAttribute(order.getId());
+        if (marketPrice == null) {
+            throw new IllegalStateException("请勿多线程撮合");
+        }
         return TradeHelper.genericTrade(order, opponentOrder, marketPrice);
     }
 }

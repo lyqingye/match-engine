@@ -1,13 +1,16 @@
 package netty;
 
+import com.trader.MatchEngine;
+import com.trader.market.publish.MarketPublishClient;
+import com.trader.market.publish.MarketPublishHandler;
+import com.trader.market.publish.TcpMarketPublishClient;
+import com.trader.market.publish.config.MarketConfigHttpClient;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpClientOptions;
-import io.vertx.core.http.HttpMethod;
 import io.vertx.core.parsetools.RecordParser;
 import org.junit.Test;
 
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -54,25 +57,17 @@ public class NetTest {
 
     @Test
     public void testHttp() throws InterruptedException {
-        HttpClient client = Vertx.vertx()
-                                 .createHttpClient(
-                                         new HttpClientOptions()
-                                                 .setLogActivity(true)
-                                                 .setConnectTimeout(5000)
-                                                 .setDefaultPort(8087)
-                                                 .setDefaultHost("localhost")
-                                 );
-        client.getAbs("http://localhost:8087/market/symbol/t2g/mappings", ar -> {
-            ar.bodyHandler(buf -> {
-                System.out.println(buf.toString());
-            });
-        });
-//        client.request(HttpMethod.GET, "/market/price/latest",ar -> {
-//            ar.bodyHandler(buf -> {
-//                System.out.println(buf.toString());
-//            });
-//        });
+        TcpMarketPublishClient tcpMarketPublishClient = new TcpMarketPublishClient("localhost", 8888);
+        MarketConfigHttpClient configClient = tcpMarketPublishClient.createConfigClient("localhost", 8087);
+        new MarketPublishHandler(tcpMarketPublishClient);
 
+        Thread.sleep(5000);
+        MatchEngine engine = new MatchEngine();
+        engine.getMarketMgr()
+              .tryToInitMarketPrice(configClient::getMarketPriceSync);
+
+//        Map<String, String> price = configClient.getMarketPriceSync();
+//        System.out.println(price);
         Thread.sleep(1000000);
 
         System.out.println();

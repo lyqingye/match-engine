@@ -52,8 +52,6 @@ public class TcpMarketPublishClient implements MarketPublishClient {
 
     static {
         final VertxOptions options = new VertxOptions();
-//        options.setWorkerPoolSize(20)
-//               .setEventLoopPoolSize(1);
         vertx = Vertx.vertx(options);
 
     }
@@ -129,9 +127,7 @@ public class TcpMarketPublishClient implements MarketPublishClient {
                              connectHandler.handle(ar);
                          }
 
-                         if (log.isDebugEnabled()) {
-                             log.debug("[MarketPublish]: success connection to the server");
-                         }
+                         System.out.println("[MarketPublish]: success connection to the server");
 
                          client.handler(parser);
 

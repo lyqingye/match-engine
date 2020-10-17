@@ -17,8 +17,10 @@ import lombok.extern.slf4j.Slf4j;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * 行情管理器
@@ -93,6 +95,29 @@ public class MarketManager implements MatchHandler {
     }
 
     /**
+     * 尝试去初始化市场价格
+     *
+     * @param supplier
+     *         提供者
+     */
+    public void tryToInitMarketPrice(Supplier<Map<String, String>> supplier) {
+        if (supplier != null) {
+            Map<String, String> map = supplier.get();
+            if (map != null) {
+                map.forEach((symbol, price) -> {
+                    //
+                    // 更新最新市场价到订单簿
+                    //
+                    this.orderBookManager.getBook(symbol)
+                                         .updateLastTradePrice(new BigDecimal(price));
+                    System.out.println(String.format("[MarketEngine]: sync init market price [%s] : [%s]",
+                                                     symbol, price));
+                });
+            }
+        }
+    }
+
+    /**
      * 第三方市场数据
      *
      * @param json
@@ -114,8 +139,10 @@ public class MarketManager implements MatchHandler {
 
                     if (log.isDebugEnabled()) {
                         log.debug("[MarketEngine]: recv msg, [{}] {} {} {}",
-                                  type, msg.getSymbol(),msg.getPrice().toPlainString(),msg.getThird());
+                                  type, msg.getSymbol(), msg.getPrice().toPlainString(), msg.getThird());
                     }
+                    System.out.println(String.format("[MarketEngine]: recv msg: [%s] {%s} {%s}",
+                                                     type.name(), msg.getSymbol(), msg.getPrice().toPlainString()));
 
                     //
                     // 更新最新市场价到订单簿

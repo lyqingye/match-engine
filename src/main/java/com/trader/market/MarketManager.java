@@ -213,6 +213,10 @@ public class MarketManager implements MatchHandler {
      */
     @Override
     public void onAddOrder(Order newOrder) throws Exception {
+        if (newOrder.isStopOrder()) {
+            return;
+        }
+
         // 当有订单添加进来的时候, 会影响盘口的变动
 
         OrderBook book = orderBookManager.getBook(newOrder);

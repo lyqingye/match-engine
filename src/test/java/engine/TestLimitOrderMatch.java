@@ -48,7 +48,7 @@ public class TestLimitOrderMatch  {
         engine.addHandler(new InMemoryLimitMatchHandler());
         engine.addHandler(new InMemoryMarketMatchHandler());
         engine.addHandler(new ExampleLoggerHandler());
-        engine.enableLog();
+//        engine.enableLog();
 
         engine.addMatcher(new LimitOrderMatcher());
         engine.addMatcher(new MarketOrderMatcher());
@@ -69,14 +69,14 @@ public class TestLimitOrderMatch  {
     public void addOrder () {
 
         final long start = System.currentTimeMillis();
-        for (int i = 0; i < 1; i++) {
+        for (int i = 0; i < 500000; i++) {
 //            try {
 //                Thread.sleep(1000);
 //            } catch (InterruptedException e) {
 //                e.printStackTrace();
 //            }
-            System.out.println("process " + i);
-            BigDecimal price = engine.getMarketMgr().getMarketPrice("BTC-USDT").add(BigDecimal.ONE);
+//            System.out.println("process " + i);
+            BigDecimal price = engine.getMarketMgr().getMarketPrice("BTC-USDT");
             Order buyLimitOrder = OrderFactory.limit()
                                               .buy("1", "BTC-USDT")
                                               .spent(BigDecimal.TEN.multiply(price))

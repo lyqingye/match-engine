@@ -24,18 +24,15 @@ public class DisruptorQueue<T> {
     /**
      * 入队操作
      *
-     * @param t 对象
+     * @param t
+     *         对象
      */
     public void add(T t) {
         if (t != null) {
             long sequence = this.ringBuffer.next();
-
-            try {
-                ObjectEvent<T> event = (ObjectEvent) this.ringBuffer.get(sequence);
-                event.setObj(t);
-            } finally {
-                this.ringBuffer.publish(sequence);
-            }
+            ObjectEvent<T> event = this.ringBuffer.get(sequence);
+            event.setObj(t);
+            this.ringBuffer.publish(sequence);
         }
     }
 }

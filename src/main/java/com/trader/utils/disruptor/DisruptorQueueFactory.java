@@ -1,6 +1,7 @@
 package com.trader.utils.disruptor;
 
 import com.lmax.disruptor.BlockingWaitStrategy;
+import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.dsl.Disruptor;
 import com.lmax.disruptor.dsl.ProducerType;
 
@@ -18,7 +19,8 @@ public class DisruptorQueueFactory {
                                                               queueSize, Executors.defaultThreadFactory(),
                                                               ProducerType.MULTI,
                                                               new BlockingWaitStrategy());
-        disruptor.handleEventsWith(consumer);
+        disruptor.handleEventsWith(consumer)
+                 .then((event, sequence, endOfBatch) -> event.clear());
         return new DisruptorQueue<T>(disruptor);
     }
 }

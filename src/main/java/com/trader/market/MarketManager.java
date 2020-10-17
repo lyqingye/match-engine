@@ -269,4 +269,42 @@ public class MarketManager implements MatchHandler {
                                   ts.getExecutePrice(), false);
         });
     }
+
+    /**
+     * 订单移除事件推送
+     * <p>
+     * {@inheritDoc}
+     *
+     * @param removed
+     *         已经被移除的订单
+     */
+    @Override
+    public void onOrderCancel(Order removed) {
+        OrderBook book = orderBookManager.getBook(removed);
+        final MarketDepthChartSeries series = book.snapSeries(20);
+
+        // 异步处理市场管理器事件
+        this.asyncExecuteHandler((h) -> {
+            h.onDepthChartChange(series);
+        });
+    }
+
+    /**
+     * 激活止盈止损订单事件
+     *
+     * @param stopOrder
+     *         止盈止损订单
+     *
+     * @throws Exception
+     */
+    @Override
+    public void onActiveStopOrder(Order stopOrder) throws Exception {
+        OrderBook book = orderBookManager.getBook(stopOrder);
+        final MarketDepthChartSeries series = book.snapSeries(20);
+
+        // 异步处理市场管理器事件
+        this.asyncExecuteHandler((h) -> {
+            h.onDepthChartChange(series);
+        });
+    }
 }

@@ -16,7 +16,6 @@ import com.trader.utils.disruptor.DisruptorQueueFactory;
 import lombok.Getter;
 import lombok.Synchronized;
 import lombok.extern.java.Log;
-import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -310,6 +309,11 @@ public class MatchEngine {
 
             if (matcher.isFinished(best)) {
                 best.markFinished();
+
+                // 推送事件
+                this.executeOrderCancel(best);
+
+                // 移除被标记的订单
                 opponentIt.remove();
                 if (order.isBuy()) {
                     opponentIt = book.getAskOrders().iterator();
@@ -360,6 +364,10 @@ public class MatchEngine {
 
                 // 直接使用
                 opponentIt.remove();
+
+                // 推送事件
+                this.executeOrderCancel(best);
+
                 if (order.isBuy()) {
                     opponentIt = book.getAskOrders().iterator();
                 } else {
@@ -455,6 +463,18 @@ public class MatchEngine {
             MatchHandler h = this.handlers.get(i);
             f.accept(h);
         }
+    }
+
+    /**
+     * 执行订单取消移除事件
+     *
+     * @param order
+     *         已经移除的订单
+     */
+    private void executeOrderCancel(Order order) {
+        this.executeHandler((h) -> {
+            h.onOrderCancel(order);
+        });
     }
 
     /**

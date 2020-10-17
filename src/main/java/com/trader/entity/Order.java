@@ -285,6 +285,10 @@ public class Order {
         order.leavesQuantity = leavesQuantity;
         order.executedQuantity = executedQuantity;
 
+        order.triggerPrice = triggerPrice;
+        order.differencePriceStrategy = differencePriceStrategy;
+
+
         order.side = side;
         order.type = type;
         order.timeInForce = timeInForce;
@@ -292,6 +296,7 @@ public class Order {
 
         order.activated = activated;
         order.finished = finished;
+        order.canceled = canceled;
         return order;
     }
 
@@ -318,6 +323,9 @@ public class Order {
         this.executedQuantity = o.executedQuantity;
         this.leavesQuantity = o.leavesQuantity;
 
+        this.triggerPrice = o.triggerPrice;
+        this.differencePriceStrategy = o.differencePriceStrategy;
+
         this.side = o.side;
         this.type = o.type;
         this.timeInForce = o.timeInForce;
@@ -325,6 +333,7 @@ public class Order {
 
         this.activated = o.activated;
         this.finished = o.finished;
+        this.canceled = o.canceled;
     }
 
     @Override

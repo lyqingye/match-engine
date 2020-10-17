@@ -96,41 +96,7 @@ public class MatchEngine {
         // 为了提高吞吐量, 需要引入队列, 当市场止盈止损订单被触发的时候将需要下单的订单
         //
         final MatchEngine that = this;
-        marketMgr.addHandler(new MarketEventHandler() {
-            @Override
-            public void onMarketPriceChange(String symbol,
-                                            BigDecimal latestPrice, boolean third) {
-                OrderBook book = that.bookMgr.getBook(symbol);
-
-                try {
-                    Iterator<Order> bidIt = book.getBuyStopOrders().iterator();
-                    while (bidIt.hasNext()) {
-                        Order bid = bidIt.next();
-
-                        if (bid.getTriggerPrice().compareTo(latestPrice) >= 0) {
-                            that.activeStopOrderQueue.add(bid);
-                            bidIt.remove();
-                        } else {
-                            break;
-                        }
-                    }
-
-                    Iterator<Order> askIt = book.getSellStopOrders().iterator();
-                    while (askIt.hasNext()) {
-                        Order ask = askIt.next();
-
-                        if (ask.getTriggerPrice().compareTo(latestPrice) <= 0) {
-                            that.activeStopOrderQueue.add(ask);
-                            askIt.remove();
-                        } else {
-                            break;
-                        }
-                    }
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-            }
-        });
+        marketMgr.addHandler(new StopOrderMarketEventHandler());
 
         // 创建下单队列
         this.addOrderQueue = DisruptorQueueFactory.createQueue(2 << 16, new AbstractDisruptorConsumer<Order>() {
@@ -512,5 +478,62 @@ public class MatchEngine {
      */
     public void disableLog() {
         this.isEnableLog = false;
+    }
+
+
+    /**
+     * 止盈止损订单处理器
+     */
+    private class StopOrderMarketEventHandler implements MarketEventHandler {
+
+        @Override
+        public void onMarketPriceChange(String symbol,
+                                        BigDecimal latestPrice, boolean third) {
+            OrderBook book = bookMgr.getBook(symbol);
+
+            try {
+                Iterator<Order> bidIt = book.getBuyStopOrders().iterator();
+                while (bidIt.hasNext()) {
+                    Order bid = bidIt.next();
+
+                    if (bid.getTriggerPrice().compareTo(latestPrice) >= 0) {
+
+                        if (isEnableLog) {
+                            System.out.println(String.format("[MatchEngine]: active stop order, orderId: [%s] side: [%s]" +
+                                                                     "triggerPrice: [%s] latestPrice: [%s]",
+                                                             bid.getId(), bid.getSide().name(),
+                                                             bid.getTriggerPrice().toPlainString(), latestPrice.toPlainString()));
+                        }
+
+                        activeStopOrderQueue.add(bid);
+                        bidIt.remove();
+                    } else {
+                        break;
+                    }
+                }
+
+                Iterator<Order> askIt = book.getSellStopOrders().iterator();
+                while (askIt.hasNext()) {
+                    Order ask = askIt.next();
+
+                    if (ask.getTriggerPrice().compareTo(latestPrice) <= 0) {
+
+                        if (isEnableLog) {
+                            System.out.println(String.format("[MatchEngine]: active stop order, orderId: [%s] side: [%s]" +
+                                                                     "triggerPrice: [%s] latestPrice: [%s]",
+                                                             ask.getId(), ask.getSide().name(),
+                                                             ask.getTriggerPrice().toPlainString(), latestPrice.toPlainString()));
+                        }
+
+                        activeStopOrderQueue.add(ask);
+                        askIt.remove();
+                    } else {
+                        break;
+                    }
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
     }
 }

@@ -14,18 +14,20 @@ import java.util.Date;
  */
 public class MarketOrderBuilder {
 
-    public BuyMarketOrderBuilder buy(String uid, String symbolId) {
+    public BuyMarketOrderBuilder buy(String uid, String coinId, String currencyId) {
         BuyMarketOrderBuilder builder = new BuyMarketOrderBuilder();
-        builder.order.setSymbol(symbolId);
+        builder.order.setCoinId(coinId);
+        builder.order.setCurrencyId(currencyId);
         builder.order.setUid(uid);
         builder.order.setId(SnowflakeIdWorker.nextId());
         builder.order.setType(OrderType.MARKET);
         return builder;
     }
 
-    public SellMarketOrderBuilder sell(String uid, String symbolId) {
+    public SellMarketOrderBuilder sell(String uid, String coinId, String currencyId) {
         SellMarketOrderBuilder builder = new SellMarketOrderBuilder();
-        builder.order.setSymbol(symbolId);
+        builder.order.setCoinId(coinId);
+        builder.order.setCurrencyId(currencyId);
         builder.order.setUid(uid);
         builder.order.setId(SnowflakeIdWorker.nextId());
         builder.order.setType(OrderType.MARKET);

@@ -1,6 +1,7 @@
 package com.trader.utils;
 
 import com.trader.entity.Order;
+import com.trader.helper.tuples.Tuple;
 
 /**
  * @author yjt
@@ -12,15 +13,27 @@ public final class SymbolUtils {
     /**
      * 生成交易对
      *
-     * @param productId
-     *         产品Id
+     * @param coinId
+     *         币种Id
      * @param currencyId
-     *         货币Id
+     *         计价货币Id
      *
      * @return 交易对
      */
-    public static String makeSymbol(String productId, String currencyId) {
-        return productId.toUpperCase() + "-" + currencyId.toUpperCase();
+    public static String makeSymbol(String coinId, String currencyId) {
+        return coinId.toUpperCase() + "-" + currencyId.toUpperCase();
+    }
+
+    /**
+     * 生成交易对
+     *
+     * @param tuple
+     *         元组
+     *
+     * @return 交易对
+     */
+    public static String makeSymbol(Tuple<String, String> tuple) {
+        return makeSymbol(tuple.getO1(), tuple.getO2());
     }
 
 

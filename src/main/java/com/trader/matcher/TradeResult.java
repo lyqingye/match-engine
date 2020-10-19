@@ -16,14 +16,15 @@ public class TradeResult {
     private BigDecimal executePrice;
 
     /**
+     * 成交量 (仅做参考)
+     */
+    private BigDecimal quantity;
+
+    /**
      * 对手订单最终的成交价
      */
     private BigDecimal opponentExecutePrice = BigDecimal.ZERO;
 
-    /**
-     * 成交量
-     */
-    private BigDecimal quantity;
 
     /**
      * 交易时间

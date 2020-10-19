@@ -162,7 +162,6 @@ public class TradeHelper {
             opponentQuantity = opponentOrder.getLeavesAmount()
                                             .divide(opponentExecutePrice, RoundingMode.DOWN)
                                             .setScale(8, RoundingMode.DOWN);
-
         }
 
         // 成交量取两者最少部分

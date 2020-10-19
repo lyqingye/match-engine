@@ -13,18 +13,20 @@ import java.util.Date;
  * @author ex
  */
 public class StopOrderBuilder {
-    public BuyStopOrderBuilder buy(String uid, String symbolId) {
+    public BuyStopOrderBuilder buy(String uid, String coinId, String currencyId) {
         BuyStopOrderBuilder builder = new BuyStopOrderBuilder();
-        builder.order.setSymbol(symbolId);
+        builder.order.setCoinId(coinId);
+        builder.order.setCurrencyId(currencyId);
         builder.order.setUid(uid);
         builder.order.setId(SnowflakeIdWorker.nextId());
         builder.order.setType(OrderType.STOP);
         return builder;
     }
 
-    public SellStopOrderBuilder sell(String uid, String symbolId) {
+    public SellStopOrderBuilder sell(String uid, String coinId, String currencyId) {
         SellStopOrderBuilder builder = new SellStopOrderBuilder();
-        builder.order.setSymbol(symbolId);
+        builder.order.setCoinId(coinId);
+        builder.order.setCurrencyId(currencyId);
         builder.order.setUid(uid);
         builder.order.setId(SnowflakeIdWorker.nextId());
         builder.order.setType(OrderType.STOP);

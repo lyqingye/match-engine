@@ -4,6 +4,7 @@ import com.trader.def.DifferencePriceStrategy;
 import com.trader.def.OrderSide;
 import com.trader.def.OrderTimeInForce;
 import com.trader.def.OrderType;
+import com.trader.utils.SymbolUtils;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -34,9 +35,14 @@ public class Order {
     private String uid;
 
     /**
-     * 交易对ID
+     * 计价货币ID
      */
-    private String symbol;
+    private String currencyId;
+
+    /**
+     * 币种ID
+     */
+    private String coinId;
 
     /**
      * 订单类型:
@@ -270,7 +276,8 @@ public class Order {
         Order order = new Order();
         order.id = id;
         order.uid = uid;
-        order.symbol = symbol;
+        order.coinId = coinId;
+        order.currencyId = currencyId;
         order.price = price;
 
         order.totalAmount = totalAmount;
@@ -308,7 +315,8 @@ public class Order {
         Objects.requireNonNull(o);
         this.id = o.id;
         this.uid = o.uid;
-        this.symbol = o.symbol;
+        this.coinId = o.coinId;
+        this.currencyId = o.currencyId;
         this.price = o.price;
         this.createDateTime = o.createDateTime;
 
@@ -340,9 +348,12 @@ public class Order {
     public String toString() {
         return "Order{" +
                 "id='" + id + '\'' +
-                ", symbol='" + symbol + '\'' +
+                ", uid='" + uid + '\'' +
+                ", currencyId='" + currencyId + '\'' +
+                ", coinId='" + coinId + '\'' +
                 ", type=" + type +
                 ", side=" + side +
+                ", differencePriceStrategy=" + differencePriceStrategy +
                 ", price=" + price +
                 ", priceUpperBound=" + priceUpperBound +
                 ", priceLowerBound=" + priceLowerBound +
@@ -353,10 +364,16 @@ public class Order {
                 ", totalAmount=" + totalAmount +
                 ", executedAmount=" + executedAmount +
                 ", leavesAmount=" + leavesAmount +
+                ", timeInForce=" + timeInForce +
                 ", createDateTime=" + createDateTime +
                 ", activated=" + activated +
                 ", finished=" + finished +
                 ", canceled=" + canceled +
+                ", version=" + version +
                 '}';
+    }
+
+    public String getSymbol() {
+        return SymbolUtils.makeSymbol(coinId, currencyId);
     }
 }

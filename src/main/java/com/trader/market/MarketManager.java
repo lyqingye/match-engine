@@ -3,6 +3,7 @@ package com.trader.market;
 import com.trader.MatchHandler;
 import com.trader.entity.Order;
 import com.trader.entity.OrderBook;
+import com.trader.helper.tuples.Tuple;
 import com.trader.market.entity.MarketDepthChartSeries;
 import com.trader.market.publish.MarketPublishHandler;
 import com.trader.market.publish.msg.Message;
@@ -10,6 +11,7 @@ import com.trader.market.publish.msg.MessageType;
 import com.trader.market.publish.msg.PriceChangeMessage;
 import com.trader.matcher.TradeResult;
 import com.trader.support.OrderBookManager;
+import com.trader.utils.SymbolUtils;
 import com.trader.utils.ThreadPoolUtils;
 import io.vertx.core.json.JsonObject;
 import lombok.extern.slf4j.Slf4j;
@@ -78,6 +80,43 @@ public class MarketManager implements MatchHandler {
     public BigDecimal getMarketPrice(String symbol) {
         OrderBook book = orderBookManager.getBook(symbol);
         return book.getLastTradePrice();
+    }
+
+    /**
+     * 获取产品对货币的市场价格
+     *
+     * @param coinId
+     *         货币
+     * @param currencyId
+     *         交易货币
+     *
+     * @return 市场价格
+     */
+    public BigDecimal getMarketPrice(String coinId, String currencyId) {
+        OrderBook book = orderBookManager.getBook(SymbolUtils.makeSymbol(coinId, currencyId));
+        return book.getLastTradePrice();
+    }
+
+    /**
+     * 批量获取市场价格
+     *
+     * @param symbol
+     *         交易对元组列表 其中元组的第一个元素代表coinId 第二个元素是计价货币 currencyId
+     *
+     * @return 市场价格
+     */
+    public List<BigDecimal> getMarketPriceBatch(List<Tuple<String, String>> symbol) {
+        List<BigDecimal> result = new ArrayList<>(16);
+        for (Tuple<String, String> tuple : symbol) {
+            OrderBook book = orderBookManager.getBook(SymbolUtils.makeSymbol(tuple));
+            BigDecimal price = book.getLastTradePrice();
+            if (price == null) {
+                result.add(BigDecimal.ZERO);
+            } else {
+                result.add(price);
+            }
+        }
+        return result;
     }
 
     /**

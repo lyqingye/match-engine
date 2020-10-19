@@ -15,18 +15,20 @@ import java.util.Date;
  */
 public class LimitOrderBuilder {
 
-    public BuyLimitOrderBuilder buy(String uid,String symbolId) {
+    public BuyLimitOrderBuilder buy(String uid, String coinId, String currencyId) {
         BuyLimitOrderBuilder builder = new BuyLimitOrderBuilder();
-        builder.order.setSymbol(symbolId);
+        builder.order.setCoinId(coinId);
+        builder.order.setCurrencyId(currencyId);
         builder.order.setUid(uid);
         builder.order.setId(SnowflakeIdWorker.nextId());
         builder.order.setType(OrderType.LIMIT);
         return builder;
     }
 
-    public SellLimitOrderBuilder sell(String uid,String symbolId) {
+    public SellLimitOrderBuilder sell(String uid, String coinId, String currencyId) {
         SellLimitOrderBuilder builder = new SellLimitOrderBuilder();
-        builder.order.setSymbol(symbolId);
+        builder.order.setCoinId(coinId);
+        builder.order.setCurrencyId(currencyId);
         builder.order.setUid(uid);
         builder.order.setId(SnowflakeIdWorker.nextId());
         builder.order.setType(OrderType.LIMIT);

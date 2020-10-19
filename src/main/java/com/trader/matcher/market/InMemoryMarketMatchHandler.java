@@ -68,13 +68,6 @@ public class InMemoryMarketMatchHandler implements MatchHandler {
                                    BigDecimal executeQuantity) {
 
         switch (order.getType()) {
-            case LIMIT:
-            case STOP: {
-
-                // 处理限价和止盈止损订单
-                InMemoryLimitMatchHandler.updateOrder(order, executePrice, executeQuantity);
-                break;
-            }
             case MARKET: {
                 // 计算成交总金额 = 单价 * 成交量
                 BigDecimal totalAmount = executePrice.multiply(executeQuantity);
@@ -99,7 +92,7 @@ public class InMemoryMarketMatchHandler implements MatchHandler {
                 break;
             }
             default: {
-                throw new UnsupportedOperationException("不支持该订单类型与市价单交易");
+                // ignored
             }
         }
     }

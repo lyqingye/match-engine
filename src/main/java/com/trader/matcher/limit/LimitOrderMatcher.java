@@ -1,5 +1,6 @@
 package com.trader.matcher.limit;
 
+import com.trader.MatchEngine;
 import com.trader.Matcher;
 import com.trader.def.OrderType;
 import com.trader.entity.Order;
@@ -27,6 +28,7 @@ public class LimitOrderMatcher implements Matcher {
      */
     @Override
     public boolean isSupport(Order order, Order opponentOrder) {
+        MatchEngine me = ctx().getEngine();
 
         //
         // 处理以下类型的订单
@@ -36,6 +38,11 @@ public class LimitOrderMatcher implements Matcher {
         //
 
         if (order.isMarketOrder() || opponentOrder.isMarketOrder()) {
+            if (me.isEnableLog()) {
+                System.out.println(String.format("[Limit Matcher]: 当前订单 %s [%s] 和 对手订单 %s [%s] 其中一个为市价订单, 无法使用此撮合规则",
+                                                 order.getId(), order.getType().name(),
+                                                 opponentOrder.getId(), opponentOrder.getType().name()));
+            }
             return false;
         }
 
@@ -59,14 +66,45 @@ public class LimitOrderMatcher implements Matcher {
             arbitrage = opponentPrice.compareTo(price) >= 0;
         }
 
-        if (!arbitrage)
+        if (!arbitrage) {
+
+            if (me.isEnableLog()) {
+                if (order.isBuy()) {
+                    System.out.println(String.format("[Market Matcher]: 不满足撮合条件 当前订单 %s [%s][%s] 价格 %s " +
+                                                             "必须大于对手订单 %s [%s][%s] 价格 %s ",
+                                                     order.getId(), order.getSide().name(), order.getType().name(), price.toPlainString(),
+                                                     opponentOrder.getId(), opponentOrder.getSide(), opponentOrder.getType().name(), opponentPrice.toPlainString()));
+                } else {
+                    System.out.println(String.format("[Market Matcher]: 不满足撮合条件 当前订单 %s [%s][%s] 价格 %s " +
+                                                             "必须小于对手订单 %s [%s][%s] 价格 %s ",
+                                                     order.getId(), order.getSide().name(), order.getType().name(), price.toPlainString(),
+                                                     opponentOrder.getId(), opponentOrder.getSide().name(), opponentOrder.getType().name(), opponentPrice.toPlainString()));
+                }
+            }
+
             return false;
+        }
 
         //
         // 判断是否有足够的钱进行购买
         //
-        if (!TradeHelper.isHasEnoughAmount(order, opponentPrice) ||
-                !TradeHelper.isHasEnoughAmount(opponentOrder, price)) {
+        if (!TradeHelper.isHasEnoughAmount(order, opponentPrice)) {
+
+            if (me.isEnableLog()) {
+                System.out.println(String.format("[Limit Matcher]: 订单没有足够的钱进行购买 当前订单 %s [%s] 剩余金额: %s 对手订单单价为: %s",
+                                                 order.getId(), order.getSide().name(),
+                                                 order.getLeavesAmount().toPlainString(),
+                                                 opponentPrice.toPlainString()));
+            }
+
+            return false;
+        } else if (!TradeHelper.isHasEnoughAmount(opponentOrder, price)) {
+            if (me.isEnableLog()) {
+                System.out.println(String.format("[Limit Matcher]: 订单没有足够的钱进行购买 当前订单 %s [%s] 剩余金额: %s 对手订单单价为: %s",
+                                                 opponentOrder.getId(), opponentOrder.getSide().name(),
+                                                 opponentOrder.getLeavesAmount().toPlainString(),
+                                                 price.toPlainString()));
+            }
             return false;
         }
 

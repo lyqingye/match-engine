@@ -37,7 +37,8 @@ public class InMemoryLimitMatchHandler implements MatchHandler {
     @Override
     public void onExecuteOrder(Order order,
                                Order opponentOrder, TradeResult ts) throws Exception {
-        InMemoryLimitMatchHandler.executeOrder(order, opponentOrder, ts);
+        InMemoryLimitMatchHandler.executeOrder(order, ts);
+        InMemoryLimitMatchHandler.executeOrder(opponentOrder, ts);
     }
 
     /**
@@ -46,18 +47,15 @@ public class InMemoryLimitMatchHandler implements MatchHandler {
      *
      * @param order
      *         订单
-     * @param opponentOrder
-     *         对手订单
      * @param ts
      *         撮合结果
      */
-    public static void executeOrder(Order order,
-                                    Order opponentOrder, TradeResult ts) {
+    public static void executeOrder(Order order, TradeResult ts) {
+
         switch (order.getType()) {
             case STOP:
             case LIMIT: {
                 InMemoryLimitMatchHandler.updateOrder(order, ts.getExecutePrice(), ts.getQuantity());
-                InMemoryLimitMatchHandler.updateOrder(opponentOrder, ts.getOpponentExecutePrice(), ts.getQuantity());
                 break;
             }
             default: {

@@ -15,7 +15,6 @@ import com.trader.utils.disruptor.DisruptorQueue;
 import com.trader.utils.disruptor.DisruptorQueueFactory;
 import lombok.Getter;
 import lombok.Synchronized;
-import lombok.extern.java.Log;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -31,7 +30,6 @@ import java.util.function.Consumer;
  * @author yjt
  * @since 2020/9/1 上午10:56
  */
-@Log
 public class MatchEngine {
 
     /**
@@ -298,10 +296,9 @@ public class MatchEngine {
             Order snap_order = order.snap();
             Order snap_best = best.snap();
 
-            // NOTE TEST ONLY
             if (this.isEnableLog) {
-                log.info(book.render_bid_ask());
-                log.info(book.render_depth_chart());
+                System.out.println(book.render_bid_ask());
+                System.out.println(book.render_depth_chart());
             }
 
             //
@@ -318,6 +315,10 @@ public class MatchEngine {
                 } catch (Exception e) {
                     order.rollback(snap_order);
                     best.rollback(snap_best);
+
+                    if (isEnableLog) {
+                        System.out.println(String.format("[MatchEngine]: 撮合发生异常 %s", e.getMessage()));
+                    }
                     throw new TradeException(e.getMessage());
                 }
             });
@@ -349,6 +350,10 @@ public class MatchEngine {
                 order.markFinished();
                 return;
             }
+        }
+
+        if (isEnableLog) {
+            System.out.println(String.format("[Match Engine]: 订单: %s 找不到合适的对手单,撮合结束", order.getId()));
         }
     }
 
@@ -471,6 +476,15 @@ public class MatchEngine {
      */
     public void enableLog() {
         this.isEnableLog = true;
+    }
+
+    /**
+     * 是否开启了日志
+     *
+     * @return 是否开启了日志
+     */
+    public boolean isEnableLog() {
+        return this.isEnableLog;
     }
 
     /**

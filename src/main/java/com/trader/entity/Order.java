@@ -340,16 +340,23 @@ public class Order {
     public String toString() {
         return "Order{" +
                 "id='" + id + '\'' +
-                ", uid='" + uid + '\'' +
+                ", symbol='" + symbol + '\'' +
                 ", type=" + type +
                 ", side=" + side +
                 ", price=" + price +
+                ", priceUpperBound=" + priceUpperBound +
+                ", priceLowerBound=" + priceLowerBound +
+                ", triggerPrice=" + triggerPrice +
                 ", quantity=" + quantity +
                 ", executedQuantity=" + executedQuantity +
                 ", leavesQuantity=" + leavesQuantity +
-                ", timeInForce=" + timeInForce +
+                ", totalAmount=" + totalAmount +
+                ", executedAmount=" + executedAmount +
+                ", leavesAmount=" + leavesAmount +
                 ", createDateTime=" + createDateTime +
-                ", version=" + version +
+                ", activated=" + activated +
+                ", finished=" + finished +
+                ", canceled=" + canceled +
                 '}';
     }
 }

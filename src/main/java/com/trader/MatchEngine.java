@@ -319,6 +319,7 @@ public class MatchEngine {
                     if (isEnableLog) {
                         System.out.println(String.format("[MatchEngine]: 撮合发生异常 %s", e.getMessage()));
                     }
+                    e.printStackTrace();
                     throw new TradeException(e.getMessage());
                 }
             });

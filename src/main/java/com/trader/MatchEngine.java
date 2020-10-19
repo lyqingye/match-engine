@@ -257,7 +257,10 @@ public class MatchEngine {
             Matcher matcher = this.lookupMatcher(order, best);
 
             if (matcher == null) {
-                return;
+                if (best.isStopOrder() || best.isLimitOrder()) {
+                    return;
+                }
+                continue;
             }
 
             // 将查找到的匹配器设置到匹配上下文中

@@ -7,6 +7,7 @@ import com.trader.matcher.TradeResult;
 import com.trader.matcher.limit.InMemoryLimitMatchHandler;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /**
  * @author yjt
@@ -70,7 +71,8 @@ public class InMemoryMarketMatchHandler implements MatchHandler {
         switch (order.getType()) {
             case MARKET: {
                 // 计算成交总金额 = 单价 * 成交量
-                BigDecimal totalAmount = executePrice.multiply(executeQuantity);
+                BigDecimal totalAmount = executePrice.multiply(executeQuantity)
+                                                     .setScale(8, RoundingMode.DOWN);
 
                 // 如果买入单则扣除成交总金额
                 if (order.isBuy()) {

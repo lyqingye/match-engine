@@ -5,8 +5,11 @@ import com.trader.def.OrderType;
 import com.trader.entity.Order;
 import com.trader.entity.OrderBook;
 import org.junit.Test;
+import org.omg.CORBA.IDLTypeOperations;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Date;
 
 /**
@@ -17,6 +20,8 @@ public class TestOrderBook {
 
     @Test
     public void testAddOrderToBook() throws InterruptedException {
+        Date today = Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant());
+        System.out.println(today);
         OrderBook book = new OrderBook();
         Date d1 = new Date();
         Thread.sleep(100);

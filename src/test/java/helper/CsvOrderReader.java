@@ -39,7 +39,8 @@ public class CsvOrderReader {
             order.setUid("1");
             order.setPrice(new BigDecimal(args[0]).setScale(8, RoundingMode.DOWN));
             order.setExecutedAmount(BigDecimal.ZERO);
-            order.setSymbol("BTC-USDT");
+            order.setCoinId("BTC");
+            order.setCurrencyId("USDT");
 
             order.setPriceUpperBound(new BigDecimal(args[1]).setScale(8, RoundingMode.DOWN));
             order.setPriceLowerBound(new BigDecimal(args[2]).setScale(8, RoundingMode.DOWN));

@@ -1,6 +1,7 @@
 package com.trader;
 
 import com.trader.context.ThreadLocalMatchingContext;
+import com.trader.def.Cmd;
 import com.trader.entity.Order;
 import com.trader.entity.OrderBook;
 import com.trader.exception.TradeException;
@@ -105,7 +106,7 @@ public class MatchEngine {
                 // 确保每一个订单的撮合都是独立的
                 //
                 try {
-                    that.addOrderInternal(event);
+                    that.processOrder(event);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -159,6 +160,10 @@ public class MatchEngine {
 
             // 设置订单取消标记位
             order.markCanceled();
+
+            // 添加进队列等待取消
+            order.setCmd(Cmd.CANCEL_ORDER);
+            this.addOrder(order);
         }
     }
 
@@ -168,24 +173,35 @@ public class MatchEngine {
      * @param order
      *         订单
      */
-    private void addOrderInternal(Order order) {
+    private void processOrder(Order order) {
         OrderBook book = Objects.requireNonNull(this.bookMgr.getBook(order));
-        this.orderMgr.addOrder(order);
-        book.addOrder(order);
 
-        // 添加订单
-        this.executeHandler(h -> {
-            try {
-                h.onAddOrder(order);
-            } catch (Exception e) {
-                this.orderMgr.removeOrder(order);
-                throw new TradeException(e.getMessage());
+        // 如果为添加订单
+        if (order.isAddCmd()) {
+            this.orderMgr.addOrder(order);
+            book.addOrder(order);
+
+            // 添加订单
+            this.executeHandler(h -> {
+                try {
+                    h.onAddOrder(order);
+                } catch (Exception e) {
+                    this.orderMgr.removeOrder(order);
+                    throw new TradeException(e.getMessage());
+                }
+            });
+
+            // 立马执行撮合
+            if (this.isMatching()) {
+                matchOrder(book, order);
             }
-        });
+            return;
+        }
 
-        // 立马执行撮合
-        if (this.isMatching()) {
-            matchOrder(book, order);
+        // 如果为取消订单
+        if (order.isCancelCmd()) {
+            book.removeOrder(order);
+            this.executeOrderCancel(order);
         }
     }
 
@@ -323,7 +339,9 @@ public class MatchEngine {
                         System.out.println(String.format("[MatchEngine]: 撮合发生异常 %s", e.getMessage()));
                     }
                     e.printStackTrace();
-                    throw new TradeException(e.getMessage());
+                    order.markCanceled();
+                    best.markCanceled();
+                    return;
                 }
             });
 

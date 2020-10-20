@@ -78,7 +78,7 @@ public class TestLimitOrderMatch  {
 //            System.out.println("process " + i);
             BigDecimal price = engine.getMarketMgr().getMarketPrice("BTC-USDT");
             Order buyLimitOrder = OrderFactory.limit()
-                                              .buy("1", "BTC-USDT")
+                                              .buy("1", "BTC", "USDT")
                                               .spent(BigDecimal.TEN.multiply(price))
                                               .withUnitPriceOf(price)
                                               .quantity(BigDecimal.TEN)
@@ -86,7 +86,7 @@ public class TestLimitOrderMatch  {
                                               .build();
 
             Order sellMarketOrder = OrderFactory.market()
-                                                .sell("1", "BTC-USDT")
+                                                .sell("1", "BTC", "USDT")
                                                 .quantity(BigDecimal.TEN)
                                                 .GTC()
                                                 .build();

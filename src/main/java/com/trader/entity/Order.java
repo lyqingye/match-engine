@@ -1,9 +1,6 @@
 package com.trader.entity;
 
-import com.trader.def.DifferencePriceStrategy;
-import com.trader.def.OrderSide;
-import com.trader.def.OrderTimeInForce;
-import com.trader.def.OrderType;
+import com.trader.def.*;
 import com.trader.utils.SymbolUtils;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,6 +20,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Getter
 @Setter
 public class Order {
+
+    /**
+     * 指令
+     */
+    private Cmd cmd = Cmd.ADD_ORDER;
 
     /**
      * 订单ID
@@ -245,11 +247,20 @@ public class Order {
         return this.executedAmount;
     }
 
-    public void markFinished () {
+    public boolean isAddCmd() {
+        return Cmd.ADD_ORDER.equals(this.cmd);
+    }
+
+    public boolean isCancelCmd() {
+        return Cmd.CANCEL_ORDER.equals(this.cmd);
+    }
+
+
+    public void markFinished() {
         this.finished = true;
     }
 
-    public void markCanceled () {
+    public void markCanceled() {
         this.canceled = true;
     }
 
@@ -274,6 +285,7 @@ public class Order {
     @Override
     public Order clone() {
         Order order = new Order();
+        order.cmd = cmd;
         order.id = id;
         order.uid = uid;
         order.coinId = coinId;
@@ -313,6 +325,7 @@ public class Order {
 
     public void rollback(Order o) {
         Objects.requireNonNull(o);
+        this.cmd = o.cmd;
         this.id = o.id;
         this.uid = o.uid;
         this.coinId = o.coinId;

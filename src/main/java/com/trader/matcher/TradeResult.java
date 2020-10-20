@@ -25,7 +25,6 @@ public class TradeResult {
      */
     private BigDecimal opponentExecutePrice = BigDecimal.ZERO;
 
-
     /**
      * 交易时间
      */

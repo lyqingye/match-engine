@@ -108,6 +108,15 @@ public class LimitOrderMatcher implements Matcher {
             return false;
         }
 
+        TradeResult ts = this.doTrade(order, opponentOrder);
+        BigDecimal amount = ts.getQuantity()
+                              .multiply(ts.getExecutePrice())
+                              .setScale(8, BigDecimal.ROUND_DOWN);
+        if (amount.compareTo(BigDecimal.ZERO) == 0) {
+            return false;
+        }
+
+
         //
         // TODO 处理全量交易
         // + 全部执行或取消 (Fill ok kill)

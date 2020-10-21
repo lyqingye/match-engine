@@ -156,18 +156,50 @@ public class TradeHelper {
             quantity = order.getLeavesAmount()
                             .divide(executePrice, RoundingMode.DOWN)
                             .setScale(8, RoundingMode.DOWN);
+
+
+            if (quantity.compareTo(opponentQuantity) <= 0) {
+                // 买单全部买完
+                ts.setExecuteAmount(order.getLeavesAmount());
+                ts.setQuantity(quantity);
+
+                // 计算对手卖单收入的计价货币 = 对手订单成交单价 * 成交数量
+                ts.setOpponentExecuteAmount(quantity.multiply(opponentExecutePrice).setScale(8, RoundingMode.DOWN));
+            } else {
+                // 买单不能全部买完, 但卖单可以卖完
+                // 所以成交金额则是 卖单的数量 * 当前订单单价
+                ts.setExecuteAmount(executePrice.multiply(opponentQuantity).setScale(8, RoundingMode.DOWN));
+                ts.setQuantity(opponentQuantity);
+
+                // 计算对手卖单收入的计价货币 = 对手订单成交单价 * 成交数量
+                ts.setOpponentExecuteAmount(opponentQuantity.multiply(opponentExecutePrice).setScale(8, RoundingMode.DOWN));
+            }
         }
 
+        //
+        // 如果当前订单为卖单, 对手单为买单
+        //
         if (opponentOrder.isBuy()) {
             opponentQuantity = opponentOrder.getLeavesAmount()
                                             .divide(opponentExecutePrice, RoundingMode.DOWN)
                                             .setScale(8, RoundingMode.DOWN);
-        }
+            if (opponentQuantity.compareTo(quantity) <= 0) {
+                // 买单全部买完
+                ts.setOpponentExecuteAmount(opponentOrder.getLeavesAmount());
+                ts.setQuantity(opponentQuantity);
 
-        // 成交量取两者最少部分
-        BigDecimal executeQuantity = MathUtils.min(quantity,
-                                                   opponentQuantity);
-        ts.setQuantity(executeQuantity);
+                // 计算当前卖单收入的计价货币 = 当前订单成交单价 * 成交数量
+                ts.setExecuteAmount(opponentQuantity.multiply(executePrice).setScale(8, RoundingMode.DOWN));
+            } else {
+                // 买单不能全部买完, 但卖单可以卖完
+                // 所以成交金额则是 卖单的数量 * 对手订单单价
+                ts.setOpponentExecuteAmount(opponentExecutePrice.multiply(quantity).setScale(8, RoundingMode.DOWN));
+                ts.setQuantity(quantity);
+
+                // 计算当前卖单收入的计价货币 = 当前订单成交单价 * 成交数量
+                ts.setExecuteAmount(quantity.multiply(executePrice).setScale(8, RoundingMode.DOWN));
+            }
+        }
         ts.setTimestamp(System.currentTimeMillis());
         return ts;
     }

@@ -49,8 +49,8 @@ public class InMemoryMarketMatchHandler implements MatchHandler {
         // MARKET <-> STOP (市价单和止盈止损单)
 
         if (order.getType().equals(OrderType.MARKET) || opponentOrder.getType().equals(OrderType.MARKET)) {
-            InMemoryMarketMatchHandler.updateOrder(order, ts.getExecutePrice(), quantity);
-            InMemoryMarketMatchHandler.updateOrder(opponentOrder, ts.getOpponentExecutePrice(), quantity);
+            InMemoryMarketMatchHandler.updateOrder(order, quantity, ts.getExecuteAmount());
+            InMemoryMarketMatchHandler.updateOrder(opponentOrder, quantity, ts.getOpponentExecuteAmount());
         }
     }
 
@@ -59,25 +59,19 @@ public class InMemoryMarketMatchHandler implements MatchHandler {
      *
      * @param order
      *         订单
-     * @param executePrice
-     *         成交价
      * @param executeQuantity
      *         成交量
      */
     public static void updateOrder(Order order,
-                                   BigDecimal executePrice,
-                                   BigDecimal executeQuantity) {
+                                   BigDecimal executeQuantity,
+                                   BigDecimal amount) {
 
         switch (order.getType()) {
             case MARKET: {
-                // 计算成交总金额 = 单价 * 成交量
-                BigDecimal totalAmount = executePrice.multiply(executeQuantity)
-                                                     .setScale(8, RoundingMode.DOWN);
-
                 // 如果买入单则扣除成交总金额
                 if (order.isBuy()) {
-                    order.incExecutedAmount(totalAmount);
-                    order.decLeavesAmount(totalAmount);
+                    order.incExecutedAmount(amount);
+                    order.decLeavesAmount(amount);
 
                     // 记录已经成交的数量
                     order.incExecutedQuality(executeQuantity);
@@ -89,7 +83,7 @@ public class InMemoryMarketMatchHandler implements MatchHandler {
                     order.decLeavesQuality(executeQuantity);
 
                     // 记录已经获得的金额
-                    order.incExecutedAmount(totalAmount);
+                    order.incExecutedAmount(amount);
                 }
                 break;
             }

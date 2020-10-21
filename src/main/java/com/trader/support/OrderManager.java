@@ -3,6 +3,7 @@ package com.trader.support;
 import com.trader.entity.Order;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -26,7 +27,7 @@ public class OrderManager {
      *         订单对象
      */
     public void addOrder(Order order) {
-        this.orderCheck(Objects.requireNonNull(order));
+//        this.orderCheck(Objects.requireNonNull(order));
         this.orderMap.put(order.getId(), order);
     }
 
@@ -93,7 +94,9 @@ public class OrderManager {
             }
 
             // 总金额 = 数量 * 单价
-            BigDecimal totalAmount = order.getQuantity().multiply(order.getPrice());
+            BigDecimal totalAmount = order.getQuantity()
+                                          .multiply(order.getPrice())
+                                          .setScale(8, RoundingMode.DOWN);
             if (totalAmount.compareTo(order.getTotalAmount()) != 0) {
                 throw new IllegalArgumentException("[限价][买入]订单总金额 != 数量 x 单价");
             }

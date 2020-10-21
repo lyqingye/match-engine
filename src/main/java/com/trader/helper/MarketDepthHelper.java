@@ -5,10 +5,8 @@ import com.trader.market.entity.MarketDepthChart;
 import com.trader.market.entity.MarketDepthInfo;
 
 import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.TreeMap;
+import java.math.RoundingMode;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -40,6 +38,11 @@ public class MarketDepthHelper {
                                 .entrySet()
                                 .stream()
                                 .flatMap((entry) -> Stream.of(combineTrx(entry.getKey(), entry.getValue())))
+                                .filter(e -> {
+                                    return e.getLeaves()
+                                            .setScale(6, RoundingMode.DOWN)
+                                            .compareTo(BigDecimal.ZERO) > 0;
+                                })
                                 .limit(limit)
                                 .sorted(comparator)
                                 .collect(Collectors.toList());

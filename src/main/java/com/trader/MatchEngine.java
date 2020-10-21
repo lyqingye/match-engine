@@ -273,9 +273,6 @@ public class MatchEngine {
             Matcher matcher = this.lookupMatcher(order, best);
 
             if (matcher == null) {
-                if (best.isStopOrder() || best.isLimitOrder()) {
-                    return;
-                }
                 continue;
             }
 
@@ -334,7 +331,6 @@ public class MatchEngine {
                 } catch (Exception e) {
                     order.rollback(snap_order);
                     best.rollback(snap_best);
-
                     if (isEnableLog) {
                         System.out.println(String.format("[MatchEngine]: 撮合发生异常 %s", e.getMessage()));
                     }

@@ -37,8 +37,8 @@ public class InMemoryLimitMatchHandler implements MatchHandler {
     @Override
     public void onExecuteOrder(Order order,
                                Order opponentOrder, TradeResult ts) throws Exception {
-        InMemoryLimitMatchHandler.executeOrder(order, ts);
-        InMemoryLimitMatchHandler.executeOrder(opponentOrder, ts);
+        InMemoryLimitMatchHandler.executeOrder(order, ts, ts.getExecuteAmount());
+        InMemoryLimitMatchHandler.executeOrder(opponentOrder, ts, ts.getOpponentExecuteAmount());
     }
 
     /**
@@ -50,12 +50,12 @@ public class InMemoryLimitMatchHandler implements MatchHandler {
      * @param ts
      *         撮合结果
      */
-    public static void executeOrder(Order order, TradeResult ts) {
+    public static void executeOrder(Order order, TradeResult ts, BigDecimal amount) {
 
         switch (order.getType()) {
             case STOP:
             case LIMIT: {
-                InMemoryLimitMatchHandler.updateOrder(order, ts.getExecutePrice(), ts.getQuantity());
+                InMemoryLimitMatchHandler.updateOrder(order, ts.getQuantity(), amount);
                 break;
             }
             default: {
@@ -75,16 +75,13 @@ public class InMemoryLimitMatchHandler implements MatchHandler {
      *         成交数量
      */
     public static void updateOrder(Order order,
-                                   BigDecimal executePrice,
-                                   BigDecimal executeQuantity) {
-        BigDecimal executeAmount = executePrice
-                .multiply(executeQuantity)
-                .setScale(8, RoundingMode.DOWN);
+                                   BigDecimal executeQuantity,
+                                   BigDecimal amount) {
         if (order.isBuy()) {
             // 限价买单
 
-            order.decLeavesAmount(executeAmount);
-            order.incExecutedAmount(executeAmount);
+            order.decLeavesAmount(amount);
+            order.incExecutedAmount(amount);
 
             // 买单需要记录已经获得的数量
             order.incExecutedQuality(executeQuantity);
@@ -96,7 +93,7 @@ public class InMemoryLimitMatchHandler implements MatchHandler {
             order.decLeavesQuality(executeQuantity);
 
             // 卖单需要记录已经获得的金钱
-            order.incExecutedAmount(executeAmount);
+            order.incExecutedAmount(amount);
         }
     }
 }

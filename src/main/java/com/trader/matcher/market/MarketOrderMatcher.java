@@ -124,7 +124,16 @@ public class MarketOrderMatcher implements Matcher {
             return false;
         }
 
-        return arbitrage;
+
+        TradeResult ts = this.doTrade(order, opponentOrder);
+        BigDecimal amount = ts.getQuantity()
+                              .multiply(ts.getExecutePrice())
+                              .setScale(8, BigDecimal.ROUND_DOWN);
+        if (amount.compareTo(BigDecimal.ZERO) == 0) {
+            return false;
+        }
+
+        return true;
     }
 
 

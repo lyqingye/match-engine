@@ -10,6 +10,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.parsetools.RecordParser;
 import org.junit.Test;
 
+import java.math.BigDecimal;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -62,9 +63,10 @@ public class NetTest {
         new MarketPublishHandler(tcpMarketPublishClient);
 
         Thread.sleep(5000);
-        MatchEngine engine = new MatchEngine();
-        engine.getMarketMgr()
-              .tryToInitMarketPrice(configClient::getMarketPriceSync);
+        configClient.updateMarketPriceSync("OEG-USDT", BigDecimal.ONE);
+//        MatchEngine engine = new MatchEngine();
+//        engine.getMarketMgr()
+//              .tryToInitMarketPrice(configClient::getMarketPriceSync);
 
 //        Map<String, String> price = configClient.getMarketPriceSync();
 //        System.out.println(price);

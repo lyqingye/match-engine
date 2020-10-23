@@ -6,7 +6,9 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
+import io.vertx.core.json.JsonObject;
 
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -22,7 +24,7 @@ public class MarketConfigHttpClient {
     /**
      * vertx
      */
-    private Vertx vertx;
+    protected Vertx vertx;
 
     /**
      * 地址
@@ -65,6 +67,55 @@ public class MarketConfigHttpClient {
                 handler.handle(Future.succeededFuture(body.toJsonObject().mapTo(Map.class)));
             });
         });
+    }
+
+    /**
+     * 更新市场价格
+     *
+     * @param symbol
+     *         交易对
+     * @param price
+     *         价格
+     * @param handler
+     *         返回值回调
+     */
+    public void updateMarketPriceAsync(String symbol, BigDecimal price,
+                                       Handler<AsyncResult<Void>> handler) {
+        JsonObject data = new JsonObject();
+        data.put("symbol", symbol);
+        data.put("price", price);
+        client.put("/market/price", response -> {
+            response.bodyHandler(body -> {
+                handler.handle(Future.succeededFuture());
+            });
+        }).write(data.encode()).end();
+    }
+
+    /**
+     * 更新市场价格
+     *
+     * @param symbol
+     *         交易对
+     * @param price
+     *         价格
+     */
+    public void updateMarketPriceSync(String symbol, BigDecimal price) {
+        AtomicReference<CountDownLatch> monitor = new AtomicReference<>(new CountDownLatch(1));
+        JsonObject data = new JsonObject();
+        data.put("symbol", symbol);
+        data.put("price", price.toPlainString());
+        String encode = data.encode();
+        client.put("/market/price", response -> {
+            response.bodyHandler(body -> {
+                monitor.get().countDown();
+            });
+        }).putHeader("Content-Length", String.valueOf(encode.length()))
+              .write(encode).end();
+        try {
+            monitor.get().await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     /**

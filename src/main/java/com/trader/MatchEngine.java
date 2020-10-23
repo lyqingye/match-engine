@@ -150,20 +150,24 @@ public class MatchEngine {
             throw new TradeException("非法订单ID");
         }
         Order order = this.orderMgr.getOrder(orderId);
-        synchronized (order.getId()) {
-            if (order.isCanceled()) {
-                throw new TradeException("该订单已经取消");
-            }
-            if (order.isFinished()) {
-                throw new TradeException("该订单已经结束");
-            }
 
-            // 设置订单取消标记位
-            order.markCanceled();
+        if (order != null) {
+            synchronized (order.getId()) {
+                if (order.isCanceled()) {
+                    return;
+                }
 
-            // 添加进队列等待取消
-            order.setCmd(Cmd.CANCEL_ORDER);
-            this.addOrder(order);
+                if (order.isFinished()) {
+                    return;
+                }
+
+                // 设置订单取消标记位
+                order.markCanceled();
+
+                // 添加进队列等待取消
+                order.setCmd(Cmd.CANCEL_ORDER);
+                this.addOrder(order);
+            }
         }
     }
 
@@ -201,6 +205,7 @@ public class MatchEngine {
         // 如果为取消订单
         if (order.isCancelCmd()) {
             book.removeOrder(order);
+            orderMgr.removeOrder(order);
             this.executeOrderCancel(order);
         }
     }

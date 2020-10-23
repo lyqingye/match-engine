@@ -23,6 +23,7 @@ public interface MatchingContext {
      *
      * @return 撮合引擎
      */
+    @Deprecated
     MatchEngine getEngine();
 
     /**

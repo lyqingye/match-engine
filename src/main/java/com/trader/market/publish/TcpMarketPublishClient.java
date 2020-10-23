@@ -21,7 +21,6 @@ import java.util.function.Consumer;
  * @author yjt
  * @since 2020/10/10 下午6:51
  */
-@Slf4j
 public class TcpMarketPublishClient implements MarketPublishClient {
     /**
      * 域名

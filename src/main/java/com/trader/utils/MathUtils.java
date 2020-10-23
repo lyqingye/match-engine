@@ -1,9 +1,6 @@
 package com.trader.utils;
 
-import org.apache.commons.lang3.RandomUtils;
-
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 /**
  * @author yjt
@@ -39,23 +36,5 @@ public final class MathUtils {
             return a;
         }
         return b;
-    }
-
-    /**
-     * 区间取随机值
-     *
-     * @param startInclusive
-     *         >=
-     * @param endInclusive
-     *         <=
-     *
-     * @return 随机值
-     */
-    public static BigDecimal random(BigDecimal startInclusive,
-                                    BigDecimal endInclusive) {
-        double randomDouble = RandomUtils.nextDouble(startInclusive.doubleValue(),
-                                                     endInclusive.doubleValue());
-        return BigDecimal.valueOf(randomDouble)
-                         .setScale(8, RoundingMode.DOWN);
     }
 }

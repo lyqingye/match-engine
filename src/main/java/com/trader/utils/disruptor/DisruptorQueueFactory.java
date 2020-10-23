@@ -6,6 +6,7 @@ import com.lmax.disruptor.dsl.Disruptor;
 import com.lmax.disruptor.dsl.ProducerType;
 
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 /**
  * @author yjt
@@ -17,6 +18,18 @@ public class DisruptorQueueFactory {
                                                     AbstractDisruptorConsumer<T> consumer) {
         Disruptor<ObjectEvent<T>> disruptor = new Disruptor<>(new ObjectEventFactory<T>(),
                                                               queueSize, Executors.defaultThreadFactory(),
+                                                              ProducerType.MULTI,
+                                                              new BlockingWaitStrategy());
+        disruptor.handleEventsWith(consumer)
+                 .then((event, sequence, endOfBatch) -> event.clear());
+        return new DisruptorQueue<T>(disruptor);
+    }
+
+    public static <T> DisruptorQueue<T> createQueue(int queueSize,
+                                                    ThreadFactory threadFactory,
+                                                    AbstractDisruptorConsumer<T> consumer) {
+        Disruptor<ObjectEvent<T>> disruptor = new Disruptor<>(new ObjectEventFactory<T>(),
+                                                              queueSize, threadFactory,
                                                               ProducerType.MULTI,
                                                               new BlockingWaitStrategy());
         disruptor.handleEventsWith(consumer)

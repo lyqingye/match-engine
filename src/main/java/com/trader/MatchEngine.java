@@ -317,11 +317,6 @@ public class MatchEngine {
             Order snap_order = order.snap();
             Order snap_best = best.snap();
 
-            if (this.isEnableLog) {
-                System.out.println(book.render_bid_ask());
-                System.out.println(book.render_depth_chart());
-            }
-
             //
             // 处理订单撮合结果
             //

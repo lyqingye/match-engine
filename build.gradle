@@ -65,8 +65,5 @@ dependencies {
     compile 'com.lmax:disruptor:3.4.2'
 
     // 方便调试
-    compile 'de.vandermeer:asciitable:0.3.2'
-
-
-
+//    compile 'de.vandermeer:asciitable:0.3.2'
 }

@@ -3,6 +3,8 @@ package com.trader.support;
 import com.trader.entity.Order;
 import com.trader.entity.OrderBook;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -53,5 +55,29 @@ public class OrderBookManager {
             newBook.setSymbolId(key);
             return newBook;
         });
+    }
+
+    /**
+     * 该订单簿是否支持该订单
+     *
+     * @param order
+     *         订单
+     *
+     * @return 是否支持
+     */
+    public boolean isSupport(Order order) {
+        return bookMap.containsKey(order.getSymbol());
+    }
+
+    /**
+     * 获取所有订单簿
+     *
+     * @return 所有订单簿
+     */
+    public Collection<OrderBook> listBooks() {
+        if (bookMap.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return bookMap.values();
     }
 }

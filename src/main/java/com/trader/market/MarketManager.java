@@ -14,7 +14,6 @@ import com.trader.support.OrderBookManager;
 import com.trader.utils.SymbolUtils;
 import com.trader.utils.ThreadPoolUtils;
 import io.vertx.core.json.JsonObject;
-import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -30,7 +29,6 @@ import java.util.function.Supplier;
  * @author yjt
  * @since 2020/9/18 下午4:34
  */
-@Slf4j
 public class MarketManager implements MatchHandler {
 
     /**
@@ -175,11 +173,6 @@ public class MarketManager implements MatchHandler {
                 PriceChangeMessage msg = json.mapTo(PriceChangeMessage.class);
                 if (msg != null &&
                         Boolean.TRUE.equals(msg.getThird())) {
-
-                    if (log.isDebugEnabled()) {
-                        log.debug("[MarketEngine]: recv msg, [{}] {} {} {}",
-                                  type, msg.getSymbol(), msg.getPrice().toPlainString(), msg.getThird());
-                    }
                     System.out.println(String.format("[MarketEngine]: recv msg: [%s] {%s} {%s}",
                                                      type.name(), msg.getSymbol(), msg.getPrice().toPlainString()));
 

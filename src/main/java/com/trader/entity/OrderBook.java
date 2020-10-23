@@ -29,6 +29,11 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class OrderBook {
 
     /**
+     * 订单簿权重, 当权重越高该订单簿撮合性能越快
+     */
+    private int weight;
+
+    /**
      * 交易对
      */
     private String symbolId;

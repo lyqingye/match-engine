@@ -35,4 +35,11 @@ public class DisruptorQueue<T> {
             this.ringBuffer.publish(sequence);
         }
     }
+
+    /**
+     * 销毁队列
+     */
+    public void shutdown() {
+        disruptor.shutdown();
+    }
 }

@@ -19,7 +19,6 @@ public abstract class AbstractDisruptorConsumer<T> implements EventHandler<Objec
     @Override
     public void onEvent(ObjectEvent<T> event) throws Exception {
         this.process(event.getObj());
-//        event.clear();
     }
 
     /**

@@ -33,6 +33,7 @@ public class OrderBookManager {
      *
      * @return 账本
      */
+    @Deprecated
     public OrderBook getBook(Order order) {
         return bookMap.computeIfAbsent(order.getSymbol(), key -> {
             OrderBook newBook = new OrderBook();
@@ -44,13 +45,13 @@ public class OrderBookManager {
     /**
      * 根据订单获取该订单所在的账本
      *
-     * @param symbolId
-     *         交易对
+     * @param identity
+     *         唯一标识
      *
      * @return 账本
      */
-    public OrderBook getBook(String symbolId) {
-        return bookMap.computeIfAbsent(symbolId, key -> {
+    public OrderBook getBook(String identity) {
+        return bookMap.computeIfAbsent(identity, key -> {
             OrderBook newBook = new OrderBook();
             newBook.setSymbolId(key);
             return newBook;
@@ -65,6 +66,7 @@ public class OrderBookManager {
      *
      * @return 是否支持
      */
+    @Deprecated
     public boolean isSupport(Order order) {
         return bookMap.containsKey(order.getSymbol());
     }

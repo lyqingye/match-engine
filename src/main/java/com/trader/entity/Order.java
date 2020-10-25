@@ -27,6 +27,13 @@ public class Order {
     private Cmd cmd = Cmd.ADD_ORDER;
 
     /**
+     * 订单种类
+     * + 用户下单
+     * + 机器人下单
+     */
+    private Category category = Category.USER;
+
+    /**
      * 订单ID
      */
     private String id;
@@ -389,4 +396,5 @@ public class Order {
     public String getSymbol() {
         return SymbolUtils.makeSymbol(coinId, currencyId);
     }
+
 }

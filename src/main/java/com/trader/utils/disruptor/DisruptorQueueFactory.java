@@ -20,8 +20,7 @@ public class DisruptorQueueFactory {
                                                               queueSize, Executors.defaultThreadFactory(),
                                                               ProducerType.MULTI,
                                                               new BlockingWaitStrategy());
-        disruptor.handleEventsWith(consumer)
-                 .then((event, sequence, endOfBatch) -> event.clear());
+        disruptor.handleEventsWith(consumer);
         return new DisruptorQueue<T>(disruptor);
     }
 
@@ -32,8 +31,7 @@ public class DisruptorQueueFactory {
                                                               queueSize, threadFactory,
                                                               ProducerType.MULTI,
                                                               new BlockingWaitStrategy());
-        disruptor.handleEventsWith(consumer)
-                 .then((event, sequence, endOfBatch) -> event.clear());
+        disruptor.handleEventsWith(consumer);
         return new DisruptorQueue<T>(disruptor);
     }
 }

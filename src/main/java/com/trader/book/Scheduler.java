@@ -12,12 +12,10 @@ import com.trader.entity.OrderBook;
 public interface Scheduler {
 
     /**
-     * 提交需要调度的订单及订单簿
+     * 提交需要调度的订单
      *
      * @param order
      *         订单
-     * @param book
-     *         订单簿
      */
-    void submit(Order order, OrderBook book);
+    void submit(Order order);
 }

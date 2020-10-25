@@ -2,6 +2,7 @@ package com.trader.book;
 
 import com.trader.entity.Order;
 import com.trader.entity.OrderBook;
+import com.trader.support.OrderBookManager;
 
 /**
  * 订单路由, 主要职责是负责将所给的订单映射到指定的订单簿
@@ -34,4 +35,6 @@ public interface OrderRouter {
      * @return 订单簿 or null 如果没有合适的订单
      */
     OrderBook mapTo(Order order);
+
+
 }

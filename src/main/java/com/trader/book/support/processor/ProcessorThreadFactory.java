@@ -1,9 +1,11 @@
 package com.trader.book.support.processor;
 
+import com.trader.book.OrderRouter;
 import com.trader.entity.OrderBook;
 import com.trader.support.OrderBookManager;
 
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -14,13 +16,9 @@ public class ProcessorThreadFactory implements ThreadFactory {
     private final ThreadGroup group;
     private final String name;
 
-    ProcessorThreadFactory(OrderBookManager bookMgr) {
+    ProcessorThreadFactory(String name) {
         SecurityManager securityManager = System.getSecurityManager();
         this.group = securityManager != null ? securityManager.getThreadGroup() : Thread.currentThread().getThreadGroup();
-        String name = bookMgr.listBooks()
-                             .stream()
-                             .map(OrderBook::getSymbolId)
-                             .collect(Collectors.joining(",", "[", "]"));
         this.name = "match-processor:" + name;
     }
 

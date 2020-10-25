@@ -1,5 +1,6 @@
 package com.trader.book.support.scheduler;
 
+import com.trader.MatchHandler;
 import com.trader.book.OrderRouter;
 import com.trader.book.Scheduler;
 import com.trader.book.support.processor.GenericProcessor;
@@ -8,7 +9,6 @@ import com.trader.market.MarketManager;
 import com.trader.matcher.MatcherManager;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -41,6 +41,11 @@ public class GenericScheduler implements Scheduler {
     private MarketManager marketMgr;
 
     /**
+     * 撮合结果处理器
+     */
+    private MatchHandler matchHandler;
+
+    /**
      * 最大处理器个数
      */
     private int maxNumOfProcessors;
@@ -48,11 +53,13 @@ public class GenericScheduler implements Scheduler {
     public GenericScheduler(OrderRouter router,
                             MatcherManager matcherMgr,
                             MarketManager marketMgr,
+                            MatchHandler matchHandler,
                             int maxNumOfProcessors) {
         this.maxNumOfProcessors = maxNumOfProcessors;
         this.router = Objects.requireNonNull(router);
         this.matcherMgr = Objects.requireNonNull(matcherMgr);
         this.marketMgr = Objects.requireNonNull(marketMgr);
+        this.matchHandler  = Objects.requireNonNull(matchHandler);
         this.processorCache = new HashMap<>(maxNumOfProcessors);
     }
 
@@ -82,6 +89,7 @@ public class GenericScheduler implements Scheduler {
                                                  matcherMgr,
                                                  marketMgr,
                                                  64);
+                processor.regHandler(matchHandler);
             }
             processorCache.put(order.getSymbol(),
                                processor);

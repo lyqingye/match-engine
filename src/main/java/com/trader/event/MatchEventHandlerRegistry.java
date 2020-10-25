@@ -25,7 +25,7 @@ public class MatchEventHandlerRegistry {
      * @param h
      *         {@link MatchHandler}
      */
-    public void addHandler(MatchHandler h) {
+    public void regHandler(MatchHandler h) {
         Objects.requireNonNull(h, "handler is null");
         this.handlers.add(h);
 

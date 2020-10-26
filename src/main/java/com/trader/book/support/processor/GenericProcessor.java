@@ -154,7 +154,7 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
          */
         @Override
         public void process(Order order) {
-            OrderBook book = router.mapTo(order);
+            OrderBook book = router.routeTo(order);
 
             // 如果为添加订单
             if (order.isAddCmd()) {
@@ -398,7 +398,7 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
         @Override
         public void onMarketPriceChange(String symbol,
                                         BigDecimal latestPrice, boolean third) {
-            Collection<OrderBook> books = router.mapTo(symbol);
+            Collection<OrderBook> books = router.routeToNeedToActiveBook(symbol);
             if (books.isEmpty()) {
                 return;
             }
@@ -412,7 +412,6 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
                                                                      "triggerPrice: [%s] latestPrice: [%s]",
                                                              bid.getId(), bid.getSide().name(),
                                                              bid.getTriggerPrice().toPlainString(), latestPrice.toPlainString()));
-
                             bid.setCmd(Cmd.ACTIVE_ORDER);
                             bid.setActivated(ActivateStatus.ACTIVATING);
                             exec(bid);

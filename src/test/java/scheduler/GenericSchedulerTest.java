@@ -8,7 +8,6 @@ import com.trader.factory.OrderFactory;
 import com.trader.handler.ExampleLoggerHandler;
 import com.trader.market.MarketManager;
 import com.trader.matcher.MatcherManager;
-import com.trader.support.OrderBookManager;
 import org.junit.Test;
 
 import java.math.BigDecimal;
@@ -22,9 +21,10 @@ public class GenericSchedulerTest {
 
     @Test
     public void testProcessorMapping () {
-        final GenericScheduler scheduler = new GenericScheduler(new GenericOrderRouter(),
+        GenericOrderRouter router = new GenericOrderRouter();
+        final GenericScheduler scheduler = new GenericScheduler(router,
                                                                 new MatcherManager(),
-                                                                new MarketManager(new OrderBookManager()),
+                                                                new MarketManager(router),
                                                                 new ExampleLoggerHandler(), 4);
         final Order order = OrderFactory.limit()
                                         .buy("1", "BTC", "USDT")

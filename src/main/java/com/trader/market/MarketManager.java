@@ -1,6 +1,7 @@
 package com.trader.market;
 
 import com.trader.MatchHandler;
+import com.trader.book.OrderRouter;
 import com.trader.entity.Order;
 import com.trader.entity.OrderBook;
 import com.trader.helper.tuples.Tuple;
@@ -10,7 +11,6 @@ import com.trader.market.publish.msg.Message;
 import com.trader.market.publish.msg.MessageType;
 import com.trader.market.publish.msg.PriceChangeMessage;
 import com.trader.matcher.TradeResult;
-import com.trader.support.OrderBookManager;
 import com.trader.utils.SymbolUtils;
 import com.trader.utils.ThreadPoolUtils;
 import io.vertx.core.json.JsonObject;
@@ -32,15 +32,14 @@ import java.util.function.Supplier;
 public class MarketManager implements MatchHandler {
 
     /**
-     * 账本管理器
-     */
-    private OrderBookManager orderBookManager;
-
-    /**
      * 市场事件处理器
      */
     private List<MarketEventHandler> handlers = new ArrayList<>(16);
 
+    /**
+     * 订单路由
+     */
+    private OrderRouter router;
 
     /**
      * hide default constructor
@@ -49,8 +48,8 @@ public class MarketManager implements MatchHandler {
     }
 
 
-    public MarketManager(OrderBookManager orderBookManager) {
-        this.orderBookManager = Objects.requireNonNull(orderBookManager);
+    public MarketManager(OrderRouter router) {
+        this.router = Objects.requireNonNull(router);
     }
 
     /**
@@ -62,7 +61,7 @@ public class MarketManager implements MatchHandler {
      * @return 市场价格
      */
     public BigDecimal getMarketPrice(Order order) {
-        OrderBook book = orderBookManager.getBook(order);
+        OrderBook book = router.routeToBookForQueryPrice(order);
         return book.getLastTradePrice();
     }
 
@@ -75,7 +74,7 @@ public class MarketManager implements MatchHandler {
      * @return 市场价格
      */
     public BigDecimal getMarketPrice(String symbol) {
-        OrderBook book = orderBookManager.getBook(symbol);
+        OrderBook book = router.routeToBookForQueryPrice(symbol);
         return book.getLastTradePrice();
     }
 
@@ -90,7 +89,7 @@ public class MarketManager implements MatchHandler {
      * @return 市场价格
      */
     public BigDecimal getMarketPrice(String coinId, String currencyId) {
-        OrderBook book = orderBookManager.getBook(SymbolUtils.makeSymbol(coinId, currencyId));
+        OrderBook book = router.routeToBookForQueryPrice(SymbolUtils.makeSymbol(coinId, currencyId));
         return book.getLastTradePrice();
     }
 
@@ -105,7 +104,7 @@ public class MarketManager implements MatchHandler {
     public List<BigDecimal> getMarketPriceBatch(List<Tuple<String, String>> symbol) {
         List<BigDecimal> result = new ArrayList<>(16);
         for (Tuple<String, String> tuple : symbol) {
-            OrderBook book = orderBookManager.getBook(SymbolUtils.makeSymbol(tuple));
+            OrderBook book = router.routeToBookForQueryPrice(SymbolUtils.makeSymbol(tuple));
             BigDecimal price = book.getLastTradePrice();
             if (price == null) {
                 result.add(BigDecimal.ZERO);
@@ -144,8 +143,9 @@ public class MarketManager implements MatchHandler {
                     //
                     // 更新最新市场价到订单簿
                     //
-                    this.orderBookManager.getBook(symbol)
-                                         .updateLastTradePrice(new BigDecimal(price));
+                    BigDecimal p = new BigDecimal(price);
+                    router.routeToNeedToUpdatePriceBook(symbol)
+                          .forEach(book -> book.updateLastTradePrice(p));
                     System.out.println(String.format("[MarketEngine]: sync init market price [%s] : [%s]",
                                                      symbol, price));
                 });
@@ -160,9 +160,13 @@ public class MarketManager implements MatchHandler {
      *         缓冲区
      */
     private void onThirdMarketData(JsonObject json) {
-        if (json == null) return;
+        if (json == null) {
+            return;
+        }
         MessageType type = Message.getTypeFromJson(json);
-        if (type == null) return;
+        if (type == null) {
+            return;
+        }
         json = json.getJsonObject("data");
         switch (type) {
             //
@@ -174,12 +178,11 @@ public class MarketManager implements MatchHandler {
                         Boolean.TRUE.equals(msg.getThird())) {
                     System.out.println(String.format("[MarketEngine]: recv msg: [%s] {%s} {%s}",
                                                      type.name(), msg.getSymbol(), msg.getPrice().toPlainString()));
-
                     //
                     // 更新最新市场价到订单簿
                     //
-                    this.orderBookManager.getBook(msg.getSymbol())
-                                         .updateLastTradePrice(msg.getPrice());
+                    router.routeToNeedToUpdatePriceBook(msg.getSymbol())
+                          .forEach(book -> book.updateLastTradePrice(msg.getPrice()));
 
                     // 触发事件
                     this.syncExecuteHandler(h -> {
@@ -249,8 +252,12 @@ public class MarketManager implements MatchHandler {
         }
 
         // 当有订单添加进来的时候, 会影响盘口的变动
+        OrderBook book = router.routeToBookForSendDepthChart(newOrder);
 
-        OrderBook book = orderBookManager.getBook(newOrder);
+        if (book == null) {
+            return;
+        }
+
         final MarketDepthChartSeries series = book.snapSeries(20);
         // 异步处理市场管理器事件
         this.syncExecuteHandler((h) -> {
@@ -277,7 +284,12 @@ public class MarketManager implements MatchHandler {
                                Order opponentOrder,
                                TradeResult ts) throws Exception {
         // 当有最新订单成交的时候, 需要更新最后一条成交价格
-        OrderBook book = orderBookManager.getBook(order);
+        OrderBook book = router.routeToBookForSendDepthChart(order);
+
+        if (book == null) {
+            return;
+        }
+
         final MarketDepthChartSeries series = book.snapSeries(20);
 
         // 更新成交价价
@@ -315,7 +327,12 @@ public class MarketManager implements MatchHandler {
      */
     @Override
     public void onOrderCancel(Order removed) {
-        OrderBook book = orderBookManager.getBook(removed);
+        OrderBook book = router.routeToBookForSendDepthChart(removed);
+
+        if (book == null) {
+            return;
+        }
+
         final MarketDepthChartSeries series = book.snapSeries(20);
 
         // 异步处理市场管理器事件
@@ -334,7 +351,12 @@ public class MarketManager implements MatchHandler {
      */
     @Override
     public void onActiveStopOrder(Order stopOrder) throws Exception {
-        OrderBook book = orderBookManager.getBook(stopOrder);
+        OrderBook book = router.routeToBookForSendDepthChart(stopOrder);
+
+        if (book == null) {
+            return;
+        }
+
         final MarketDepthChartSeries series = book.snapSeries(20);
 
         // 异步处理市场管理器事件

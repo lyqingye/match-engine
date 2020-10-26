@@ -6,15 +6,13 @@ import com.trader.def.Cmd;
 import com.trader.entity.Order;
 import com.trader.exception.TradeException;
 import com.trader.market.MarketManager;
-import com.trader.support.OrderBookManager;
 import com.trader.support.OrderManager;
 import com.trader.utils.disruptor.AbstractDisruptorConsumer;
 import com.trader.utils.disruptor.DisruptorQueue;
 import com.trader.utils.disruptor.DisruptorQueueFactory;
 import lombok.Getter;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Objects;
 
 /**
  * TODO:
@@ -39,22 +37,6 @@ public class MatchEngine {
     private volatile boolean isEnableLog = false;
 
     /**
-     * 处理器列表
-     */
-    private List<MatchHandler> handlers = new ArrayList<>(16);
-
-    /**
-     * 撮合匹配器
-     */
-    private List<Matcher> matchers = new ArrayList<>(16);
-
-    /**
-     * 账本管理器
-     */
-    @Getter
-    private OrderBookManager bookMgr;
-
-    /**
      * 订单管理器
      */
     @Getter
@@ -69,11 +51,13 @@ public class MatchEngine {
     /**
      * 调度器
      */
+    @Getter
     private Scheduler scheduler;
 
     /**
      * 路由
      */
+    @Getter
     private OrderRouter router;
 
     /**
@@ -81,16 +65,18 @@ public class MatchEngine {
      */
     private DisruptorQueue<Order> addOrderQueue;
 
-    public MatchEngine() {
+    public MatchEngine(OrderRouter router,
+                       Scheduler scheduler) {
         this.orderMgr = new OrderManager();
-        this.bookMgr = new OrderBookManager();
-        this.marketMgr = new MarketManager(bookMgr);
+        this.router = Objects.requireNonNull(router);
+        this.scheduler = Objects.requireNonNull(scheduler);
+        this.marketMgr = new MarketManager(router);
 
         // 创建下单队列
         this.addOrderQueue = DisruptorQueueFactory.createQueue(2 << 16, new AbstractDisruptorConsumer<Order>() {
             @Override
             public void process(Order event) {
-
+                scheduler.submit(event);
             }
         });
     }

@@ -24,7 +24,7 @@ public class TestLimitOrderMatch  {
 
     @Before
     public void before () {
-        engine = new MatchEngine();
+//        engine = new MatchEngine();
 //        engine.addHandler(new InMemoryLimitMatchHandler());
 //        engine.addHandler(new InMemoryMarketMatchHandler());
 //        engine.addHandler(new ExampleLoggerHandler());

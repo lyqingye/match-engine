@@ -24,7 +24,7 @@ public class ProcessorThreadFactory implements ThreadFactory {
     public void rename(String name, String newName) {
         if (threadMap.containsKey(name)) {
             Thread tr = threadMap.get(name);
-            tr.setName("match-processor:" + newName);
+            tr.setName("Match-Processor: " + newName);
             threadMap.remove(name);
             threadMap.put(newName, tr);
         }
@@ -32,7 +32,7 @@ public class ProcessorThreadFactory implements ThreadFactory {
 
     @Override
     public Thread newThread(Runnable var1) {
-        String trName = "match-processor:" + name;
+        String trName = "Match-processor: " + name;
         Thread var2 = new Thread(this.group, var1, trName, 0L);
         if (var2.isDaemon()) {
             var2.setDaemon(false);

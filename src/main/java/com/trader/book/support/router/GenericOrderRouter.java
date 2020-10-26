@@ -35,7 +35,7 @@ public class GenericOrderRouter implements OrderRouter {
     }
 
     @Override
-    public OrderBook mapTo(Order order) {
+    public OrderBook routeTo(Order order) {
         return bookCache.computeIfAbsent(order.getSymbol(), k -> {
             final OrderBook newBook = new OrderBook();
             newBook.setSymbolId(k);
@@ -44,19 +44,79 @@ public class GenericOrderRouter implements OrderRouter {
     }
 
     /**
-     * 根据交易对进行映射
+     * 给定一个交易对, 当市场价格变动的时候, 根据交易对
+     * 获取需要触发止盈止损订单的订单簿
      *
      * @param symbolId
      *         交易对
      *
-     * @return 订单簿 or null 如果没有合适的订单
+     * @return 订单簿集合
      */
     @Override
-    public Collection<OrderBook> mapTo(String symbolId) {
+    public Collection<OrderBook> routeToNeedToActiveBook(String symbolId) {
         OrderBook book = bookCache.get(symbolId);
         if (book == null) {
             return Collections.emptyList();
         }
         return Collections.singletonList(book);
+    }
+
+    /**
+     * 给定一个交易对, 当市场价格变动的时候, 根据交易对
+     * 获取需要更新最新成交价的订单簿
+     *
+     * @param symbolId
+     *         交易对
+     *
+     * @return 订单簿集合
+     */
+    @Override
+    public Collection<OrderBook> routeToNeedToUpdatePriceBook(String symbolId) {
+        OrderBook book = bookCache.get(symbolId);
+        if (book == null) {
+            return Collections.emptyList();
+        }
+        return Collections.singletonList(book);
+    }
+
+    /**
+     * 给定一个交易对, 返回一个订单簿, 用于第三方调用者查询市场价
+     *
+     * @param symbolId
+     *         交易对
+     *
+     * @return 订单簿
+     */
+    @Override
+    public OrderBook routeToBookForQueryPrice(String symbolId) {
+        return bookCache.get(symbolId);
+    }
+
+    /**
+     * 给定一个订单, 返回该订单实际撮合获取市价的订单簿
+     * 用于撮合过程中, 如果该订单为市价单, 则从该订单簿获取最新成交价
+     *
+     * @param order
+     *         订单
+     *
+     * @return 订单簿
+     */
+    @Override
+    public OrderBook routeToBookForQueryPrice(Order order) {
+        return bookCache.get(order.getSymbol());
+    }
+
+    /**
+     * 给定一个订单, 返回一个订单簿, 当该订单引起盘口变化时
+     * 需要根据该订单获取需要发送的盘口
+     *
+     * @param order
+     *         订单
+     *
+     * @return 订单簿
+     */
+    @Override
+    public OrderBook routeToBookForSendDepthChart(Order order) {
+        return bookCache.get(order.getSymbol());
     }
 }

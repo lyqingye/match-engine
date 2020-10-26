@@ -83,7 +83,7 @@ public class GenericSchedulerTest {
         order5.setCategory(Category.BOT);
 
         scheduler.submit(order5);
-
+        scheduler.submit(order5);
 
         System.out.println();
     }

@@ -1,34 +1,15 @@
 package engine;
 
 import com.trader.MatchEngine;
-import com.trader.def.OrderSide;
-import com.trader.def.OrderTimeInForce;
-import com.trader.def.OrderType;
 import com.trader.entity.Order;
 import com.trader.factory.OrderFactory;
 import com.trader.market.publish.MarketPublishHandler;
 import com.trader.market.publish.TcpMarketPublishClient;
-import com.trader.matcher.limit.InMemoryLimitMatchHandler;
-import com.trader.handler.ExampleLoggerHandler;
-import com.trader.matcher.limit.LimitOrderMatcher;
-import com.trader.matcher.market.InMemoryMarketMatchHandler;
-import com.trader.matcher.market.MarketOrderMatcher;
-import com.trader.utils.SnowflakeIdWorker;
-import helper.CsvOrderReader;
-import junit.extensions.RepeatedTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.annotation.Repeatable;
 import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.TreeSet;
-import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -44,13 +25,12 @@ public class TestLimitOrderMatch  {
     @Before
     public void before () {
         engine = new MatchEngine();
-        engine.addHandler(new InMemoryLimitMatchHandler());
-        engine.addHandler(new InMemoryMarketMatchHandler());
-        engine.addHandler(new ExampleLoggerHandler());
-//        engine.enableLog();
-
-        engine.addMatcher(new LimitOrderMatcher());
-        engine.addMatcher(new MarketOrderMatcher());
+//        engine.addHandler(new InMemoryLimitMatchHandler());
+//        engine.addHandler(new InMemoryMarketMatchHandler());
+//        engine.addHandler(new ExampleLoggerHandler());
+//
+//        engine.addMatcher(new LimitOrderMatcher());
+//        engine.addMatcher(new MarketOrderMatcher());
         engine.enableMatching();
 
         engine.getMarketMgr()

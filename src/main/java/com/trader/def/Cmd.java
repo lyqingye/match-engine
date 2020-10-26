@@ -11,5 +11,6 @@ import lombok.Getter;
 @Getter
 public enum Cmd {
     ADD_ORDER,
-    CANCEL_ORDER
+    CANCEL_ORDER,
+    ACTIVE_ORDER
 }

@@ -9,7 +9,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Date;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * 订单的定义
@@ -137,7 +136,7 @@ public class Order {
     /**
      * 止盈止损激活标志
      */
-    private volatile boolean activated = false;
+    private volatile ActivateStatus activated = ActivateStatus.NO_ACTIVATED;
 
     /**
      * 是否已经被标记为订单已经结束
@@ -262,6 +261,21 @@ public class Order {
         return Cmd.CANCEL_ORDER.equals(this.cmd);
     }
 
+    public boolean isActiveCmd() {
+        return Cmd.ADD_ORDER.equals(this.cmd);
+    }
+
+    public boolean isActivated() {
+        return activated.equals(ActivateStatus.ACTIVATED);
+    }
+
+    public boolean isNotActivated() {
+        return activated.equals(ActivateStatus.NO_ACTIVATED);
+    }
+
+    public boolean isActivating() {
+        return activated.equals(ActivateStatus.ACTIVATING);
+    }
 
     public void markFinished() {
         this.finished = true;

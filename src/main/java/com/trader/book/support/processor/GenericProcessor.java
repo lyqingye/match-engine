@@ -5,10 +5,13 @@ import com.trader.Matcher;
 import com.trader.book.OrderRouter;
 import com.trader.book.Processor;
 import com.trader.context.MatchingContext;
+import com.trader.def.ActivateStatus;
+import com.trader.def.Cmd;
 import com.trader.entity.Order;
 import com.trader.entity.OrderBook;
 import com.trader.event.MatchEventHandlerRegistry;
 import com.trader.exception.TradeException;
+import com.trader.market.MarketEventHandler;
 import com.trader.market.MarketManager;
 import com.trader.matcher.MatcherManager;
 import com.trader.matcher.TradeResult;
@@ -16,10 +19,8 @@ import com.trader.utils.disruptor.AbstractDisruptorConsumer;
 import com.trader.utils.disruptor.DisruptorQueue;
 import com.trader.utils.disruptor.DisruptorQueueFactory;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Objects;
+import java.math.BigDecimal;
+import java.util.*;
 
 /**
  * 通用处理器,负责处理订单
@@ -95,6 +96,9 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
         inputQueue = DisruptorQueueFactory.createQueue(queueSize,
                                                        ptf,
                                                        new OrderProcessor());
+
+        // 止盈止损订单监听处理器
+        marketMgr.addHandler(new StopOrderMarketEventHandler());
     }
 
     public GenericProcessor(String name,
@@ -111,6 +115,9 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
         inputQueue = DisruptorQueueFactory.createQueue(DEFAULT_INPUT_QUEUE_SIZE,
                                                        ptf,
                                                        new OrderProcessor());
+
+        // 止盈止损订单监听处理器
+        marketMgr.addHandler(new StopOrderMarketEventHandler());
     }
 
 
@@ -137,6 +144,7 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
      * 真正的逻辑实现
      */
     class OrderProcessor extends AbstractDisruptorConsumer<Order> {
+
 
         /**
          * 进行数据处理
@@ -168,6 +176,31 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
             if (order.isCancelCmd()) {
                 book.removeOrder(order);
                 executeOrderCancel(order);
+                return;
+            }
+
+            // 如果为激活止盈止损命令
+            if (order.isActiveCmd()) {
+                // 账本激活止盈止损订单
+                // 也就是将止盈利止损订单放入撮合买卖盘
+                book.activeStopOrder(order);
+
+                // 添加订单
+                executeHandler(h -> {
+                    try {
+                        h.onActiveStopOrder(order);
+                    } catch (Exception e) {
+                        order.setActivated(ActivateStatus.NO_ACTIVATED);
+                        // 如果激活订单失败则将该订单从买卖盘中移除
+                        book.removeOrder(order);
+                        throw new TradeException(e.getMessage());
+                    }
+                });
+
+                // 标记订单为已经激活, 止盈止损的订单是另外一条线程（监听市价变动的处理线程）进行检测激活并放入订单事件队列的
+                // 所以在这里我们只是做一个标记处理, 依旧是由监听市价变动的线程进行处理
+                order.setActivated(ActivateStatus.ACTIVATED);
+                matchOrder(book, order);
             }
         }
 
@@ -255,7 +288,6 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
                         e.printStackTrace();
                         order.markCanceled();
                         best.markCanceled();
-                        return;
                     }
                 });
 
@@ -356,6 +388,60 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
 
             public void clearAttrs() {
                 attr.clear();
+            }
+        }
+    }
+
+
+    class StopOrderMarketEventHandler implements MarketEventHandler {
+
+        @Override
+        public void onMarketPriceChange(String symbol,
+                                        BigDecimal latestPrice, boolean third) {
+            Collection<OrderBook> books = router.mapTo(symbol);
+            if (books.isEmpty()) {
+                return;
+            }
+            for (OrderBook book : books) {
+                Iterator<Order> bidIt = book.getBuyStopOrders().iterator();
+                while (bidIt.hasNext()) {
+                    Order bid = bidIt.next();
+                    if (bid.isNotActivated()) {
+                        if (bid.getTriggerPrice().compareTo(latestPrice) >= 0) {
+                            System.out.println(String.format("[MatchEngine]: active stop order, orderId: [%s] side: [%s]" +
+                                                                     "triggerPrice: [%s] latestPrice: [%s]",
+                                                             bid.getId(), bid.getSide().name(),
+                                                             bid.getTriggerPrice().toPlainString(), latestPrice.toPlainString()));
+
+                            bid.setCmd(Cmd.ACTIVE_ORDER);
+                            bid.setActivated(ActivateStatus.ACTIVATING);
+                            exec(bid);
+                        } else {
+                            break;
+                        }
+                    } else if (bid.isActivated()) {
+                        bidIt.remove();
+                    }
+                }
+
+                Iterator<Order> askIt = book.getSellStopOrders().iterator();
+                while (askIt.hasNext()) {
+                    Order ask = askIt.next();
+
+                    if (ask.isNotActivated()) {
+                        if (ask.getTriggerPrice().compareTo(latestPrice) <= 0) {
+                            System.out.println(String.format("[MatchEngine]: active stop order, orderId: [%s] side: [%s]" +
+                                                                     "triggerPrice: [%s] latestPrice: [%s]",
+                                                             ask.getId(), ask.getSide().name(),
+                                                             ask.getTriggerPrice().toPlainString(), latestPrice.toPlainString()));
+                            ask.setCmd(Cmd.ACTIVE_ORDER);
+                            ask.setActivated(ActivateStatus.ACTIVATING);
+                            exec(ask);
+                        }
+                    } else if (ask.isActivated()) {
+                        askIt.remove();
+                    }
+                }
             }
         }
     }

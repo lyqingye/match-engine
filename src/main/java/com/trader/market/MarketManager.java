@@ -51,7 +51,6 @@ public class MarketManager implements MatchHandler {
 
     public MarketManager(OrderBookManager orderBookManager) {
         this.orderBookManager = Objects.requireNonNull(orderBookManager);
-
     }
 
     /**

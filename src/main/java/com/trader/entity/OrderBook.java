@@ -14,7 +14,10 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.TreeSet;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -140,9 +143,6 @@ public class OrderBook {
         } else {
             askOrders.add(stopOrder);
         }
-
-        // 设置订单已经被激活
-        stopOrder.setActivated(true);
     }
 
     /**

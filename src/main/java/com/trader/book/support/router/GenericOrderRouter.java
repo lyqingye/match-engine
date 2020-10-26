@@ -3,8 +3,9 @@ package com.trader.book.support.router;
 import com.trader.book.OrderRouter;
 import com.trader.entity.Order;
 import com.trader.entity.OrderBook;
-import com.trader.support.OrderBookManager;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,5 +41,22 @@ public class GenericOrderRouter implements OrderRouter {
             newBook.setSymbolId(k);
             return newBook;
         });
+    }
+
+    /**
+     * 根据交易对进行映射
+     *
+     * @param symbolId
+     *         交易对
+     *
+     * @return 订单簿 or null 如果没有合适的订单
+     */
+    @Override
+    public Collection<OrderBook> mapTo(String symbolId) {
+        OrderBook book = bookCache.get(symbolId);
+        if (book == null) {
+            return Collections.emptyList();
+        }
+        return Collections.singletonList(book);
     }
 }

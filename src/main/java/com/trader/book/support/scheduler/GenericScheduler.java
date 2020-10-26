@@ -77,7 +77,7 @@ public class GenericScheduler implements Scheduler {
         } else {
             String theProcessorName = order.getSymbol() + ":" + order.getCategory().name();
             // 当前处理器已经满了，则将其映射到任意一个处理器
-            if (processorCache.size() == maxNumOfProcessors) {
+            if (processorCache.size() >= maxNumOfProcessors) {
                 final int idx = order.getSymbol().hashCode() % this.maxNumOfProcessors;
                 processor = (GenericProcessor) processorCache.values()
                                                              .toArray()[idx];

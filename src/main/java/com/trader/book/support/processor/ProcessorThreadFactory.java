@@ -25,6 +25,8 @@ public class ProcessorThreadFactory implements ThreadFactory {
         if (threadMap.containsKey(name)) {
             Thread tr = threadMap.get(name);
             tr.setName("match-processor:" + newName);
+            threadMap.remove(name);
+            threadMap.put(newName, tr);
         }
     }
 

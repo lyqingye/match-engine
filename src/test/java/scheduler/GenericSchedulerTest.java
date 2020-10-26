@@ -2,6 +2,7 @@ package scheduler;
 
 import com.trader.book.support.router.GenericOrderRouter;
 import com.trader.book.support.scheduler.GenericScheduler;
+import com.trader.def.Category;
 import com.trader.entity.Order;
 import com.trader.factory.OrderFactory;
 import com.trader.handler.ExampleLoggerHandler;
@@ -59,17 +60,31 @@ public class GenericSchedulerTest {
                                          .build();
 
         final Order order4 = OrderFactory.limit()
+                                         .buy("1", "KO", "USDT")
+                                         .GTC()
+                                         .quantity(BigDecimal.TEN)
+                                         .spent(BigDecimal.TEN)
+                                         .withUnitPriceOf(BigDecimal.ONE)
+                                         .build();
+        final Order order5 = OrderFactory.limit()
                                          .buy("1", "JPT", "USDT")
                                          .GTC()
                                          .quantity(BigDecimal.TEN)
                                          .spent(BigDecimal.TEN)
                                          .withUnitPriceOf(BigDecimal.ONE)
                                          .build();
+
         scheduler.submit(order);
         scheduler.submit(order1);
         scheduler.submit(order2);
         scheduler.submit(order3);
         scheduler.submit(order4);
+
+        order5.setCategory(Category.BOT);
+
+        scheduler.submit(order5);
+
+
         System.out.println();
     }
 }

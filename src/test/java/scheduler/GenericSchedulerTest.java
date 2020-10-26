@@ -4,6 +4,7 @@ import com.trader.book.support.router.GenericOrderRouter;
 import com.trader.book.support.scheduler.GenericScheduler;
 import com.trader.entity.Order;
 import com.trader.factory.OrderFactory;
+import com.trader.handler.ExampleLoggerHandler;
 import com.trader.market.MarketManager;
 import com.trader.matcher.MatcherManager;
 import com.trader.support.OrderBookManager;
@@ -21,9 +22,9 @@ public class GenericSchedulerTest {
     @Test
     public void testProcessorMapping () {
         final GenericScheduler scheduler = new GenericScheduler(new GenericOrderRouter(),
-                                                                       new MatcherManager(),
-                                                                       new MarketManager(new OrderBookManager()),
-                                                                       4);
+                                                                new MatcherManager(),
+                                                                new MarketManager(new OrderBookManager()),
+                                                                new ExampleLoggerHandler(), 4);
         final Order order = OrderFactory.limit()
                                         .buy("1", "BTC", "USDT")
                                         .GTC()

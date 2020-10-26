@@ -12,7 +12,6 @@ import com.trader.exception.TradeException;
 import com.trader.market.MarketManager;
 import com.trader.matcher.MatcherManager;
 import com.trader.matcher.TradeResult;
-import com.trader.support.OrderBookManager;
 import com.trader.utils.disruptor.AbstractDisruptorConsumer;
 import com.trader.utils.disruptor.DisruptorQueue;
 import com.trader.utils.disruptor.DisruptorQueueFactory;
@@ -71,6 +70,11 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
     private String name;
 
     /**
+     * 线程工厂
+     */
+    private ProcessorThreadFactory ptf;
+
+    /**
      * hide default constructor
      */
     private GenericProcessor() {
@@ -85,10 +89,11 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
         this.router = Objects.requireNonNull(router);
         this.matcherMgr = Objects.requireNonNull(matcherMgr);
         this.marketMgr = marketMgr;
+        this.ptf = new ProcessorThreadFactory(this.name());
 
         // 队列创建
         inputQueue = DisruptorQueueFactory.createQueue(queueSize,
-                                                       new ProcessorThreadFactory(name),
+                                                       ptf,
                                                        new OrderProcessor());
     }
 
@@ -100,20 +105,22 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
         this.router = Objects.requireNonNull(router);
         this.matcherMgr = Objects.requireNonNull(matcherMgr);
         this.marketMgr = marketMgr;
+        this.ptf = new ProcessorThreadFactory(this.name());
 
         // 队列创建
         inputQueue = DisruptorQueueFactory.createQueue(DEFAULT_INPUT_QUEUE_SIZE,
-                                                       new ProcessorThreadFactory(name),
+                                                       ptf,
                                                        new OrderProcessor());
     }
 
 
-    public String name () {
+    public String name() {
         return this.name;
     }
 
-    public void renaming (String name) {
-        this.name = name;
+    public void renaming(String newName) {
+        ptf.rename(this.name, newName);
+        this.name = newName;
     }
 
     /**

@@ -34,6 +34,15 @@ public class MatchEventHandlerRegistry {
     }
 
     /**
+     * 获取所有处理器
+     *
+     * @return 处理器列表
+     */
+    protected List<MatchHandler> handlers() {
+        return this.handlers;
+    }
+
+    /**
      * 执行处理器,当其中任意一个处理失败的时, 其后续的处理器将不会继续执行
      *
      * @param f
@@ -59,4 +68,5 @@ public class MatchEventHandlerRegistry {
             h.onOrderCancel(order);
         });
     }
+
 }

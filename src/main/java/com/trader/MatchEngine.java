@@ -1,11 +1,17 @@
 package com.trader;
 
-import com.trader.book.OrderRouter;
-import com.trader.book.Scheduler;
+import com.trader.core.Scheduler;
+import com.trader.core.support.router.GenericOrderRouter;
+import com.trader.core.support.scheduler.GenericScheduler;
 import com.trader.def.Cmd;
 import com.trader.entity.Order;
 import com.trader.exception.TradeException;
 import com.trader.market.MarketManager;
+import com.trader.matcher.MatcherManager;
+import com.trader.matcher.limit.InMemoryLimitMatchHandler;
+import com.trader.matcher.limit.LimitOrderMatcher;
+import com.trader.matcher.market.InMemoryMarketMatchHandler;
+import com.trader.matcher.market.MarketOrderMatcher;
 import com.trader.support.OrderManager;
 import com.trader.utils.disruptor.AbstractDisruptorConsumer;
 import com.trader.utils.disruptor.DisruptorQueue;
@@ -43,37 +49,59 @@ public class MatchEngine {
     private OrderManager orderMgr;
 
     /**
-     * 市场管理器
-     */
-    @Getter
-    private MarketManager marketMgr;
-
-    /**
      * 调度器
      */
     @Getter
     private Scheduler scheduler;
 
     /**
-     * 路由
+     * 市场管理器
      */
     @Getter
-    private OrderRouter router;
+    private MarketManager marketMgr;
+
 
     /**
      * 下单队列
      */
     private DisruptorQueue<Order> addOrderQueue;
 
-    public MatchEngine(OrderRouter router,
-                       Scheduler scheduler) {
+    public static MatchEngine newEngine(int numberOfCores,
+                                        int sizeOfOrderQueue,
+                                        int sizeOfProcessorCmdBuffer,
+                                        MatchHandler handler) {
+        GenericOrderRouter router = new GenericOrderRouter();
+        MarketManager market = new MarketManager(router);
+        MatcherManager matcher = new MatcherManager();
+        matcher.addMatcher(new LimitOrderMatcher());
+        matcher.addMatcher(new MarketOrderMatcher());
+
+        GenericScheduler scheduler = new GenericScheduler(router, matcher, market,
+
+                                                          // 注意处理器顺序
+                                                          new CompositeMatchEventHandler(
+                                                                  // 内存计算
+                                                                  new InMemoryLimitMatchHandler(),
+                                                                  new InMemoryMarketMatchHandler(),
+
+                                                                  // 持久化
+                                                                  handler,
+
+                                                                  // 消息推送
+                                                                  market.getMatchHandler()),
+                                                          numberOfCores, sizeOfProcessorCmdBuffer);
+        return new MatchEngine(market, scheduler, sizeOfOrderQueue);
+    }
+
+    public MatchEngine(MarketManager market,
+                       Scheduler scheduler,
+                       int sizeOfOrderQueue) {
         this.orderMgr = new OrderManager();
-        this.router = Objects.requireNonNull(router);
         this.scheduler = Objects.requireNonNull(scheduler);
-        this.marketMgr = new MarketManager(router);
+        this.marketMgr = Objects.requireNonNull(market);
 
         // 创建下单队列
-        this.addOrderQueue = DisruptorQueueFactory.createQueue(2 << 16, new AbstractDisruptorConsumer<Order>() {
+        this.addOrderQueue = DisruptorQueueFactory.createQueue(sizeOfOrderQueue, new AbstractDisruptorConsumer<Order>() {
             @Override
             public void process(Order event) {
                 scheduler.submit(event);
@@ -94,9 +122,10 @@ public class MatchEngine {
     /**
      * 取消一个订单
      *
-     * @param orderId 订单ID
+     * @param orderId
+     *         订单ID
      */
-    public void cancelOrder (String orderId) {
+    public void cancelOrder(String orderId) {
         if (orderId == null || orderId.isEmpty()) {
             throw new TradeException("非法订单ID");
         }

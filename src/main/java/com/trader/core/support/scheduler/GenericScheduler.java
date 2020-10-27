@@ -1,9 +1,9 @@
-package com.trader.book.support.scheduler;
+package com.trader.core.support.scheduler;
 
 import com.trader.MatchHandler;
-import com.trader.book.OrderRouter;
-import com.trader.book.Scheduler;
-import com.trader.book.support.processor.GenericProcessor;
+import com.trader.core.OrderRouter;
+import com.trader.core.Scheduler;
+import com.trader.core.support.processor.GenericProcessor;
 import com.trader.entity.Order;
 import com.trader.market.MarketManager;
 import com.trader.matcher.MatcherManager;
@@ -50,17 +50,24 @@ public class GenericScheduler implements Scheduler {
      */
     private int maxNumOfProcessors;
 
+    /**
+     * 处理器命令缓冲区大小
+     */
+    private int sizeOfProcessorCmdBuffer;
+
     public GenericScheduler(OrderRouter router,
                             MatcherManager matcherMgr,
                             MarketManager marketMgr,
                             MatchHandler matchHandler,
-                            int maxNumOfProcessors) {
+                            int maxNumOfProcessors,
+                            int sizeOfProcessorCmdBuffer) {
         this.maxNumOfProcessors = maxNumOfProcessors;
         this.router = Objects.requireNonNull(router);
         this.matcherMgr = Objects.requireNonNull(matcherMgr);
         this.marketMgr = Objects.requireNonNull(marketMgr);
-        this.matchHandler  = Objects.requireNonNull(matchHandler);
+        this.matchHandler = Objects.requireNonNull(matchHandler);
         this.processorCache = new HashMap<>(maxNumOfProcessors);
+        this.sizeOfProcessorCmdBuffer = sizeOfProcessorCmdBuffer;
     }
 
     /**
@@ -88,7 +95,7 @@ public class GenericScheduler implements Scheduler {
                                                  router,
                                                  matcherMgr,
                                                  marketMgr,
-                                                 64);
+                                                 sizeOfProcessorCmdBuffer);
                 processor.regHandler(matchHandler);
             }
             processorCache.put(order.getSymbol(),

@@ -1,17 +1,17 @@
 package netty;
 
-import com.trader.MatchEngine;
-import com.trader.market.publish.MarketPublishClient;
 import com.trader.market.publish.MarketPublishHandler;
 import com.trader.market.publish.TcpMarketPublishClient;
 import com.trader.market.publish.config.MarketConfigHttpClient;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.WebSocket;
 import io.vertx.core.parsetools.RecordParser;
 import org.junit.Test;
 
 import java.math.BigDecimal;
-import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -72,6 +72,40 @@ public class NetTest {
 //        System.out.println(price);
         Thread.sleep(1000000);
 
+        System.out.println();
+    }
+
+    @Test
+    public void beanchmarkWebsocket() {
+        long start = System.currentTimeMillis();
+        CountDownLatch countDownLatch = new CountDownLatch(20001);
+        for (int i = 0; i < 20000; i++) {
+            vertx.createHttpClient()
+                 .webSocket(8089, "192.168.1.55", "/", ar -> {
+                     if (ar.succeeded()) {
+                         WebSocket ws = ar.result();
+                         ws.writeTextMessage("{\n" +
+                                                     "  \"sub\": \"market.btcusdt.detail\",\n" +
+                                                     "  \"id\": \"id1\"\n" +
+                                                     "}");
+                         countDownLatch.countDown();
+//                         ws.frameHandler(f -> {
+//                             if (f.isFinal() && f.isText()) {
+//                                 System.out.println(f.textData());
+//                             }
+//                         });
+                     }
+                 });
+        }
+
+
+        try {
+            countDownLatch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        long end = System.currentTimeMillis();
+        System.out.println(TimeUnit.MILLISECONDS.toSeconds(end - start));
         System.out.println();
     }
 }

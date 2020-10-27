@@ -1,10 +1,10 @@
-package com.trader.book.support.processor;
+package com.trader.core.support.processor;
 
 import com.trader.MatchEngine;
 import com.trader.Matcher;
-import com.trader.book.OrderRouter;
-import com.trader.book.Processor;
 import com.trader.context.MatchingContext;
+import com.trader.core.OrderRouter;
+import com.trader.core.Processor;
 import com.trader.def.ActivateStatus;
 import com.trader.def.Cmd;
 import com.trader.entity.Order;
@@ -120,11 +120,12 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
         marketMgr.addHandler(new StopOrderMarketEventHandler());
     }
 
-
+    @Override
     public String name() {
         return this.name;
     }
 
+    @Override
     public void renaming(String newName) {
         ptf.rename(this.name, newName);
         this.name = newName;
@@ -136,6 +137,7 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
      * @param order
      *         订单
      */
+    @Override
     public void exec(Order order) {
         inputQueue.add(order);
     }

@@ -1,4 +1,4 @@
-package com.trader.book;
+package com.trader.core;
 
 import com.trader.entity.Order;
 import com.trader.entity.OrderBook;

@@ -13,7 +13,6 @@ public abstract class AbstractDisruptorConsumer<T> implements EventHandler<Objec
     @Override
     public void onEvent(ObjectEvent<T> event, long sequence, boolean endOfBatch) throws Exception {
         this.onEvent(event);
-        System.out.println(event);
     }
 
     @Override

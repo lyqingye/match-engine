@@ -1,7 +1,7 @@
 package scheduler;
 
-import com.trader.book.support.router.GenericOrderRouter;
-import com.trader.book.support.scheduler.GenericScheduler;
+import com.trader.core.support.router.GenericOrderRouter;
+import com.trader.core.support.scheduler.GenericScheduler;
 import com.trader.def.Category;
 import com.trader.entity.Order;
 import com.trader.factory.OrderFactory;
@@ -25,7 +25,7 @@ public class GenericSchedulerTest {
         final GenericScheduler scheduler = new GenericScheduler(router,
                                                                 new MatcherManager(),
                                                                 new MarketManager(router),
-                                                                new ExampleLoggerHandler(), 4);
+                                                                new ExampleLoggerHandler(), 4, 1 << 16);
         final Order order = OrderFactory.limit()
                                         .buy("1", "BTC", "USDT")
                                         .GTC()

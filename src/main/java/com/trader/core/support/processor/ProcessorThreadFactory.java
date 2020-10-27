@@ -1,4 +1,4 @@
-package com.trader.book.support.processor;
+package com.trader.core.support.processor;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,18 +31,18 @@ public class ProcessorThreadFactory implements ThreadFactory {
     }
 
     @Override
-    public Thread newThread(Runnable var1) {
+    public Thread newThread(Runnable cmd) {
         String trName = "Match-processor: " + name;
-        Thread var2 = new Thread(this.group, var1, trName, 0L);
-        if (var2.isDaemon()) {
-            var2.setDaemon(false);
+        Thread tr = new Thread(this.group, cmd, trName, 0L);
+        if (tr.isDaemon()) {
+            tr.setDaemon(false);
         }
 
-        if (var2.getPriority() != 5) {
-            var2.setPriority(5);
+        if (tr.getPriority() != 5) {
+            tr.setPriority(5);
         }
 
-        threadMap.put(this.name, var2);
-        return var2;
+        threadMap.put(this.name, tr);
+        return tr;
     }
 }

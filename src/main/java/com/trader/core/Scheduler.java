@@ -1,7 +1,6 @@
-package com.trader.book;
+package com.trader.core;
 
 import com.trader.entity.Order;
-import com.trader.entity.OrderBook;
 
 /**
  * 负责调度 {@link Processor}

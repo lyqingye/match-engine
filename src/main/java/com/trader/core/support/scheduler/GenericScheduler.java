@@ -96,7 +96,6 @@ public class GenericScheduler implements Scheduler {
      * @param order
      *         订单
      */
-    AtomicInteger counter = new AtomicInteger(0);
     @Override
     public void submit(Order order) {
         GenericProcessor processor;
@@ -124,15 +123,10 @@ public class GenericScheduler implements Scheduler {
                                processor);
         }
         processor.exec(order);
-//        if (counter.incrementAndGet() % 100000 == 0){
-//            System.out.println(counter.get());
-//            System.out.println(System.currentTimeMillis());
-//        }
-
     }
 
     private void triggerMarketPriceChange(PriceChangeMessage msg) {
-        GenericProcessor processor = processorCache.get(msg);
+        GenericProcessor processor = processorCache.get(msg.getSymbol());
         if (processor != null) {
             processor.execPriceChange(msg);
         }

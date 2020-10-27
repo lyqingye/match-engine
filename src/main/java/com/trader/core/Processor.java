@@ -1,6 +1,7 @@
 package com.trader.core;
 
 import com.trader.entity.Order;
+import com.trader.market.publish.msg.PriceChangeMessage;
 
 /**
  * @author yjt
@@ -16,6 +17,11 @@ public interface Processor {
      *         订单
      */
     void exec(Order order);
+
+    /**
+     * 市价价格变动
+     */
+    void execPriceChange(PriceChangeMessage msg);
 
     /**
      * 获取处理器名称

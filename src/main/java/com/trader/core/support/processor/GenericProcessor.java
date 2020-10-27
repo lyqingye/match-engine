@@ -11,15 +11,14 @@ import com.trader.entity.Order;
 import com.trader.entity.OrderBook;
 import com.trader.event.MatchEventHandlerRegistry;
 import com.trader.exception.TradeException;
-import com.trader.market.MarketEventHandler;
 import com.trader.market.MarketManager;
+import com.trader.market.publish.msg.PriceChangeMessage;
 import com.trader.matcher.MatcherManager;
 import com.trader.matcher.TradeResult;
 import com.trader.utils.disruptor.AbstractDisruptorConsumer;
 import com.trader.utils.disruptor.DisruptorQueue;
 import com.trader.utils.disruptor.DisruptorQueueFactory;
 
-import java.math.BigDecimal;
 import java.util.*;
 
 /**
@@ -97,8 +96,6 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
                                                        ptf,
                                                        new OrderProcessor());
 
-        // 止盈止损订单监听处理器
-        marketMgr.addHandler(new StopOrderMarketEventHandler());
     }
 
     public GenericProcessor(String name,
@@ -115,9 +112,6 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
         inputQueue = DisruptorQueueFactory.createQueue(DEFAULT_INPUT_QUEUE_SIZE,
                                                        ptf,
                                                        new OrderProcessor());
-
-        // 止盈止损订单监听处理器
-        marketMgr.addHandler(new StopOrderMarketEventHandler());
     }
 
     @Override
@@ -140,6 +134,62 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
     @Override
     public void exec(Order order) {
         inputQueue.add(order);
+    }
+
+    /**
+     * 市价价格变动
+     */
+    @Override
+    public void execPriceChange(PriceChangeMessage msg) {
+        Collection<OrderBook> books = router.routeToNeedToActiveBook(msg.getSymbol());
+        if (books.isEmpty()) {
+            return;
+        }
+        for (OrderBook book : books) {
+            if (!book.getBuyStopOrders().isEmpty()) {
+                Iterator<Order> bidIt = book.getBuyStopOrders().iterator();
+                while (bidIt.hasNext()) {
+                    Order bid = bidIt.next();
+                    if (bid.isNotActivated()) {
+                        if (bid.getTriggerPrice().compareTo(msg.getPrice()) >= 0) {
+                            System.out.println(String.format("[MatchEngine]: active stop order, orderId: [%s] side: [%s]" +
+                                                                     "triggerPrice: [%s] latestPrice: [%s]",
+                                                             bid.getId(), bid.getSide().name(),
+                                                             bid.getTriggerPrice().toPlainString(), msg.getPrice().toPlainString()));
+                            bid.setCmd(Cmd.ACTIVE_ORDER);
+                            bid.setActivated(ActivateStatus.ACTIVATING);
+                            exec(bid);
+                        } else {
+                            break;
+                        }
+                    } else if (bid.isActivated()) {
+                        bidIt.remove();
+                    }
+                }
+                continue;
+            }
+
+            if (!book.getSellStopOrders().isEmpty()) {
+                Iterator<Order> askIt = book.getSellStopOrders().iterator();
+                while (askIt.hasNext()) {
+                    Order ask = askIt.next();
+
+                    if (ask.isNotActivated()) {
+                        if (ask.getTriggerPrice().compareTo(msg.getPrice()) <= 0) {
+                            System.out.println(String.format("[MatchEngine]: active stop order, orderId: [%s] side: [%s]" +
+                                                                     "triggerPrice: [%s] latestPrice: [%s]",
+                                                             ask.getId(), ask.getSide().name(),
+                                                             ask.getTriggerPrice().toPlainString(), msg.getPrice().toPlainString()));
+                            ask.setCmd(Cmd.ACTIVE_ORDER);
+                            ask.setActivated(ActivateStatus.ACTIVATING);
+                            exec(ask);
+                        }
+                    } else if (ask.isActivated()) {
+                        askIt.remove();
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -390,59 +440,6 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
 
             public void clearAttrs() {
                 attr.clear();
-            }
-        }
-    }
-
-
-    class StopOrderMarketEventHandler implements MarketEventHandler {
-
-        @Override
-        public void onMarketPriceChange(String symbol,
-                                        BigDecimal latestPrice, boolean third) {
-            Collection<OrderBook> books = router.routeToNeedToActiveBook(symbol);
-            if (books.isEmpty()) {
-                return;
-            }
-            for (OrderBook book : books) {
-                Iterator<Order> bidIt = book.getBuyStopOrders().iterator();
-                while (bidIt.hasNext()) {
-                    Order bid = bidIt.next();
-                    if (bid.isNotActivated()) {
-                        if (bid.getTriggerPrice().compareTo(latestPrice) >= 0) {
-                            System.out.println(String.format("[MatchEngine]: active stop order, orderId: [%s] side: [%s]" +
-                                                                     "triggerPrice: [%s] latestPrice: [%s]",
-                                                             bid.getId(), bid.getSide().name(),
-                                                             bid.getTriggerPrice().toPlainString(), latestPrice.toPlainString()));
-                            bid.setCmd(Cmd.ACTIVE_ORDER);
-                            bid.setActivated(ActivateStatus.ACTIVATING);
-                            exec(bid);
-                        } else {
-                            break;
-                        }
-                    } else if (bid.isActivated()) {
-                        bidIt.remove();
-                    }
-                }
-
-                Iterator<Order> askIt = book.getSellStopOrders().iterator();
-                while (askIt.hasNext()) {
-                    Order ask = askIt.next();
-
-                    if (ask.isNotActivated()) {
-                        if (ask.getTriggerPrice().compareTo(latestPrice) <= 0) {
-                            System.out.println(String.format("[MatchEngine]: active stop order, orderId: [%s] side: [%s]" +
-                                                                     "triggerPrice: [%s] latestPrice: [%s]",
-                                                             ask.getId(), ask.getSide().name(),
-                                                             ask.getTriggerPrice().toPlainString(), latestPrice.toPlainString()));
-                            ask.setCmd(Cmd.ACTIVE_ORDER);
-                            ask.setActivated(ActivateStatus.ACTIVATING);
-                            exec(ask);
-                        }
-                    } else if (ask.isActivated()) {
-                        askIt.remove();
-                    }
-                }
             }
         }
     }

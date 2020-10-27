@@ -5,7 +5,9 @@ import com.trader.core.OrderRouter;
 import com.trader.core.Scheduler;
 import com.trader.core.support.processor.GenericProcessor;
 import com.trader.entity.Order;
+import com.trader.market.MarketEventHandler;
 import com.trader.market.MarketManager;
+import com.trader.market.publish.msg.PriceChangeMessage;
 import com.trader.matcher.MatcherManager;
 
 import java.util.HashMap;
@@ -68,6 +70,18 @@ public class GenericScheduler implements Scheduler {
         this.matchHandler = Objects.requireNonNull(matchHandler);
         this.processorCache = new HashMap<>(maxNumOfProcessors);
         this.sizeOfProcessorCmdBuffer = sizeOfProcessorCmdBuffer;
+
+        marketMgr.addHandler(new MarketEventHandler() {
+            /**
+             * 市价价格变动事件
+             *
+             * @param msg
+             */
+            @Override
+            public void onMarketPriceChange(PriceChangeMessage msg) {
+                triggerMarketPriceChange(msg);
+            }
+        });
     }
 
     /**
@@ -102,5 +116,12 @@ public class GenericScheduler implements Scheduler {
                                processor);
         }
         processor.exec(order);
+    }
+
+    private void triggerMarketPriceChange(PriceChangeMessage msg) {
+        GenericProcessor processor = processorCache.get(msg);
+        if (processor != null) {
+            processor.execPriceChange(msg);
+        }
     }
 }

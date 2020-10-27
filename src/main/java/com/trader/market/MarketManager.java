@@ -13,6 +13,7 @@ import com.trader.market.publish.msg.PriceChangeMessage;
 import com.trader.matcher.TradeResult;
 import com.trader.utils.SymbolUtils;
 import com.trader.utils.ThreadPoolUtils;
+import com.trader.utils.buffer.CoalescingRingBuffer;
 import io.vertx.core.json.JsonObject;
 
 import java.math.BigDecimal;
@@ -42,14 +43,64 @@ public class MarketManager implements MatchHandler {
     private OrderRouter router;
 
     /**
+     * 合并型 ring buffer, 用于优化深度图推送
+     * https://github.com/LMAX-Exchange/LMAXCollections
+     */
+    private CoalescingRingBuffer<String, MarketDepthChartSeries> depthChartRingBuffer;
+
+    /**
+     * 价格变动事件缓冲区
+     */
+    private CoalescingRingBuffer<String, PriceChangeMessage> priceChangeRingBuffer;
+
+
+    /**
      * hide default constructor
      */
     private MarketManager() {
     }
 
 
+
     public MarketManager(OrderRouter router) {
         this.router = Objects.requireNonNull(router);
+        priceChangeRingBuffer = new CoalescingRingBuffer<>(1 << 12);
+        ThreadPoolUtils.submit(() -> {
+            List<PriceChangeMessage> messages = new ArrayList<>(16);
+            for (; ; ) {
+                priceChangeRingBuffer.poll(messages);
+                for (PriceChangeMessage msg : messages) {
+                    // 触发事件
+                    this.syncExecuteHandler(h -> {
+                        h.onMarketPriceChange(msg);
+                    });
+                }
+                try {
+                    Thread.sleep(0);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        depthChartRingBuffer = new CoalescingRingBuffer<>(1 << 12);
+        ThreadPoolUtils.submit(() -> {
+            List<MarketDepthChartSeries> messages = new ArrayList<>(16);
+            for (; ; ) {
+                depthChartRingBuffer.poll(messages);
+                for (MarketDepthChartSeries msg : messages) {
+                    // 触发事件
+                    this.syncExecuteHandler(h -> {
+                        h.onDepthChartChange(msg);
+                    });
+                }
+                try {
+                    Thread.sleep(0);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     /**
@@ -184,12 +235,9 @@ public class MarketManager implements MatchHandler {
                     router.routeToNeedToUpdatePriceBook(msg.getSymbol())
                           .forEach(book -> book.updateLastTradePrice(msg.getPrice()));
 
-                    // 触发事件
-                    this.syncExecuteHandler(h -> {
-                        h.onMarketPriceChange(msg.getSymbol(),
-                                              msg.getPrice(),
-                                              msg.getThird());
-                    });
+
+                    // 进入合并队列
+                    priceChangeRingBuffer.offer(msg.getSymbol(), msg);
                 }
                 break;
             }
@@ -258,13 +306,9 @@ public class MarketManager implements MatchHandler {
             return;
         }
 
+        // 深度推送到队列
         final MarketDepthChartSeries series = book.snapSeries(20);
-        // 异步处理市场管理器事件
-        this.syncExecuteHandler((h) -> {
-            // 推送盘口
-            h.onDepthChartChange(series);
-        });
-
+        depthChartRingBuffer.offer(series.getSymbol(), series);
     }
 
     /**
@@ -295,26 +339,24 @@ public class MarketManager implements MatchHandler {
         // 更新成交价价
         book.updateLastTradePrice(ts.getExecutePrice());
 
+        // 深度写入到队列
+        depthChartRingBuffer.offer(series.getSymbol(), series);
+
         // 异步处理市场管理器事件
         this.asyncExecuteHandler((h) -> {
-
             // 推送交易数据
             h.onTrade(order.getSymbol(),
                       order.getSide(),
                       ts
             );
-            h.onDepthChartChange(series);
         });
 
-        // 上面这个事件和下面这个事件不应该放在一起推送
-        // 因为上面这个影响的是市场数据
-        // 下面这个会影响止盈止损挂单的数据
-        // 所以分开触发
-        this.syncExecuteHandler((h) -> {
-            // 推送市价变动事件
-            h.onMarketPriceChange(order.getSymbol(),
-                                  ts.getExecutePrice(), false);
-        });
+        // 进入合并队列
+        PriceChangeMessage msg = new PriceChangeMessage();
+        msg.setPrice(ts.getExecutePrice());
+        msg.setSymbol(order.getSymbol());
+        msg.setThird(false);
+        priceChangeRingBuffer.offer(msg.getSymbol(), msg);
     }
 
     /**
@@ -335,10 +377,8 @@ public class MarketManager implements MatchHandler {
 
         final MarketDepthChartSeries series = book.snapSeries(20);
 
-        // 异步处理市场管理器事件
-        this.asyncExecuteHandler((h) -> {
-            h.onDepthChartChange(series);
-        });
+        // 深度写入到队列
+        depthChartRingBuffer.offer(series.getSymbol(), series);
     }
 
     /**
@@ -359,9 +399,7 @@ public class MarketManager implements MatchHandler {
 
         final MarketDepthChartSeries series = book.snapSeries(20);
 
-        // 异步处理市场管理器事件
-        this.asyncExecuteHandler((h) -> {
-            h.onDepthChartChange(series);
-        });
+        // 深度写入到队列
+        depthChartRingBuffer.offer(series.getSymbol(), series);
     }
 }

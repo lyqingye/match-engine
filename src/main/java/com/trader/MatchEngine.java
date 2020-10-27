@@ -104,6 +104,13 @@ public class MatchEngine {
         this.addOrderQueue = DisruptorQueueFactory.createQueue(sizeOfOrderQueue, new AbstractDisruptorConsumer<Order>() {
             @Override
             public void process(Order event) {
+                while (!isMatching()) {
+                    try {
+                        Thread.sleep(0);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
                 scheduler.submit(event);
             }
         });
@@ -164,7 +171,7 @@ public class MatchEngine {
      * 停止撮合
      */
     public void disableMatching() {
-        this.isMatching = true;
+        this.isMatching = false;
     }
 
     /**

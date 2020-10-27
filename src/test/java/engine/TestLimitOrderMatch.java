@@ -25,10 +25,11 @@ public class TestLimitOrderMatch  {
 
     @Before
     public void before () {
-        engine = MatchEngine.newEngine(4, 1 << 16,
-                                       1 << 16,
+        engine = MatchEngine.newEngine(4, 1 << 18,
+                                       1 << 18,
                                        new ExampleLoggerHandler());
         engine.enableMatching();
+        engine.disableMatching();
 
         engine.getMarketMgr()
               .addHandler(new MarketPublishHandler(new TcpMarketPublishClient("localhost", 8888)));
@@ -44,7 +45,7 @@ public class TestLimitOrderMatch  {
 
     public void addOrder () {
 
-        final long start = System.currentTimeMillis();
+
         for (int i = 0; i < 100000; i++) {
 //            try {
 //                Thread.sleep(1000);
@@ -72,15 +73,18 @@ public class TestLimitOrderMatch  {
             engine.addOrder(sellMarketOrder);
 
         }
+
+        final long start = System.currentTimeMillis();
+
+        engine.enableMatching();
+
+        final long end = System.currentTimeMillis();
+        System.out.println("process  orders using " + TimeUnit.MILLISECONDS.toSeconds(end - start) + "s");
         try {
             Thread.sleep(1000000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-
-        final long end = System.currentTimeMillis();
-            System.out.println("process  orders using " + TimeUnit.MILLISECONDS.toSeconds(end - start) + "s");
-
 
 //
 //

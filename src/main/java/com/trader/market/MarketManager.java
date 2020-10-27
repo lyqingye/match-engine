@@ -342,14 +342,14 @@ public class MarketManager implements MatchHandler {
         // 深度写入到队列
         depthChartRingBuffer.offer(series.getSymbol(), series);
 
-        // 异步处理市场管理器事件
-        this.asyncExecuteHandler((h) -> {
-            // 推送交易数据
-            h.onTrade(order.getSymbol(),
-                      order.getSide(),
-                      ts
-            );
-        });
+//        // 异步处理市场管理器事件
+//        this.asyncExecuteHandler((h) -> {
+//            // 推送交易数据
+//            h.onTrade(order.getSymbol(),
+//                      order.getSide(),
+//                      ts
+//            );
+//        });
 
         // 进入合并队列
         PriceChangeMessage msg = new PriceChangeMessage();

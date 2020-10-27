@@ -85,7 +85,10 @@ public class MatchEngine {
                                                                   new InMemoryMarketMatchHandler(),
 
                                                                   // 持久化
-                                                                  handler),
+                                                                  handler,
+
+                                                                  // 消息推送
+                                                                  market.getMatchHandler()),
                                                           numberOfCores, sizeOfProcessorCmdBuffer);
         return new MatchEngine(market, scheduler, sizeOfOrderQueue);
     }

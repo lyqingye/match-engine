@@ -11,6 +11,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -25,8 +28,8 @@ public class TestLimitOrderMatch  {
 
     @Before
     public void before () {
-        engine = MatchEngine.newEngine(4, 1 << 18,
-                                       1 << 18,
+        engine = MatchEngine.newEngine(2, 1 << 20,
+                                       1 << 20,
                                        new ExampleLoggerHandler());
         engine.enableMatching();
         engine.disableMatching();
@@ -46,14 +49,10 @@ public class TestLimitOrderMatch  {
     public void addOrder () {
 
         final long start = System.currentTimeMillis();
+        List<Order> orderList = new ArrayList<>(1000000);
         for (int i = 0; i < 100000; i++) {
-//            try {
-//                Thread.sleep(1000);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-//            System.out.println("process " + i);
-//            BigDecimal price = engine.getMarketMgr().getMarketPrice("BTC-USDT");
+
+
             BigDecimal price = BigDecimal.TEN;
             Order buyLimitOrder = OrderFactory.limit()
                                               .buy("1", "BTC", "USDT")
@@ -64,15 +63,86 @@ public class TestLimitOrderMatch  {
                                               .build();
 
             Order sellMarketOrder = OrderFactory.limit()
-                                                .sell("1", "BTC", "USDT")
+                                                .sell("2", "BTC", "USDT")
                                                 .quantity(BigDecimal.TEN)
                                                 .withUnitPriceOf(price)
                                                 .GTC()
                                                 .build();
-            engine.addOrder(buyLimitOrder);
-            engine.addOrder(sellMarketOrder);
-
+            orderList.add(buyLimitOrder);
+            orderList.add(sellMarketOrder);
         }
+
+        for (int i = 0; i < 100000; i++) {
+
+
+            BigDecimal price = BigDecimal.TEN;
+            Order buyLimitOrder = OrderFactory.limit()
+                                              .buy("1", "YAC", "USDT")
+                                              .spent(BigDecimal.TEN.multiply(price))
+                                              .withUnitPriceOf(price)
+                                              .quantity(BigDecimal.TEN)
+                                              .GTC()
+                                              .build();
+
+            Order sellMarketOrder = OrderFactory.limit()
+                                                .sell("2", "YAC", "USDT")
+                                                .quantity(BigDecimal.TEN)
+                                                .withUnitPriceOf(price)
+                                                .GTC()
+                                                .build();
+            orderList.add(buyLimitOrder);
+            orderList.add(sellMarketOrder);
+        }
+
+        for (int i = 0; i < 100000; i++) {
+
+
+            BigDecimal price = BigDecimal.TEN;
+            Order buyLimitOrder = OrderFactory.limit()
+                                              .buy("1", "YSB", "USDT")
+                                              .spent(BigDecimal.TEN.multiply(price))
+                                              .withUnitPriceOf(price)
+                                              .quantity(BigDecimal.TEN)
+                                              .GTC()
+                                              .build();
+
+            Order sellMarketOrder = OrderFactory.limit()
+                                                .sell("2", "YSB", "USDT")
+                                                .quantity(BigDecimal.TEN)
+                                                .withUnitPriceOf(price)
+                                                .GTC()
+                                                .build();
+            orderList.add(buyLimitOrder);
+            orderList.add(sellMarketOrder);
+        }
+
+        for (int i = 0; i < 100000; i++) {
+
+
+            BigDecimal price = BigDecimal.TEN;
+            Order buyLimitOrder = OrderFactory.limit()
+                                              .buy("1", "YAB", "USDT")
+                                              .spent(BigDecimal.TEN.multiply(price))
+                                              .withUnitPriceOf(price)
+                                              .quantity(BigDecimal.TEN)
+                                              .GTC()
+                                              .build();
+
+            Order sellMarketOrder = OrderFactory.limit()
+                                                .sell("2", "YAB", "USDT")
+                                                .quantity(BigDecimal.TEN)
+                                                .withUnitPriceOf(price)
+                                                .GTC()
+                                                .build();
+            orderList.add(buyLimitOrder);
+            orderList.add(sellMarketOrder);
+        }
+        Collections.shuffle(orderList);
+        for (Order order : orderList) {
+            engine.addOrder(order);
+        }
+
+
         final long end = System.currentTimeMillis();
         System.out.println("process  orders using " + TimeUnit.MILLISECONDS.toSeconds(end - start) + "s");
 

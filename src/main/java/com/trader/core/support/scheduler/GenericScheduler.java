@@ -13,6 +13,7 @@ import com.trader.matcher.MatcherManager;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 线程池调度器, 并且一个处理器控制一个交易对
@@ -90,6 +91,7 @@ public class GenericScheduler implements Scheduler {
      * @param order
      *         订单
      */
+    AtomicInteger counter = new AtomicInteger(0);
     @Override
     public void submit(Order order) {
         GenericProcessor processor;
@@ -99,7 +101,7 @@ public class GenericScheduler implements Scheduler {
             String theProcessorName = order.getSymbol();
             // 当前处理器已经满了，则将其映射到任意一个处理器
             if (processorCache.size() >= maxNumOfProcessors) {
-                final int idx = order.getSymbol().hashCode() % this.maxNumOfProcessors;
+                final int idx = order.getSymbol().hashCode() % (this.maxNumOfProcessors - 1);
                 processor = (GenericProcessor) processorCache.values()
                                                              .toArray()[idx];
                 processor.renaming(processor.name() + " | " + theProcessorName);
@@ -116,6 +118,7 @@ public class GenericScheduler implements Scheduler {
                                processor);
         }
         processor.exec(order);
+        System.out.println(counter.incrementAndGet());
     }
 
     private void triggerMarketPriceChange(PriceChangeMessage msg) {

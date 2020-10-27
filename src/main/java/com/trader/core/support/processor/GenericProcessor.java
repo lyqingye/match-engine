@@ -108,9 +108,9 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
         this.ptf = new ProcessorThreadFactory(this.name());
 
         // 队列创建
-        inputQueue = DisruptorQueueFactory.createQueue(DEFAULT_INPUT_QUEUE_SIZE,
-                                                       ptf,
-                                                       new OrderProcessor());
+        inputQueue = DisruptorQueueFactory.createSingleQueue(DEFAULT_INPUT_QUEUE_SIZE,
+                                                             ptf,
+                                                             new OrderProcessor());
     }
 
     @Override

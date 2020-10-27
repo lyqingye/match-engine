@@ -32,7 +32,7 @@ public class ProcessorThreadFactory implements ThreadFactory {
 
     @Override
     public Thread newThread(Runnable cmd) {
-        String trName = "Match-processor: " + name;
+        String trName = "Match-Processor: " + name;
         Thread tr = new Thread(this.group, cmd, trName, 0L);
         if (tr.isDaemon()) {
             tr.setDaemon(false);

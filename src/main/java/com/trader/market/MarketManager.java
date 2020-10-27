@@ -73,7 +73,7 @@ public class MarketManager implements MatchHandler {
 
     public MarketManager(OrderRouter router) {
         this.router = Objects.requireNonNull(router);
-        priceChangeRingBuffer = new CoalescingRingBuffer<>(1 << 16);
+        priceChangeRingBuffer = new CoalescingRingBuffer<>(1 << 20);
         ThreadPoolUtils.submit(() -> {
             List<PriceChangeMessage> messages = new ArrayList<>(16);
             for (; ; ) {
@@ -92,7 +92,7 @@ public class MarketManager implements MatchHandler {
             }
         });
 
-        depthChartRingBuffer = new CoalescingRingBuffer<>(1 << 16);
+        depthChartRingBuffer = new CoalescingRingBuffer<>(1 << 20);
         ThreadPoolUtils.submit(() -> {
             List<MarketDepthChartSeries> messages = new ArrayList<>(16);
             for (; ; ) {
@@ -111,7 +111,7 @@ public class MarketManager implements MatchHandler {
             }
         });
 
-        tradeMessageQueue = DisruptorQueueFactory.createQueue(1 << 16,
+        tradeMessageQueue = DisruptorQueueFactory.createQueue(1 << 20,
                                                               new AbstractDisruptorConsumer<TradeMessage>() {
                                                                   @Override
                                                                   public void process(TradeMessage event) {

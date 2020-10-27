@@ -45,7 +45,7 @@ public class TestLimitOrderMatch  {
 
     public void addOrder () {
 
-
+        final long start = System.currentTimeMillis();
         for (int i = 0; i < 100000; i++) {
 //            try {
 //                Thread.sleep(1000);
@@ -73,13 +73,13 @@ public class TestLimitOrderMatch  {
             engine.addOrder(sellMarketOrder);
 
         }
+        final long end = System.currentTimeMillis();
+        System.out.println("process  orders using " + TimeUnit.MILLISECONDS.toSeconds(end - start) + "s");
 
-        final long start = System.currentTimeMillis();
 
         engine.enableMatching();
 
-        final long end = System.currentTimeMillis();
-        System.out.println("process  orders using " + TimeUnit.MILLISECONDS.toSeconds(end - start) + "s");
+
         try {
             Thread.sleep(1000000);
         } catch (InterruptedException e) {

@@ -1,9 +1,8 @@
 package com.trader.market;
 
-import com.trader.def.OrderSide;
 import com.trader.market.entity.MarketDepthChartSeries;
 import com.trader.market.publish.msg.PriceChangeMessage;
-import com.trader.matcher.TradeResult;
+import com.trader.market.publish.msg.TradeMessage;
 
 /**
  * 市场事件处理器
@@ -33,14 +32,7 @@ public interface MarketEventHandler {
 
     /**
      * 交易成功事件
-     *
-     * @param symbolId
-     *         交易对
-     * @param side
-     *         买入 / 卖出
-     * @param ts
-     *         撮合结果
      */
-    default void onTrade(String symbolId, OrderSide side, TradeResult ts) {
+    default void onTrade(TradeMessage tm) {
     }
 }

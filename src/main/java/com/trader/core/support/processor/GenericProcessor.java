@@ -1,6 +1,5 @@
 package com.trader.core.support.processor;
 
-import com.trader.MatchEngine;
 import com.trader.Matcher;
 import com.trader.context.MatchingContext;
 import com.trader.core.OrderRouter;
@@ -411,11 +410,6 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
             @Override
             public MarketManager getMarketMgr() {
                 return marketMgr;
-            }
-
-            @Override
-            public MatchEngine getEngine() {
-                return null;
             }
 
             @Override

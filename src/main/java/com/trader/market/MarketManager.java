@@ -10,10 +10,14 @@ import com.trader.market.publish.MarketPublishHandler;
 import com.trader.market.publish.msg.Message;
 import com.trader.market.publish.msg.MessageType;
 import com.trader.market.publish.msg.PriceChangeMessage;
+import com.trader.market.publish.msg.TradeMessage;
 import com.trader.matcher.TradeResult;
 import com.trader.utils.SymbolUtils;
 import com.trader.utils.ThreadPoolUtils;
 import com.trader.utils.buffer.CoalescingRingBuffer;
+import com.trader.utils.disruptor.AbstractDisruptorConsumer;
+import com.trader.utils.disruptor.DisruptorQueue;
+import com.trader.utils.disruptor.DisruptorQueueFactory;
 import io.vertx.core.json.JsonObject;
 
 import java.math.BigDecimal;
@@ -53,6 +57,11 @@ public class MarketManager implements MatchHandler {
      */
     private CoalescingRingBuffer<String, PriceChangeMessage> priceChangeRingBuffer;
 
+    /**
+     * 撮合结果数据推送队列
+     */
+    private DisruptorQueue<TradeMessage> tradeMessageQueue;
+
 
     /**
      * hide default constructor
@@ -64,7 +73,7 @@ public class MarketManager implements MatchHandler {
 
     public MarketManager(OrderRouter router) {
         this.router = Objects.requireNonNull(router);
-        priceChangeRingBuffer = new CoalescingRingBuffer<>(1 << 12);
+        priceChangeRingBuffer = new CoalescingRingBuffer<>(1 << 16);
         ThreadPoolUtils.submit(() -> {
             List<PriceChangeMessage> messages = new ArrayList<>(16);
             for (; ; ) {
@@ -83,7 +92,7 @@ public class MarketManager implements MatchHandler {
             }
         });
 
-        depthChartRingBuffer = new CoalescingRingBuffer<>(1 << 12);
+        depthChartRingBuffer = new CoalescingRingBuffer<>(1 << 16);
         ThreadPoolUtils.submit(() -> {
             List<MarketDepthChartSeries> messages = new ArrayList<>(16);
             for (; ; ) {
@@ -101,6 +110,16 @@ public class MarketManager implements MatchHandler {
                 }
             }
         });
+
+        tradeMessageQueue = DisruptorQueueFactory.createQueue(1 << 16,
+                                                              new AbstractDisruptorConsumer<TradeMessage>() {
+                                                                  @Override
+                                                                  public void process(TradeMessage event) {
+                                                                      syncExecuteHandler(h -> {
+                                                                          h.onTrade(event);
+                                                                      });
+                                                                  }
+                                                              });
     }
 
     /**
@@ -342,14 +361,14 @@ public class MarketManager implements MatchHandler {
         // 深度写入到队列
         depthChartRingBuffer.offer(series.getSymbol(), series);
 
-//        // 异步处理市场管理器事件
-//        this.asyncExecuteHandler((h) -> {
-//            // 推送交易数据
-//            h.onTrade(order.getSymbol(),
-//                      order.getSide(),
-//                      ts
-//            );
-//        });
+        // 推送成交数据到队列
+        final TradeMessage tradeResult = new TradeMessage();
+        tradeResult.setSymbol(order.getSymbol());
+        tradeResult.setQuantity(ts.getQuantity());
+        tradeResult.setPrice(ts.getExecutePrice());
+        tradeResult.setTs(ts.getTimestamp());
+        tradeResult.setDirection(order.getSide().toDirection());
+        tradeMessageQueue.add(tradeResult);
 
         // 进入合并队列
         PriceChangeMessage msg = new PriceChangeMessage();

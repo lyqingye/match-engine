@@ -1,6 +1,5 @@
 package com.trader.context;
 
-import com.trader.MatchEngine;
 import com.trader.Matcher;
 import com.trader.entity.OrderBook;
 import com.trader.market.MarketManager;
@@ -50,16 +49,6 @@ public class ThreadLocalMatchingContext implements MatchingContext {
     @Override
     public MarketManager getMarketMgr() {
         return ThreadLocalUtils.get(NAME_OF_MARKET_MANAGER);
-    }
-
-    /**
-     * 获取撮合引擎
-     *
-     * @return 撮合引擎
-     */
-    @Override
-    public MatchEngine getEngine() {
-        return ThreadLocalUtils.get(NAME_OF_MATCH_ENGINE);
     }
 
     /**

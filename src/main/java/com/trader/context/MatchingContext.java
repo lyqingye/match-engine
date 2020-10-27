@@ -1,6 +1,5 @@
 package com.trader.context;
 
-import com.trader.MatchEngine;
 import com.trader.Matcher;
 import com.trader.entity.OrderBook;
 import com.trader.market.MarketManager;
@@ -17,14 +16,6 @@ public interface MatchingContext {
      * @return 市场价
      */
     MarketManager getMarketMgr();
-
-    /**
-     * 获取撮合引擎
-     *
-     * @return 撮合引擎
-     */
-    @Deprecated
-    MatchEngine getEngine();
 
     /**
      * 当前的买卖账本

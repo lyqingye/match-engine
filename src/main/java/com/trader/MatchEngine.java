@@ -19,6 +19,7 @@ import com.trader.utils.disruptor.DisruptorQueueFactory;
 import lombok.Getter;
 
 import java.util.Objects;
+import java.util.concurrent.ThreadFactory;
 
 /**
  * TODO:
@@ -101,16 +102,16 @@ public class MatchEngine {
         this.marketMgr = Objects.requireNonNull(market);
 
         // 创建下单队列
-        this.addOrderQueue = DisruptorQueueFactory.createQueue(sizeOfOrderQueue, new AbstractDisruptorConsumer<Order>() {
+        this.addOrderQueue = DisruptorQueueFactory.createQueue(sizeOfOrderQueue, new ThreadFactory() {
+            @Override
+            public Thread newThread(Runnable r) {
+                final Thread tr = new Thread(r);
+                tr.setName("MatchEngine:AddOrderQueue");
+                return tr;
+            }
+        }, new AbstractDisruptorConsumer<Order>() {
             @Override
             public void process(Order event) {
-                while (!isMatching()) {
-                    try {
-                        Thread.sleep(0);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
                 scheduler.submit(event);
             }
         });

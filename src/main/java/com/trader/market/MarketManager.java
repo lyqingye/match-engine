@@ -276,18 +276,6 @@ public class MarketManager implements MatchHandler {
     }
 
     /**
-     * (异步) 执行事件处理器
-     *
-     * @param hConsumer
-     *         处理器消费者 {@link MarketEventHandler}
-     */
-    private void asyncExecuteHandler(Consumer<MarketEventHandler> hConsumer) {
-        ThreadPoolUtils.submit(() -> {
-            this.handlers.forEach(hConsumer);
-        });
-    }
-
-    /**
      * (同步) 执行事件处理器
      *
      * @param hConsumer
@@ -353,12 +341,13 @@ public class MarketManager implements MatchHandler {
             return;
         }
 
-        final MarketDepthChartSeries series = book.snapSeries(20);
+
 
         // 更新成交价价
         book.updateLastTradePrice(ts.getExecutePrice());
 
         // 深度写入到队列
+        final MarketDepthChartSeries series = book.snapSeries(20);
         depthChartRingBuffer.offer(series.getSymbol(), series);
 
         // 推送成交数据到队列

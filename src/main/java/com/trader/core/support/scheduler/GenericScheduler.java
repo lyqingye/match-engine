@@ -58,6 +58,11 @@ public class GenericScheduler implements Scheduler {
      */
     private int sizeOfProcessorCmdBuffer;
 
+    /**
+     * 实际的任务个数
+     */
+    private int actualNumOfTask = 0;
+
     public GenericScheduler(OrderRouter router,
                             MatcherManager matcherMgr,
                             MarketManager marketMgr,
@@ -98,12 +103,12 @@ public class GenericScheduler implements Scheduler {
         if (processorCache.containsKey(order.getSymbol())) {
             processor = processorCache.get(order.getSymbol());
         } else {
+            actualNumOfTask++;
             String theProcessorName = order.getSymbol();
             // 当前处理器已经满了，则将其映射到任意一个处理器
             if (processorCache.size() >= maxNumOfProcessors) {
-                final int idx = order.getSymbol().hashCode() % (this.maxNumOfProcessors - 1);
                 processor = (GenericProcessor) processorCache.values()
-                                                             .toArray()[idx];
+                                                             .toArray()[actualNumOfTask % maxNumOfProcessors];
                 processor.renaming(processor.name() + " | " + theProcessorName);
             } else {
                 // 创建一个处理器
@@ -112,13 +117,18 @@ public class GenericScheduler implements Scheduler {
                                                  matcherMgr,
                                                  marketMgr,
                                                  sizeOfProcessorCmdBuffer);
+
                 processor.regHandler(matchHandler);
             }
             processorCache.put(order.getSymbol(),
                                processor);
         }
         processor.exec(order);
-        System.out.println(counter.incrementAndGet());
+//        if (counter.incrementAndGet() % 100000 == 0){
+//            System.out.println(counter.get());
+//            System.out.println(System.currentTimeMillis());
+//        }
+
     }
 
     private void triggerMarketPriceChange(PriceChangeMessage msg) {

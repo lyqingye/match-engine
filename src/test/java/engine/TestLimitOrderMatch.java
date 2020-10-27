@@ -137,17 +137,19 @@ public class TestLimitOrderMatch  {
             orderList.add(buyLimitOrder);
             orderList.add(sellMarketOrder);
         }
-        Collections.shuffle(orderList);
+//        Collections.shuffle(orderList);
         for (Order order : orderList) {
             engine.addOrder(order);
         }
 
 
         final long end = System.currentTimeMillis();
-        System.out.println("process  orders using " + TimeUnit.MILLISECONDS.toSeconds(end - start) + "s");
+//        System.out.println("process  orders using " + TimeUnit.MILLISECONDS.toSeconds(end - start) + "s");
 
 
         engine.enableMatching();
+
+        System.out.println("startTime:" + System.currentTimeMillis());
 
 
         try {

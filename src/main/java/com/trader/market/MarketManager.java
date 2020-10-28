@@ -8,6 +8,8 @@ import com.trader.entity.OrderBook;
 import com.trader.helper.tuples.Tuple;
 import com.trader.market.entity.MarketDepthChartSeries;
 import com.trader.market.publish.MarketPublishHandler;
+import com.trader.market.publish.TcpMarketPublishClient;
+import com.trader.market.publish.config.MarketConfigHttpClient;
 import com.trader.market.publish.msg.Message;
 import com.trader.market.publish.msg.MessageType;
 import com.trader.market.publish.msg.PriceChangeMessage;
@@ -20,6 +22,7 @@ import com.trader.utils.disruptor.AbstractDisruptorConsumer;
 import com.trader.utils.disruptor.DisruptorQueue;
 import com.trader.utils.disruptor.DisruptorQueueFactory;
 import io.vertx.core.json.JsonObject;
+import lombok.Getter;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -78,6 +81,12 @@ public class MarketManager implements MatchHandler {
      * 撮合引擎配置
      */
     private MatchEngineConfig config;
+
+    /**
+     * 消息推送服务器配置客户端
+     */
+    @Getter
+    private MarketConfigHttpClient marketConfigClient;
 
 
     /**
@@ -180,6 +189,21 @@ public class MarketManager implements MatchHandler {
                                                                       });
                                                                   }
                                                               });
+        // 配置市场推送服务
+        if (config.getMarketPublishClient() == null) {
+            TcpMarketPublishClient client = new TcpMarketPublishClient(config.getMarketPublishClientHost(),
+                                                                       config.getMarketPublishClientPort());
+            config.setMarketPublishClient(client);
+            this.addHandler(new MarketPublishHandler(client));
+        } else {
+            this.addHandler(new MarketPublishHandler(config.getMarketPublishClient()));
+        }
+
+        // 创建市场配置客户端
+        marketConfigClient = TcpMarketPublishClient.createConfigClient(config.getWebsocketConfigClientHost(),
+                                                                       config.getMarketPublishClientPort());
+        // 同步方式获取市价
+        this.tryToInitMarketPrice(marketConfigClient::getMarketPriceSync);
     }
 
     /**

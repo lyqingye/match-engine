@@ -4,6 +4,7 @@ import com.trader.MatchHandler;
 import com.trader.Matcher;
 import com.trader.core.OrderRouter;
 import com.trader.core.Scheduler;
+import com.trader.market.publish.MarketPublishClient;
 import lombok.Data;
 
 /**
@@ -79,4 +80,30 @@ public class MatchEngineConfig {
      * 当你希望你的系统每秒能承受1w笔订单的成交的时候该值应该设置为 1 << 14 = 16384
      */
     private int sizeOfTradeResultQueue = 1 << 16;
+
+    /**
+     * 消息推送客户端, 默认为 tcp进行推送
+     * {@link com.trader.market.publish.TcpMarketPublishClient}
+     */
+    private MarketPublishClient marketPublishClient;
+
+    /**
+     * 消息推送域名, 默认为 localhost
+     */
+    private String marketPublishClientHost = "localhost";
+
+    /**
+     * 消息推送端口, 默认为 8888
+     */
+    private int marketPublishClientPort = 8888;
+
+    /**
+     * websocket 配置客户端域名
+     */
+    private String websocketConfigClientHost = "localhost";
+
+    /**
+     * websocket 配置客户端端口
+     */
+    private int websocketConfigClientPort = 8087;
 }

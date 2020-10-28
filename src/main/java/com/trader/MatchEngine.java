@@ -125,15 +125,13 @@ public class MatchEngine {
         }, new AbstractDisruptorConsumer<Order>() {
             @Override
             public void process(Order event) {
-
-//                while (!isMatching) {
-//                    try {
-//                        Thread.sleep(0);
-//                    } catch (InterruptedException e) {
-//                        e.printStackTrace();
-//                    }
-//                }
-
+                while (!isMatching) {
+                    try {
+                        Thread.sleep(0);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
                 scheduler.submit(event);
             }
         });

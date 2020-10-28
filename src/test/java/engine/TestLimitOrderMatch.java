@@ -1,6 +1,7 @@
 package engine;
 
 import com.trader.MatchEngine;
+import com.trader.config.MatchEngineConfig;
 import com.trader.entity.Order;
 import com.trader.factory.OrderFactory;
 import com.trader.handler.ExampleLoggerHandler;
@@ -12,6 +13,7 @@ import org.junit.Test;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -26,11 +28,15 @@ public class TestLimitOrderMatch  {
 
     @Before
     public void before () {
-        engine = MatchEngine.newEngine(2, 1 << 20,
-                                       1 << 20,
-                                       new ExampleLoggerHandler());
+        MatchEngineConfig config = new MatchEngineConfig();
+        config.setSizeOfOrderQueue(1 << 20);
+        config.setSizeOfCoreCmdBuffer(1 << 20);
+        config.setSizeOfPublishDataRingBuffer(1 << 20);
+        config.setNumberOfCores(1);
+        config.setHandler(new ExampleLoggerHandler());
+        engine = MatchEngine.newEngine(config);
+//        engine.disableMatching();
         engine.enableMatching();
-        engine.disableMatching();
 
         engine.getMarketMgr()
               .addHandler(new MarketPublishHandler(new TcpMarketPublishClient("localhost", 8888)));
@@ -135,7 +141,7 @@ public class TestLimitOrderMatch  {
             orderList.add(buyLimitOrder);
             orderList.add(sellMarketOrder);
         }
-//        Collections.shuffle(orderList);
+        Collections.shuffle(orderList);
         for (Order order : orderList) {
             engine.addOrder(order);
         }

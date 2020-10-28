@@ -1,6 +1,7 @@
 package com.trader.market;
 
 import com.trader.MatchHandler;
+import com.trader.config.MatchEngineConfig;
 import com.trader.core.OrderRouter;
 import com.trader.entity.Order;
 import com.trader.entity.OrderBook;
@@ -25,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ThreadFactory;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -58,9 +60,24 @@ public class MarketManager implements MatchHandler {
     private CoalescingRingBuffer<String, PriceChangeMessage> priceChangeRingBuffer;
 
     /**
+     * 深度推送队列 （仅用于多核的情况） 用于解决多线程写入
+     */
+    private DisruptorQueue<MarketDepthChartSeries> depthChartQueue;
+
+    /**
+     * 价格推送队列 （仅用于多核的情况） 用于解决多线程写入
+     */
+    private DisruptorQueue<PriceChangeMessage> priceChangeQueue;
+
+    /**
      * 撮合结果数据推送队列
      */
     private DisruptorQueue<TradeMessage> tradeMessageQueue;
+
+    /**
+     * 撮合引擎配置
+     */
+    private MatchEngineConfig config;
 
 
     /**
@@ -69,49 +86,92 @@ public class MarketManager implements MatchHandler {
     private MarketManager() {
     }
 
+    public MarketManager(MatchEngineConfig config) {
+        this.config = Objects.requireNonNull(config);
+        this.router = Objects.requireNonNull(config.getRouter());
 
 
-    public MarketManager(OrderRouter router) {
-        this.router = Objects.requireNonNull(router);
-        priceChangeRingBuffer = new CoalescingRingBuffer<>(1 << 20);
+        //
+        // 创建数据合并缓冲区
+        // 该缓冲区只支持一个生产者对应一个消费者, 也就是只支持一个线程生产, 一个线程消费
+        // 相关文档参阅: https://nickzeeb.wordpress.com/2013/03/07/the-coalescing-ring-buffer/
+        // 这就会暴露一个问题, 当存在多和核心进行撮合的时候, 产生的事件肯定是多线程去访问的, 也就是说
+        // 盘口改变事件将会被多个线程调用, 因为数据合并缓冲区只支持单线程写入, 所以在多核环境下我们需要再起两个队列
+        // 以解决多线程写入
+        //
+
+        if (config.getNumberOfCores() > 1) {
+            priceChangeQueue = DisruptorQueueFactory.createQueue(config.getSizeOfPublishDataRingBuffer(),
+                                                                 new ThreadFactory() {
+                                                                     @Override
+                                                                     public Thread newThread(Runnable runnable) {
+                                                                         Thread tr = new Thread(runnable);
+                                                                         tr.setName("Market-Price-Change-Thread");
+                                                                         return tr;
+                                                                     }
+                                                                 },
+                                                                 new AbstractDisruptorConsumer<PriceChangeMessage>() {
+                                                                     @Override
+                                                                     public void process(PriceChangeMessage event) {
+                                                                         priceChangeRingBuffer.offer(event.getSymbol(), event);
+                                                                     }
+                                                                 });
+
+            depthChartQueue = DisruptorQueueFactory.createQueue(config.getSizeOfPublishDataRingBuffer(),
+                                                                new ThreadFactory() {
+                                                                    @Override
+                                                                    public Thread newThread(Runnable runnable) {
+                                                                        Thread tr = new Thread(runnable);
+                                                                        tr.setName("Market-Depth-Change-Thread");
+                                                                        return tr;
+                                                                    }
+                                                                },
+                                                                new AbstractDisruptorConsumer<MarketDepthChartSeries>() {
+                                                                    @Override
+                                                                    public void process(MarketDepthChartSeries event) {
+                                                                        depthChartRingBuffer.offer(event.getSymbol(), event);
+                                                                    }
+                                                                });
+        }
+
+        priceChangeRingBuffer = new CoalescingRingBuffer<>(config.getSizeOfPublishDataRingBuffer());
+        depthChartRingBuffer = new CoalescingRingBuffer<>(config.getSizeOfPublishDataRingBuffer());
+
+        // 启动数据合并线程
         ThreadPoolUtils.submit(() -> {
-            List<PriceChangeMessage> messages = new ArrayList<>(16);
+            List<PriceChangeMessage> pMessages = new ArrayList<>(16);
+            List<MarketDepthChartSeries> dMessages = new ArrayList<>(16);
             for (; ; ) {
-                priceChangeRingBuffer.poll(messages);
-                for (PriceChangeMessage msg : messages) {
-                    // 触发事件
+
+                // 合并价格数据
+                priceChangeRingBuffer.poll(pMessages);
+                for (PriceChangeMessage msg : pMessages) {
+
                     this.syncExecuteHandler(h -> {
                         h.onMarketPriceChange(msg);
                     });
                 }
-                try {
-                    Thread.sleep(0);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
 
-        depthChartRingBuffer = new CoalescingRingBuffer<>(1 << 20);
-        ThreadPoolUtils.submit(() -> {
-            List<MarketDepthChartSeries> messages = new ArrayList<>(16);
-            for (; ; ) {
-                depthChartRingBuffer.poll(messages);
-                for (MarketDepthChartSeries msg : messages) {
+                // 合并深度数据
+                depthChartRingBuffer.poll(dMessages);
+                for (MarketDepthChartSeries msg : dMessages) {
                     // 触发事件
                     this.syncExecuteHandler(h -> {
                         h.onDepthChartChange(msg);
                     });
                 }
+
+                // 线程休眠
                 try {
-                    Thread.sleep(0);
+                    Thread.sleep(config.getPublishDataCompressCycle());
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }
         });
 
-        tradeMessageQueue = DisruptorQueueFactory.createQueue(1 << 20,
+        // 创建撮合数据队列
+        tradeMessageQueue = DisruptorQueueFactory.createQueue(config.getSizeOfTradeResultQueue(),
                                                               new AbstractDisruptorConsumer<TradeMessage>() {
                                                                   @Override
                                                                   public void process(TradeMessage event) {
@@ -255,8 +315,12 @@ public class MarketManager implements MatchHandler {
                           .forEach(book -> book.updateLastTradePrice(msg.getPrice()));
 
 
-                    // 进入合并队列
-                    priceChangeRingBuffer.offer(msg.getSymbol(), msg);
+                    if (priceChangeQueue != null) {
+                        priceChangeQueue.add(msg);
+                    } else {
+                        // 进入合并队列
+                        priceChangeRingBuffer.offer(msg.getSymbol(), msg);
+                    }
                 }
                 break;
             }
@@ -312,10 +376,7 @@ public class MarketManager implements MatchHandler {
         if (book == null) {
             return;
         }
-
-        // 深度推送到队列
-        final MarketDepthChartSeries series = book.snapSeries(20);
-        depthChartRingBuffer.offer(series.getSymbol(), series);
+        publishDepth(book.snapSeries(20));
     }
 
     /**
@@ -342,13 +403,17 @@ public class MarketManager implements MatchHandler {
         }
 
 
-
         // 更新成交价价
         book.updateLastTradePrice(ts.getExecutePrice());
 
         // 深度写入到队列
         final MarketDepthChartSeries series = book.snapSeries(20);
-        depthChartRingBuffer.offer(series.getSymbol(), series);
+        if (depthChartQueue != null) {
+            depthChartQueue.add(series);
+        } else {
+            // 进入合并队列
+            depthChartRingBuffer.offer(series.getSymbol(), series);
+        }
 
         // 推送成交数据到队列
         final TradeMessage tradeResult = new TradeMessage();
@@ -364,7 +429,12 @@ public class MarketManager implements MatchHandler {
         msg.setPrice(ts.getExecutePrice());
         msg.setSymbol(order.getSymbol());
         msg.setThird(false);
-        priceChangeRingBuffer.offer(msg.getSymbol(), msg);
+        if (priceChangeQueue != null) {
+            priceChangeQueue.add(msg);
+        } else {
+            // 进入合并队列
+            priceChangeRingBuffer.offer(msg.getSymbol(), msg);
+        }
     }
 
     /**
@@ -378,15 +448,10 @@ public class MarketManager implements MatchHandler {
     @Override
     public void onOrderCancel(Order removed) {
         OrderBook book = router.routeToBookForSendDepthChart(removed);
-
         if (book == null) {
             return;
         }
-
-        final MarketDepthChartSeries series = book.snapSeries(20);
-
-        // 深度写入到队列
-        depthChartRingBuffer.offer(series.getSymbol(), series);
+        publishDepth(book.snapSeries(20));
     }
 
     /**
@@ -400,14 +465,25 @@ public class MarketManager implements MatchHandler {
     @Override
     public void onActiveStopOrder(Order stopOrder) throws Exception {
         OrderBook book = router.routeToBookForSendDepthChart(stopOrder);
-
         if (book == null) {
             return;
         }
+        publishDepth(book.snapSeries(20));
+    }
 
-        final MarketDepthChartSeries series = book.snapSeries(20);
-
+    /**
+     * 推送盘口
+     *
+     * @param series
+     *         盘口
+     */
+    private void publishDepth(MarketDepthChartSeries series) {
         // 深度写入到队列
-        depthChartRingBuffer.offer(series.getSymbol(), series);
+        if (depthChartQueue != null) {
+            depthChartQueue.add(series);
+        } else {
+            // 进入合并队列
+            depthChartRingBuffer.offer(series.getSymbol(), series);
+        }
     }
 }

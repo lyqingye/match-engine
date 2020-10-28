@@ -74,7 +74,10 @@ public class ExampleLoggerHandler implements MatchHandler {
 //                                             opponentOrder.getLeavesAmount().toPlainString()));
 
 //        }
-        if (counter.incrementAndGet() % 10000 == 0){
+        if (counter.get() == 0) {
+            System.out.println("startxxx: " + System.currentTimeMillis());
+        }
+        if (counter.incrementAndGet() % 10000 == 0) {
             System.out.println(counter.get());
             System.out.println(System.currentTimeMillis());
         }

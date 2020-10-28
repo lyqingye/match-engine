@@ -1,5 +1,7 @@
 package com.trader;
 
+import com.trader.config.MatchEngineConfig;
+import com.trader.core.OrderRouter;
 import com.trader.core.Scheduler;
 import com.trader.core.support.router.GenericOrderRouter;
 import com.trader.core.support.scheduler.GenericScheduler;
@@ -67,31 +69,42 @@ public class MatchEngine {
      */
     private DisruptorQueue<Order> addOrderQueue;
 
-    public static MatchEngine newEngine(int numberOfCores,
-                                        int sizeOfOrderQueue,
-                                        int sizeOfProcessorCmdBuffer,
-                                        MatchHandler handler) {
-        GenericOrderRouter router = new GenericOrderRouter();
-        MarketManager market = new MarketManager(router);
+    public static MatchEngine newEngine(MatchEngineConfig config) {
+        // 订单路由
+        OrderRouter router;
+        if (config.getRouter() != null) {
+            router = config.getRouter();
+        } else {
+            router = new GenericOrderRouter();
+        }
+        config.setRouter(router);
+
+        // 撮合处理器
+        CompositeMatchEventHandler handlers = new CompositeMatchEventHandler(new InMemoryLimitMatchHandler(),
+                                                                             new InMemoryMarketMatchHandler());
+        MatchHandler h = config.getHandler();
+        if (h != null) {
+            handlers.regHandler(h);
+        }
+
+        // 市场管理器
+        MarketManager market = new MarketManager(config);
+        handlers.regHandler(market.getMatchHandler());
+
+        // 撮合规则
         MatcherManager matcher = new MatcherManager();
         matcher.addMatcher(new LimitOrderMatcher());
         matcher.addMatcher(new MarketOrderMatcher());
 
-        GenericScheduler scheduler = new GenericScheduler(router, matcher, market,
-
-                                                          // 注意处理器顺序
-                                                          new CompositeMatchEventHandler(
-                                                                  // 内存计算
-                                                                  new InMemoryLimitMatchHandler(),
-                                                                  new InMemoryMarketMatchHandler(),
-
-                                                                  // 持久化
-                                                                  handler,
-
-                                                                  // 消息推送
-                                                                  market.getMatchHandler()),
-                                                          numberOfCores, sizeOfProcessorCmdBuffer);
-        return new MatchEngine(market, scheduler, sizeOfOrderQueue);
+        // 调度器
+        GenericScheduler scheduler = new GenericScheduler(router,
+                                                          matcher,
+                                                          market,
+                                                          handlers,
+                                                          config.getNumberOfCores(),
+                                                          config.getSizeOfCoreCmdBuffer());
+        config.setScheduler(scheduler);
+        return new MatchEngine(market, scheduler, config.getSizeOfOrderQueue());
     }
 
     public MatchEngine(MarketManager market,
@@ -112,6 +125,15 @@ public class MatchEngine {
         }, new AbstractDisruptorConsumer<Order>() {
             @Override
             public void process(Order event) {
+
+//                while (!isMatching) {
+//                    try {
+//                        Thread.sleep(0);
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+
                 scheduler.submit(event);
             }
         });

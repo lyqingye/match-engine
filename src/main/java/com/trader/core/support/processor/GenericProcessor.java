@@ -151,10 +151,13 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
                     Order bid = bidIt.next();
                     if (bid.isNotActivated()) {
                         if (bid.getTriggerPrice().compareTo(msg.getPrice()) >= 0) {
-                            System.out.println(String.format("[MatchEngine]: active stop order, orderId: [%s] side: [%s]" +
+                            System.out.println(String.format("[MatchEngine]: active stop order," +
+                                                                     " orderId: [%s] side: [%s]" +
                                                                      "triggerPrice: [%s] latestPrice: [%s]",
-                                                             bid.getId(), bid.getSide().name(),
-                                                             bid.getTriggerPrice().toPlainString(), msg.getPrice().toPlainString()));
+                                                             bid.getId(),
+                                                             bid.getSide().name(),
+                                                             bid.getTriggerPrice().toPlainString(),
+                                                             msg.getPrice().toPlainString()));
                             bid.setCmd(Cmd.ACTIVE_ORDER);
                             bid.setActivated(ActivateStatus.ACTIVATING);
                             exec(bid);
@@ -175,10 +178,13 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
 
                     if (ask.isNotActivated()) {
                         if (ask.getTriggerPrice().compareTo(msg.getPrice()) <= 0) {
-                            System.out.println(String.format("[MatchEngine]: active stop order, orderId: [%s] side: [%s]" +
+                            System.out.println(String.format("[MatchEngine]: active stop order, " +
+                                                                     "orderId: [%s] side: [%s]" +
                                                                      "triggerPrice: [%s] latestPrice: [%s]",
-                                                             ask.getId(), ask.getSide().name(),
-                                                             ask.getTriggerPrice().toPlainString(), msg.getPrice().toPlainString()));
+                                                             ask.getId(),
+                                                             ask.getSide().name(),
+                                                             ask.getTriggerPrice().toPlainString(),
+                                                             msg.getPrice().toPlainString()));
                             ask.setCmd(Cmd.ACTIVE_ORDER);
                             ask.setActivated(ActivateStatus.ACTIVATING);
                             exec(ask);

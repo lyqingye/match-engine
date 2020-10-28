@@ -29,7 +29,7 @@ public class TestLimitOrderMatch  {
         config.setSizeOfOrderQueue(1 << 20);
         config.setSizeOfCoreCmdBuffer(1 << 20);
         config.setSizeOfPublishDataRingBuffer(1 << 20);
-        config.setNumberOfCores(1);
+        config.setNumberOfCores(2);
         config.setHandler(new ExampleLoggerHandler());
         config.setSizeOfPublishDataRingBuffer(1 << 20);
         config.setPublishDataCompressCycle(1000);

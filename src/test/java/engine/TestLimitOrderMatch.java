@@ -26,7 +26,7 @@ public class TestLimitOrderMatch  {
 
     @Before
     public void before () {
-        engine = MatchEngine.newEngine(1, 1 << 20,
+        engine = MatchEngine.newEngine(2, 1 << 20,
                                        1 << 20,
                                        new ExampleLoggerHandler());
         engine.enableMatching();

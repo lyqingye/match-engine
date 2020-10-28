@@ -14,9 +14,10 @@ public class ThreadPoolUtils {
     private static final ExecutorService EXECUTOR_SERVICE;
 
     static {
-        EXECUTOR_SERVICE = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() << 1,
+        EXECUTOR_SERVICE = Executors.newFixedThreadPool(2,
                                                         new ThreadFactory() {
                                                             AtomicInteger counter = new AtomicInteger(0);
+
                                                             @Override
                                                             public Thread newThread(Runnable r) {
                                                                 final Thread thr = new Thread(r);

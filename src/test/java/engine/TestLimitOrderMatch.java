@@ -12,9 +12,7 @@ import org.junit.Test;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author yjt
@@ -28,7 +26,7 @@ public class TestLimitOrderMatch  {
 
     @Before
     public void before () {
-        engine = MatchEngine.newEngine(2, 1 << 20,
+        engine = MatchEngine.newEngine(1, 1 << 20,
                                        1 << 20,
                                        new ExampleLoggerHandler());
         engine.enableMatching();

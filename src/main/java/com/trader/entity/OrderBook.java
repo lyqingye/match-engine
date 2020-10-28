@@ -18,9 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.TreeSet;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 
 /**
@@ -61,16 +58,6 @@ public class OrderBook {
     private TreeSet<Order> sellStopOrders = new TreeSet<>(StopAskComparator.getInstance());
 
     /**
-     * 止盈止损订单锁
-     */
-    private ReentrantLock stopOrdersLock = new ReentrantLock();
-
-    /**
-     * 读写锁 (预留)
-     */
-    private ReadWriteLock reserve = new ReentrantReadWriteLock();
-
-    /**
      * 最后一条成交价
      */
     private volatile BigDecimal lastTradePrice = BigDecimal.ZERO;
@@ -104,23 +91,14 @@ public class OrderBook {
             }
 
             case STOP: {
-                //
-                // 止盈止损单需要加锁
-                //
-                this.lockStopOrders();
-                try {
-                    /**
-                     * 止盈止损单
-                     */
-                    if (o.isBuy()) {
-                        buyStopOrders.add(o);
-                    } else {
-                        sellStopOrders.add(o);
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
-                    this.unlockStopOrders();
+
+                /**
+                 * 止盈止损单
+                 */
+                if (o.isBuy()) {
+                    buyStopOrders.add(o);
+                } else {
+                    sellStopOrders.add(o);
                 }
                 break;
             }
@@ -178,20 +156,6 @@ public class OrderBook {
             }
             orders.removeIf(v -> v.getId().equals(stopOrder.getId()));
         }
-    }
-
-    /**
-     * 锁定止盈止损订单列表
-     */
-    public void lockStopOrders() {
-        this.stopOrdersLock.lock();
-    }
-
-    /**
-     * 解锁止盈止损订单
-     */
-    public void unlockStopOrders() {
-        this.stopOrdersLock.unlock();
     }
 
     /**

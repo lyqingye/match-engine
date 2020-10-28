@@ -5,15 +5,12 @@ import com.trader.config.MatchEngineConfig;
 import com.trader.entity.Order;
 import com.trader.factory.OrderFactory;
 import com.trader.handler.ExampleLoggerHandler;
-import com.trader.market.publish.MarketPublishHandler;
-import com.trader.market.publish.TcpMarketPublishClient;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -34,12 +31,11 @@ public class TestLimitOrderMatch  {
         config.setSizeOfPublishDataRingBuffer(1 << 20);
         config.setNumberOfCores(1);
         config.setHandler(new ExampleLoggerHandler());
+        config.setSizeOfPublishDataRingBuffer(1 << 20);
+        config.setPublishDataCompressCycle(1000);
         engine = MatchEngine.newEngine(config);
 //        engine.disableMatching();
         engine.enableMatching();
-
-        engine.getMarketMgr()
-              .addHandler(new MarketPublishHandler(new TcpMarketPublishClient("localhost", 8888)));
 
         try {
             Thread.sleep(10000);
@@ -141,7 +137,7 @@ public class TestLimitOrderMatch  {
             orderList.add(buyLimitOrder);
             orderList.add(sellMarketOrder);
         }
-        Collections.shuffle(orderList);
+//        Collections.shuffle(orderList);
         for (Order order : orderList) {
             engine.addOrder(order);
         }

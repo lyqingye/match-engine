@@ -7,6 +7,7 @@ import com.trader.entity.Order;
 import com.trader.entity.OrderBook;
 import com.trader.helper.tuples.Tuple;
 import com.trader.market.entity.MarketDepthChartSeries;
+import com.trader.market.publish.MarketPublishClient;
 import com.trader.market.publish.MarketPublishHandler;
 import com.trader.market.publish.TcpMarketPublishClient;
 import com.trader.market.publish.config.MarketConfigHttpClient;
@@ -88,6 +89,12 @@ public class MarketManager implements MatchHandler {
     @Getter
     private MarketConfigHttpClient marketConfigClient;
 
+    /**
+     * 消息推送客户端
+     */
+    @Getter
+    private MarketPublishClient marketPublishClient;
+
 
     /**
      * hide default constructor
@@ -154,11 +161,16 @@ public class MarketManager implements MatchHandler {
 
                 // 合并价格数据
                 priceChangeRingBuffer.poll(pMessages);
+
                 for (PriceChangeMessage msg : pMessages) {
 
                     this.syncExecuteHandler(h -> {
                         h.onMarketPriceChange(msg);
                     });
+                }
+
+                if (pMessages.size() > 0) {
+                    pMessages.clear();
                 }
 
                 // 合并深度数据
@@ -168,6 +180,10 @@ public class MarketManager implements MatchHandler {
                     this.syncExecuteHandler(h -> {
                         h.onDepthChartChange(msg);
                     });
+                }
+
+                if (dMessages.size() > 0) {
+                    dMessages.clear();
                 }
 
                 // 线程休眠
@@ -191,17 +207,17 @@ public class MarketManager implements MatchHandler {
                                                               });
         // 配置市场推送服务
         if (config.getMarketPublishClient() == null) {
-            TcpMarketPublishClient client = new TcpMarketPublishClient(config.getMarketPublishClientHost(),
-                                                                       config.getMarketPublishClientPort());
-            config.setMarketPublishClient(client);
-            this.addHandler(new MarketPublishHandler(client));
+            marketPublishClient = new TcpMarketPublishClient(config.getMarketPublishClientHost(),
+                                                             config.getMarketPublishClientPort());
+            config.setMarketPublishClient(marketPublishClient);
+            this.addHandler(new MarketPublishHandler(marketPublishClient));
         } else {
             this.addHandler(new MarketPublishHandler(config.getMarketPublishClient()));
         }
 
         // 创建市场配置客户端
         marketConfigClient = TcpMarketPublishClient.createConfigClient(config.getWebsocketConfigClientHost(),
-                                                                       config.getMarketPublishClientPort());
+                                                                       config.getWebsocketConfigClientPort());
         // 同步方式获取市价
         this.tryToInitMarketPrice(marketConfigClient::getMarketPriceSync);
     }

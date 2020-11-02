@@ -33,7 +33,7 @@ public interface OrderRouter {
      * @param order
      *         订单
      *
-     * @return 订单簿 or null 如果没有合适的订单
+     * @return 订单所在盘, 不能为null
      */
     OrderBook routeTo(Order order);
 
@@ -88,7 +88,16 @@ public interface OrderRouter {
      * @param order
      *         订单
      *
-     * @return 订单簿
+     * @return 订单簿 or null 如果不需要推送盘口
      */
     OrderBook routeToBookForSendDepthChart(Order order);
+
+    /**
+     * 对于本次撮合是否推送K线
+     *
+     * @param order 当前订单
+     * @param opponentOrder 对手订单
+     * @return 是否推送
+     */
+    boolean isPublishKline (Order order,Order opponentOrder);
 }

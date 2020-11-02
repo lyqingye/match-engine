@@ -119,4 +119,9 @@ public class GenericOrderRouter implements OrderRouter {
     public OrderBook routeToBookForSendDepthChart(Order order) {
         return bookCache.get(order.getSymbol());
     }
+
+    @Override
+    public boolean isPublishKline(Order order, Order opponentOrder) {
+        return true;
+    }
 }

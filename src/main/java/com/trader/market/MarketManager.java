@@ -438,42 +438,41 @@ public class MarketManager implements MatchHandler {
         // 当有最新订单成交的时候, 需要更新最后一条成交价格
         OrderBook book = router.routeToBookForSendDepthChart(order);
 
-        if (book == null) {
-            return;
+        if (book != null) {
+            // 更新成交价价
+            book.updateLastTradePrice(ts.getExecutePrice());
+
+            // 深度写入到队列
+            final MarketDepthChartSeries series = book.snapSeries(20);
+            if (depthChartQueue != null) {
+                depthChartQueue.add(series);
+            } else {
+                // 进入合并队列
+                depthChartRingBuffer.offer(series.getSymbol(), series);
+            }
         }
 
+        if (router.isPublishKline(order, opponentOrder)) {
+            // 推送成交数据到队列
+            final TradeMessage tradeResult = new TradeMessage();
+            tradeResult.setSymbol(order.getSymbol());
+            tradeResult.setQuantity(ts.getQuantity());
+            tradeResult.setPrice(ts.getExecutePrice());
+            tradeResult.setTs(ts.getTimestamp());
+            tradeResult.setDirection(order.getSide().toDirection());
+            tradeMessageQueue.add(tradeResult);
 
-        // 更新成交价价
-        book.updateLastTradePrice(ts.getExecutePrice());
-
-        // 深度写入到队列
-        final MarketDepthChartSeries series = book.snapSeries(20);
-        if (depthChartQueue != null) {
-            depthChartQueue.add(series);
-        } else {
             // 进入合并队列
-            depthChartRingBuffer.offer(series.getSymbol(), series);
-        }
-
-        // 推送成交数据到队列
-        final TradeMessage tradeResult = new TradeMessage();
-        tradeResult.setSymbol(order.getSymbol());
-        tradeResult.setQuantity(ts.getQuantity());
-        tradeResult.setPrice(ts.getExecutePrice());
-        tradeResult.setTs(ts.getTimestamp());
-        tradeResult.setDirection(order.getSide().toDirection());
-        tradeMessageQueue.add(tradeResult);
-
-        // 进入合并队列
-        PriceChangeMessage msg = new PriceChangeMessage();
-        msg.setPrice(ts.getExecutePrice());
-        msg.setSymbol(order.getSymbol());
-        msg.setThird(false);
-        if (priceChangeQueue != null) {
-            priceChangeQueue.add(msg);
-        } else {
-            // 进入合并队列
-            priceChangeRingBuffer.offer(msg.getSymbol(), msg);
+            PriceChangeMessage msg = new PriceChangeMessage();
+            msg.setPrice(ts.getExecutePrice());
+            msg.setSymbol(order.getSymbol());
+            msg.setThird(false);
+            if (priceChangeQueue != null) {
+                priceChangeQueue.add(msg);
+            } else {
+                // 进入合并队列
+                priceChangeRingBuffer.offer(msg.getSymbol(), msg);
+            }
         }
     }
 

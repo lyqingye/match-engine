@@ -14,7 +14,7 @@ public enum MessageType {
     DEPTH_CHART,
     TRADE_RESULT;
 
-    public static MessageType ofName (String name) {
+    public static MessageType ofName(String name) {
         for (MessageType t : values()) {
             if (t.name().equalsIgnoreCase(name)) {
                 return t;

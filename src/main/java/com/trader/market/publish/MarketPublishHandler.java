@@ -31,18 +31,18 @@ public class MarketPublishHandler implements MarketEventHandler {
     @Getter
     private MarketPublishClient client;
 
-    public MarketPublishHandler (MarketPublishClient client) {
+    public MarketPublishHandler(MarketPublishClient client) {
         this.client = Objects.requireNonNull(client);
-        this.client.conn(client.host(),client.port(),client.consumer(),ar -> {
+        this.client.conn(client.host(), client.port(), client.consumer(), ar -> {
             if (ar.succeeded()) {
                 latestChartCache.values().forEach(this.client::send);
             }
         });
     }
 
-    public MarketPublishHandler (MarketPublishClient client, Consumer<MarketPublishHandler> onConnection) {
+    public MarketPublishHandler(MarketPublishClient client, Consumer<MarketPublishHandler> onConnection) {
         this.client = Objects.requireNonNull(client);
-        this.client.conn(client.host(),client.port(),client.consumer(),ar -> {
+        this.client.conn(client.host(), client.port(), client.consumer(), ar -> {
             if (ar.succeeded()) {
                 onConnection.accept(this);
             }
@@ -52,8 +52,8 @@ public class MarketPublishHandler implements MarketEventHandler {
     @Override
     public void onDepthChartChange(MarketDepthChartSeries series) {
         String obj = Json.encode(DepthChartMessage.of(series));
-        latestChartCache.put(series.getSymbol(),obj);
-        if(client.isOpen()) {
+        latestChartCache.put(series.getSymbol(), obj);
+        if (client.isOpen()) {
             client.send(obj);
         }
     }

@@ -24,7 +24,7 @@ public class Message<T> {
      */
     private T data;
 
-    public static MessageType getTypeFromJson (JsonObject json) {
+    public static MessageType getTypeFromJson(JsonObject json) {
         if (json == null) {
             return null;
         }

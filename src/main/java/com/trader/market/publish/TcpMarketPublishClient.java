@@ -12,7 +12,6 @@ import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.NetSocket;
 import io.vertx.core.parsetools.RecordParser;
 import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 
 import java.nio.charset.StandardCharsets;
 import java.util.function.Consumer;
@@ -77,12 +76,15 @@ public class TcpMarketPublishClient implements MarketPublishClient {
     /**
      * 链接到目标
      *
-     * @param host 域名
-     * @param port 端口
-     * @param consumer 消息消费者
+     * @param host
+     *         域名
+     * @param port
+     *         端口
+     * @param consumer
+     *         消息消费者
      */
     @Override
-    public void conn(String host, int port, Consumer<JsonObject> consumer, Handler<AsyncResult<NetSocket>> connectHandler)  {
+    public void conn(String host, int port, Consumer<JsonObject> consumer, Handler<AsyncResult<NetSocket>> connectHandler) {
         this.host = host;
         this.port = port;
         this.consumer = consumer;
@@ -94,7 +96,7 @@ public class TcpMarketPublishClient implements MarketPublishClient {
             JsonObject json = null;
             try {
                 json = h.toJsonObject();
-            }catch (Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
             if (json == null) {
@@ -133,7 +135,7 @@ public class TcpMarketPublishClient implements MarketPublishClient {
                          // 如果目标关闭则进行重连
                          client.closeHandler(close -> {
                              this.client = null;
-                            conn(host,port,consumer,connectHandler);
+                             conn(host, port, consumer, connectHandler);
                          });
                      }
                  });
@@ -143,10 +145,11 @@ public class TcpMarketPublishClient implements MarketPublishClient {
     /**
      * 推送消息
      *
-     * @param textMsg 文本消息
+     * @param textMsg
+     *         文本消息
      */
     @Override
-    public void send (String textMsg) {
+    public void send(String textMsg) {
         if (this.client != null) {
             this.client.write(textMsg + "\n", StandardCharsets.UTF_8.name());
             if (this.client.writeQueueFull()) {
@@ -164,10 +167,11 @@ public class TcpMarketPublishClient implements MarketPublishClient {
     /**
      * 推送消息
      *
-     * @param binMsg 二进制消息
+     * @param binMsg
+     *         二进制消息
      */
     @Override
-    public void send (byte[] binMsg) {
+    public void send(byte[] binMsg) {
         if (this.client != null) {
             this.client.write(Buffer.buffer(binMsg));
             if (this.client.writeQueueFull()) {

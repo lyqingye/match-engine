@@ -60,9 +60,6 @@ public interface MatchHandler {
      *
      * @param removed
      *         已经被移除的事件
-     *
-     * @throws Exception
-     *         异常
      */
     default void onOrderCancel(Order removed) {
 
@@ -80,6 +77,7 @@ public interface MatchHandler {
      *         撮合结果
      *
      * @throws Exception
+     *         如果发生异常
      */
     default void onExecuteOrder(Order order, Order opponentOrder, TradeResult ts) throws Exception {
     }

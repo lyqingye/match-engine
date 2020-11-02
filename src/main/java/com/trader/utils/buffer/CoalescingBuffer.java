@@ -35,8 +35,10 @@ public interface CoalescingBuffer<K, V> {
     /**
      * Add a value to be collapsed on the give key
      *
-     * @param key the key on which to collapse the value
-     *        equality is determined by the equals method
+     * @param key
+     *         the key on which to collapse the value
+     *         equality is determined by the equals method
+     *
      * @return true if the value was added or false if the buffer was full
      */
     boolean offer(K key, V value);

@@ -35,17 +35,17 @@ public class LimitOrderBuilder {
         return builder;
     }
 
-    public static class SellLimitOrderBuilder  {
+    public static class SellLimitOrderBuilder {
         private Order order;
 
-        public SellLimitOrderBuilder () {
+        public SellLimitOrderBuilder() {
             order = new Order();
             order.setSide(OrderSide.SELL);
             order.setCreateDateTime(new Date());
             order.setVersion(0);
         }
 
-        public SellLimitOrderBuilder quantity (BigDecimal quantity) {
+        public SellLimitOrderBuilder quantity(BigDecimal quantity) {
             order.setQuantity(quantity);
             order.setLeavesQuantity(quantity);
             return this;
@@ -61,42 +61,42 @@ public class LimitOrderBuilder {
             return this;
         }
 
-        public SellLimitOrderBuilder AOK () {
+        public SellLimitOrderBuilder AOK() {
             order.setTimeInForce(OrderTimeInForce.FOK);
             return this;
         }
 
-        public SellLimitOrderBuilder GTC () {
+        public SellLimitOrderBuilder GTC() {
             order.setTimeInForce(OrderTimeInForce.GTC);
             return this;
         }
 
-        public SellLimitOrderBuilder IOC () {
+        public SellLimitOrderBuilder IOC() {
             order.setTimeInForce(OrderTimeInForce.IOC);
             return this;
         }
 
-        public SellLimitOrderBuilder FOK () {
+        public SellLimitOrderBuilder FOK() {
             order.setTimeInForce(OrderTimeInForce.FOK);
             return this;
         }
 
-        public Order build () {
+        public Order build() {
             return this.order;
         }
     }
 
-    public static class BuyLimitOrderBuilder  {
+    public static class BuyLimitOrderBuilder {
         private Order order;
 
-        public BuyLimitOrderBuilder () {
+        public BuyLimitOrderBuilder() {
             order = new Order();
             order.setSide(OrderSide.BUY);
             order.setCreateDateTime(new Date());
             order.setVersion(0);
         }
 
-        public BuyLimitOrderBuilder spent (BigDecimal totalAmount) {
+        public BuyLimitOrderBuilder spent(BigDecimal totalAmount) {
             order.setTotalAmount(totalAmount);
             order.setLeavesAmount(totalAmount);
             return this;
@@ -112,32 +112,32 @@ public class LimitOrderBuilder {
             return this;
         }
 
-        public BuyLimitOrderBuilder withUnitPriceCap (BigDecimal priceUpper) {
+        public BuyLimitOrderBuilder withUnitPriceCap(BigDecimal priceUpper) {
             order.setPriceUpperBound(priceUpper);
             return this;
         }
 
-        public BuyLimitOrderBuilder AOK () {
+        public BuyLimitOrderBuilder AOK() {
             order.setTimeInForce(OrderTimeInForce.FOK);
             return this;
         }
 
-        public BuyLimitOrderBuilder GTC () {
+        public BuyLimitOrderBuilder GTC() {
             order.setTimeInForce(OrderTimeInForce.GTC);
             return this;
         }
 
-        public BuyLimitOrderBuilder IOC () {
+        public BuyLimitOrderBuilder IOC() {
             order.setTimeInForce(OrderTimeInForce.IOC);
             return this;
         }
 
-        public BuyLimitOrderBuilder FOK () {
+        public BuyLimitOrderBuilder FOK() {
             order.setTimeInForce(OrderTimeInForce.FOK);
             return this;
         }
 
-        public Order build () {
+        public Order build() {
             return this.order;
         }
     }

@@ -2,7 +2,6 @@ package com.trader.market.publish;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.NetSocket;
 
@@ -16,30 +15,35 @@ public interface MarketPublishClient {
     /**
      * 链接到目标
      *
-     * @param host 域名
-     * @param port 端口
-     * @param consumer 消息消费者
+     * @param host
+     *         域名
+     * @param port
+     *         端口
+     * @param consumer
+     *         消息消费者
      */
-    void conn(String host, int port, Consumer<JsonObject> consumer, Handler<AsyncResult<NetSocket>> connectHandler) ;
+    void conn(String host, int port, Consumer<JsonObject> consumer, Handler<AsyncResult<NetSocket>> connectHandler);
 
     /**
      * 推送消息
      *
-     * @param textMsg 文本消息
+     * @param textMsg
+     *         文本消息
      */
-     void send (String textMsg);
+    void send(String textMsg);
 
     /**
      * 是否已经连接上了
      */
-    boolean isOpen ();
+    boolean isOpen();
 
     /**
      * 推送消息
      *
-     * @param binMsg 二进制消息
+     * @param binMsg
+     *         二进制消息
      */
-    void send (byte[] binMsg);
+    void send(byte[] binMsg);
 
     /**
      * 关闭链接
@@ -48,6 +52,7 @@ public interface MarketPublishClient {
 
     /**
      * 域名
+     *
      * @return 域名
      */
     String host();
@@ -57,17 +62,18 @@ public interface MarketPublishClient {
      *
      * @return 端口
      */
-    int port ();
+    int port();
 
     /**
      * 消费者
      *
      * @return 消费者
      */
-    Consumer<JsonObject> consumer ();
+    Consumer<JsonObject> consumer();
 
     /**
      * 添加消费者
+     *
      * @param consumer
      */
     void setConsumer(Consumer<JsonObject> consumer);

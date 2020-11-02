@@ -4,10 +4,8 @@ import com.trader.MatchHandler;
 import com.trader.def.OrderType;
 import com.trader.entity.Order;
 import com.trader.matcher.TradeResult;
-import com.trader.matcher.limit.InMemoryLimitMatchHandler;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 /**
  * @author yjt
@@ -28,13 +26,49 @@ public class InMemoryMarketMatchHandler implements MatchHandler {
     }
 
     /**
+     * 扣除订单
+     *
+     * @param order
+     *         订单
+     * @param executeQuantity
+     *         成交量
+     */
+    public static void updateOrder(Order order,
+                                   BigDecimal executeQuantity,
+                                   BigDecimal amount) {
+        // 如果买入单则扣除成交总金额
+        if (order.getType().equals(OrderType.MARKET)) {
+            if (order.isBuy()) {
+                order.incExecutedAmount(amount);
+                order.decLeavesAmount(amount);
+
+                // 记录已经成交的数量
+                order.incExecutedQuality(executeQuantity);
+            }
+
+            // 如果是卖出单则扣除成交量
+            if (order.isSell()) {
+                order.incExecutedQuality(executeQuantity);
+                order.decLeavesQuality(executeQuantity);
+
+                // 记录已经获得的金额
+                order.incExecutedAmount(amount);
+            }
+        }
+    }
+
+    /**
      * 撮合订单事件
      *
      * @param order
+     *         当前订单
      * @param opponentOrder
+     *         对手订单
      * @param ts
+     *         撮合结果
      *
      * @throws Exception
+     *         如果撮合失败
      */
     @Override
     public void onExecuteOrder(Order order,
@@ -51,45 +85,6 @@ public class InMemoryMarketMatchHandler implements MatchHandler {
         if (order.getType().equals(OrderType.MARKET) || opponentOrder.getType().equals(OrderType.MARKET)) {
             InMemoryMarketMatchHandler.updateOrder(order, quantity, ts.getExecuteAmount());
             InMemoryMarketMatchHandler.updateOrder(opponentOrder, quantity, ts.getOpponentExecuteAmount());
-        }
-    }
-
-    /**
-     * 扣除订单
-     *
-     * @param order
-     *         订单
-     * @param executeQuantity
-     *         成交量
-     */
-    public static void updateOrder(Order order,
-                                   BigDecimal executeQuantity,
-                                   BigDecimal amount) {
-
-        switch (order.getType()) {
-            case MARKET: {
-                // 如果买入单则扣除成交总金额
-                if (order.isBuy()) {
-                    order.incExecutedAmount(amount);
-                    order.decLeavesAmount(amount);
-
-                    // 记录已经成交的数量
-                    order.incExecutedQuality(executeQuantity);
-                }
-
-                // 如果是卖出单则扣除成交量
-                if (order.isSell()) {
-                    order.incExecutedQuality(executeQuantity);
-                    order.decLeavesQuality(executeQuantity);
-
-                    // 记录已经获得的金额
-                    order.incExecutedAmount(amount);
-                }
-                break;
-            }
-            default: {
-                // ignored
-            }
         }
     }
 }

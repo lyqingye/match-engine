@@ -5,7 +5,6 @@ import com.trader.entity.Order;
 import com.trader.matcher.TradeResult;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 /**
  * @author yjt
@@ -26,19 +25,36 @@ public class InMemoryLimitMatchHandler implements MatchHandler {
     }
 
     /**
-     * 撮合订单事件
+     * 更新订单
      *
      * @param order
-     * @param opponentOrder
-     * @param ts
-     *
-     * @throws Exception
+     *         订单
+     * @param executeQuantity
+     *         成交数量
+     * @param amount
+     *         成交金额
      */
-    @Override
-    public void onExecuteOrder(Order order,
-                               Order opponentOrder, TradeResult ts) throws Exception {
-        InMemoryLimitMatchHandler.executeOrder(order, ts, ts.getExecuteAmount());
-        InMemoryLimitMatchHandler.executeOrder(opponentOrder, ts, ts.getOpponentExecuteAmount());
+    public static void updateOrder(Order order,
+                                   BigDecimal executeQuantity,
+                                   BigDecimal amount) {
+        if (order.isBuy()) {
+            // 限价买单
+
+            order.decLeavesAmount(amount);
+            order.incExecutedAmount(amount);
+
+            // 买单需要记录已经获得的数量
+            order.incExecutedQuality(executeQuantity);
+        } else {
+            //
+            // 增加成交量, 与减少剩余成交量
+            //
+            order.incExecutedQuality(executeQuantity);
+            order.decLeavesQuality(executeQuantity);
+
+            // 卖单需要记录已经获得的金钱
+            order.incExecutedAmount(amount);
+        }
     }
 
     /**
@@ -65,35 +81,22 @@ public class InMemoryLimitMatchHandler implements MatchHandler {
     }
 
     /**
-     * 更新订单
+     * 撮合订单事件
      *
      * @param order
-     *         订单
-     * @param executePrice
-     *         成交价格
-     * @param executeQuantity
-     *         成交数量
+     *         当前订单
+     * @param opponentOrder
+     *         对手订单
+     * @param ts
+     *         撮合结果
+     *
+     * @throws Exception
+     *         如果发生异常
      */
-    public static void updateOrder(Order order,
-                                   BigDecimal executeQuantity,
-                                   BigDecimal amount) {
-        if (order.isBuy()) {
-            // 限价买单
-
-            order.decLeavesAmount(amount);
-            order.incExecutedAmount(amount);
-
-            // 买单需要记录已经获得的数量
-            order.incExecutedQuality(executeQuantity);
-        } else {
-            //
-            // 增加成交量, 与减少剩余成交量
-            //
-            order.incExecutedQuality(executeQuantity);
-            order.decLeavesQuality(executeQuantity);
-
-            // 卖单需要记录已经获得的金钱
-            order.incExecutedAmount(amount);
-        }
+    @Override
+    public void onExecuteOrder(Order order,
+                               Order opponentOrder, TradeResult ts) throws Exception {
+        InMemoryLimitMatchHandler.executeOrder(order, ts, ts.getExecuteAmount());
+        InMemoryLimitMatchHandler.executeOrder(opponentOrder, ts, ts.getOpponentExecuteAmount());
     }
 }

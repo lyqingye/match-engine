@@ -24,7 +24,8 @@ public abstract class AbstractDisruptorConsumer<T> implements EventHandler<Objec
     /**
      * 进行数据处理
      *
-     * @param event 事件
+     * @param event
+     *         事件
      */
     public abstract void process(T event);
 }

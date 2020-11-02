@@ -5,13 +5,15 @@ package com.trader.factory;
  */
 public final class OrderFactory {
 
-    public static LimitOrderBuilder limit () {
+    public static LimitOrderBuilder limit() {
         return new LimitOrderBuilder();
     }
 
-    public static MarketOrderBuilder market () {return new MarketOrderBuilder();}
+    public static MarketOrderBuilder market() {
+        return new MarketOrderBuilder();
+    }
 
-    public static StopOrderBuilder stop () {
+    public static StopOrderBuilder stop() {
         return new StopOrderBuilder();
     }
 }

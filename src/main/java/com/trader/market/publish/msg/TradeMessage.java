@@ -1,6 +1,5 @@
 package com.trader.market.publish.msg;
 
-import com.trader.matcher.TradeResult;
 import lombok.Data;
 
 import java.math.BigDecimal;

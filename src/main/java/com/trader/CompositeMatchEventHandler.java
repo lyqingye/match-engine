@@ -23,6 +23,7 @@ public class CompositeMatchEventHandler extends MatchEventHandlerRegistry implem
      *         订单
      *
      * @throws Exception
+     *         如果发生异常
      */
     @Override
     public void onAddOrder(Order newOrder) throws Exception {
@@ -38,6 +39,7 @@ public class CompositeMatchEventHandler extends MatchEventHandlerRegistry implem
      *         止盈止损订单
      *
      * @throws Exception
+     *         如果发生异常
      */
     @Override
     public void onActiveStopOrder(Order stopOrder) throws Exception {
@@ -57,9 +59,6 @@ public class CompositeMatchEventHandler extends MatchEventHandlerRegistry implem
      *
      * @param removed
      *         已经被移除的事件
-     *
-     * @throws Exception
-     *         异常
      */
     @Override
     public void onOrderCancel(Order removed) {
@@ -79,6 +78,7 @@ public class CompositeMatchEventHandler extends MatchEventHandlerRegistry implem
      *         撮合结果
      *
      * @throws Exception
+     *         如果发生异常
      */
     @Override
     public void onExecuteOrder(Order order, Order opponentOrder, TradeResult ts) throws Exception {

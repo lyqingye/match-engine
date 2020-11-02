@@ -27,17 +27,17 @@ public class PriceChangeMessage {
 
     public static Message<PriceChangeMessage> ofLocal(String symbol,
                                                       BigDecimal price) {
-        return of(symbol,price,false);
+        return of(symbol, price, false);
     }
 
     public static Message<PriceChangeMessage> ofThird(String symbol,
                                                       BigDecimal price) {
-        return of(symbol,price,true);
+        return of(symbol, price, true);
     }
 
     private static Message<PriceChangeMessage> of(String symbol,
-                                                       BigDecimal price,
-                                                       boolean third) {
+                                                  BigDecimal price,
+                                                  boolean third) {
         PriceChangeMessage data = new PriceChangeMessage();
         data.setSymbol(symbol);
         data.setPrice(price);

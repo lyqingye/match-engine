@@ -95,9 +95,12 @@ public interface OrderRouter {
     /**
      * 对于本次撮合是否推送K线
      *
-     * @param order 当前订单
-     * @param opponentOrder 对手订单
+     * @param order
+     *         当前订单
+     * @param opponentOrder
+     *         对手订单
+     *
      * @return 是否推送
      */
-    boolean isPublishKline (Order order,Order opponentOrder);
+    boolean isPublishKline(Order order, Order opponentOrder);
 }

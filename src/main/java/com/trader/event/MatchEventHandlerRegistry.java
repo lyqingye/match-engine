@@ -47,12 +47,9 @@ public class MatchEventHandlerRegistry {
      *
      * @param f
      *         handler 消费者
-     *
-     * @throws Exception
      */
     protected void executeHandler(Consumer<MatchHandler> f) {
-        for (int i = 0; i < this.handlers.size(); i++) {
-            MatchHandler h = this.handlers.get(i);
+        for (MatchHandler h : this.handlers) {
             f.accept(h);
         }
     }

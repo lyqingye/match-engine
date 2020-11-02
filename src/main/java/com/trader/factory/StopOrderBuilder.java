@@ -33,17 +33,17 @@ public class StopOrderBuilder {
         return builder;
     }
 
-    public static class SellStopOrderBuilder  {
+    public static class SellStopOrderBuilder {
         private Order order;
 
-        public SellStopOrderBuilder () {
+        public SellStopOrderBuilder() {
             order = new Order();
             order.setSide(OrderSide.SELL);
             order.setCreateDateTime(new Date());
             order.setVersion(0);
         }
 
-        public SellStopOrderBuilder quantity (BigDecimal quantity) {
+        public SellStopOrderBuilder quantity(BigDecimal quantity) {
             order.setQuantity(quantity);
             order.setLeavesQuantity(quantity);
             return this;
@@ -59,47 +59,47 @@ public class StopOrderBuilder {
             return this;
         }
 
-        public SellStopOrderBuilder AOK () {
+        public SellStopOrderBuilder AOK() {
             order.setTimeInForce(OrderTimeInForce.FOK);
             return this;
         }
 
-        public SellStopOrderBuilder GTC () {
+        public SellStopOrderBuilder GTC() {
             order.setTimeInForce(OrderTimeInForce.GTC);
             return this;
         }
 
-        public SellStopOrderBuilder IOC () {
+        public SellStopOrderBuilder IOC() {
             order.setTimeInForce(OrderTimeInForce.IOC);
             return this;
         }
 
-        public SellStopOrderBuilder FOK () {
+        public SellStopOrderBuilder FOK() {
             order.setTimeInForce(OrderTimeInForce.FOK);
             return this;
         }
 
-        public SellStopOrderBuilder triggerByUnitPrice (BigDecimal triggerPrice) {
+        public SellStopOrderBuilder triggerByUnitPrice(BigDecimal triggerPrice) {
             order.setTriggerPrice(triggerPrice);
             return this;
         }
 
-        public Order build () {
+        public Order build() {
             return this.order;
         }
     }
 
-    public static class BuyStopOrderBuilder  {
+    public static class BuyStopOrderBuilder {
         private Order order;
 
-        public BuyStopOrderBuilder () {
+        public BuyStopOrderBuilder() {
             order = new Order();
             order.setSide(OrderSide.BUY);
             order.setCreateDateTime(new Date());
             order.setVersion(0);
         }
 
-        public BuyStopOrderBuilder spent (BigDecimal totalAmount) {
+        public BuyStopOrderBuilder spent(BigDecimal totalAmount) {
             order.setTotalAmount(totalAmount);
             order.setLeavesAmount(totalAmount);
             return this;
@@ -110,37 +110,37 @@ public class StopOrderBuilder {
             return this;
         }
 
-        public BuyStopOrderBuilder withUnitPriceCap (BigDecimal priceUpper) {
+        public BuyStopOrderBuilder withUnitPriceCap(BigDecimal priceUpper) {
             order.setPriceUpperBound(priceUpper);
             return this;
         }
 
-        public BuyStopOrderBuilder AOK () {
+        public BuyStopOrderBuilder AOK() {
             order.setTimeInForce(OrderTimeInForce.FOK);
             return this;
         }
 
-        public BuyStopOrderBuilder GTC () {
+        public BuyStopOrderBuilder GTC() {
             order.setTimeInForce(OrderTimeInForce.GTC);
             return this;
         }
 
-        public BuyStopOrderBuilder IOC () {
+        public BuyStopOrderBuilder IOC() {
             order.setTimeInForce(OrderTimeInForce.IOC);
             return this;
         }
 
-        public BuyStopOrderBuilder FOK () {
+        public BuyStopOrderBuilder FOK() {
             order.setTimeInForce(OrderTimeInForce.FOK);
             return this;
         }
 
-        public BuyStopOrderBuilder triggerByUnitPrice (BigDecimal triggerPrice) {
+        public BuyStopOrderBuilder triggerByUnitPrice(BigDecimal triggerPrice) {
             order.setTriggerPrice(triggerPrice);
             return this;
         }
 
-        public Order build () {
+        public Order build() {
             return this.order;
         }
     }

@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- *
  * 通用的订单路由
  * 根据交易对进行分区
  *
@@ -22,7 +21,7 @@ public class GenericOrderRouter implements OrderRouter {
     /**
      * symbol -> book
      */
-    private Map<String,OrderBook> bookCache = new HashMap<>(16);
+    private Map<String, OrderBook> bookCache = new HashMap<>(16);
 
     @Override
     public String name() {
@@ -54,7 +53,7 @@ public class GenericOrderRouter implements OrderRouter {
      */
     @Override
     public Collection<OrderBook> routeToNeedToActiveBook(String symbolId) {
-        return  Collections.singletonList(bookCache.computeIfAbsent(symbolId, k -> {
+        return Collections.singletonList(bookCache.computeIfAbsent(symbolId, k -> {
             final OrderBook newBook = new OrderBook();
             newBook.setSymbolId(k);
             return newBook;

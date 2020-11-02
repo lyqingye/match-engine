@@ -10,7 +10,7 @@ import lombok.Data;
 public class ObjectEvent<T> {
     private T obj;
 
-    public void clear () {
+    public void clear() {
         this.obj = null;
     }
 }

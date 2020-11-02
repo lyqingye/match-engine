@@ -34,84 +34,84 @@ public class MarketOrderBuilder {
         return builder;
     }
 
-    public static class SellMarketOrderBuilder  {
+    public static class SellMarketOrderBuilder {
         private Order order;
 
-        public SellMarketOrderBuilder () {
+        public SellMarketOrderBuilder() {
             order = new Order();
             order.setSide(OrderSide.SELL);
             order.setCreateDateTime(new Date());
             order.setVersion(0);
         }
 
-        public SellMarketOrderBuilder quantity (BigDecimal quantity) {
+        public SellMarketOrderBuilder quantity(BigDecimal quantity) {
             order.setQuantity(quantity);
             order.setLeavesQuantity(quantity);
             return this;
         }
 
-        public SellMarketOrderBuilder AOK () {
+        public SellMarketOrderBuilder AOK() {
             order.setTimeInForce(OrderTimeInForce.FOK);
             return this;
         }
 
-        public SellMarketOrderBuilder GTC () {
+        public SellMarketOrderBuilder GTC() {
             order.setTimeInForce(OrderTimeInForce.GTC);
             return this;
         }
 
-        public SellMarketOrderBuilder IOC () {
+        public SellMarketOrderBuilder IOC() {
             order.setTimeInForce(OrderTimeInForce.IOC);
             return this;
         }
 
-        public SellMarketOrderBuilder FOK () {
+        public SellMarketOrderBuilder FOK() {
             order.setTimeInForce(OrderTimeInForce.FOK);
             return this;
         }
 
-        public Order build () {
+        public Order build() {
             return this.order;
         }
     }
 
-    public static class BuyMarketOrderBuilder{
+    public static class BuyMarketOrderBuilder {
         private Order order;
 
-        public BuyMarketOrderBuilder () {
+        public BuyMarketOrderBuilder() {
             order = new Order();
             order.setSide(OrderSide.BUY);
             order.setCreateDateTime(new Date());
             order.setVersion(0);
         }
 
-        public BuyMarketOrderBuilder spent (BigDecimal totalAmount) {
+        public BuyMarketOrderBuilder spent(BigDecimal totalAmount) {
             order.setTotalAmount(totalAmount);
             order.setLeavesAmount(totalAmount);
             return this;
         }
 
-        public BuyMarketOrderBuilder AOK () {
+        public BuyMarketOrderBuilder AOK() {
             order.setTimeInForce(OrderTimeInForce.FOK);
             return this;
         }
 
-        public BuyMarketOrderBuilder GTC () {
+        public BuyMarketOrderBuilder GTC() {
             order.setTimeInForce(OrderTimeInForce.GTC);
             return this;
         }
 
-        public BuyMarketOrderBuilder IOC () {
+        public BuyMarketOrderBuilder IOC() {
             order.setTimeInForce(OrderTimeInForce.IOC);
             return this;
         }
 
-        public BuyMarketOrderBuilder FOK () {
+        public BuyMarketOrderBuilder FOK() {
             order.setTimeInForce(OrderTimeInForce.FOK);
             return this;
         }
 
-        public Order build () {
+        public Order build() {
             return this.order;
         }
     }

@@ -13,7 +13,6 @@ import com.trader.matcher.MatcherManager;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 线程池调度器, 并且一个处理器控制一个交易对

@@ -4,7 +4,6 @@ import com.trader.entity.Order;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -159,9 +158,10 @@ public class OrderManager {
     /**
      * 常规检查
      *
-     * @param order 订单
+     * @param order
+     *         订单
      */
-    private void genericCheck (Order order) {
+    private void genericCheck(Order order) {
         if (order == null) {
             throw new IllegalArgumentException("订单不能为空");
         }

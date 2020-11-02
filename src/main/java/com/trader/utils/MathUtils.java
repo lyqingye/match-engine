@@ -12,7 +12,9 @@ public final class MathUtils {
      * 取最小值
      *
      * @param a
+     *         a
      * @param b
+     *         b
      *
      * @return 最小值
      */
@@ -27,7 +29,9 @@ public final class MathUtils {
      * 取最大值
      *
      * @param a
+     *         a
      * @param b
+     *         b
      *
      * @return 最大值
      */

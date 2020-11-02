@@ -10,7 +10,18 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public enum Cmd {
+    /**
+     * 添加订单的命令
+     */
     ADD_ORDER,
+
+    /**
+     * 取消订单命令
+     */
     CANCEL_ORDER,
+
+    /**
+     * 激活订单命令
+     */
     ACTIVE_ORDER
 }

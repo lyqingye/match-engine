@@ -16,7 +16,17 @@ public enum Category {
     USER,
 
     /**
-     * 机器人下的单
+     * 普通机器人下的单
      */
-    BOT
+    GENERIC_BOT,
+
+    /**
+     * 控盘机器人
+     */
+    TRADING_BOT,
+
+    /**
+     * 单纯影响K线的机器人
+     */
+    KLINE_BOT
 }

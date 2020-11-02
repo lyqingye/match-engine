@@ -54,11 +54,11 @@ public class GenericOrderRouter implements OrderRouter {
      */
     @Override
     public Collection<OrderBook> routeToNeedToActiveBook(String symbolId) {
-        OrderBook book = bookCache.get(symbolId);
-        if (book == null) {
-            return Collections.emptyList();
-        }
-        return Collections.singletonList(book);
+        return  Collections.singletonList(bookCache.computeIfAbsent(symbolId, k -> {
+            final OrderBook newBook = new OrderBook();
+            newBook.setSymbolId(k);
+            return newBook;
+        }));
     }
 
     /**
@@ -72,11 +72,7 @@ public class GenericOrderRouter implements OrderRouter {
      */
     @Override
     public Collection<OrderBook> routeToNeedToUpdatePriceBook(String symbolId) {
-        OrderBook book = bookCache.get(symbolId);
-        if (book == null) {
-            return Collections.emptyList();
-        }
-        return Collections.singletonList(book);
+        return routeToNeedToActiveBook(symbolId);
     }
 
     /**
@@ -89,7 +85,11 @@ public class GenericOrderRouter implements OrderRouter {
      */
     @Override
     public OrderBook routeToBookForQueryPrice(String symbolId) {
-        return bookCache.get(symbolId);
+        return bookCache.computeIfAbsent(symbolId, k -> {
+            final OrderBook newBook = new OrderBook();
+            newBook.setSymbolId(k);
+            return newBook;
+        });
     }
 
     /**
@@ -103,7 +103,7 @@ public class GenericOrderRouter implements OrderRouter {
      */
     @Override
     public OrderBook routeToBookForQueryPrice(Order order) {
-        return bookCache.get(order.getSymbol());
+        return routeTo(order);
     }
 
     /**
@@ -117,7 +117,7 @@ public class GenericOrderRouter implements OrderRouter {
      */
     @Override
     public OrderBook routeToBookForSendDepthChart(Order order) {
-        return bookCache.get(order.getSymbol());
+        return routeTo(order);
     }
 
     @Override

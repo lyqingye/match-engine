@@ -1,10 +1,11 @@
 package engine;
 
 import com.trader.MatchEngine;
+import com.trader.MatchHandler;
 import com.trader.config.MatchEngineConfig;
 import com.trader.entity.Order;
 import com.trader.factory.OrderFactory;
-import com.trader.handler.ExampleLoggerHandler;
+import com.trader.matcher.TradeResult;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,15 +27,13 @@ public class TestLimitOrderMatch  {
     @Before
     public void before () {
         MatchEngineConfig config = new MatchEngineConfig();
-        config.setSizeOfOrderQueue(1 << 20);
-        config.setSizeOfCoreCmdBuffer(1 << 20);
-        config.setSizeOfPublishDataRingBuffer(1 << 20);
-        config.setNumberOfCores(2);
-        config.setHandler(new ExampleLoggerHandler());
-        config.setSizeOfPublishDataRingBuffer(1 << 20);
-        config.setPublishDataCompressCycle(1000);
+        config.setHandler(new MatchHandler() {
+            @Override
+            public void onExecuteOrder(Order order, Order opponentOrder, TradeResult ts) throws Exception {
+                // 持久化
+            }
+        });
         engine = MatchEngine.newEngine(config);
-//        engine.disableMatching();
         engine.enableMatching();
 
         try {

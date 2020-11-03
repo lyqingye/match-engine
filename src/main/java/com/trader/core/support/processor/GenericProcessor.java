@@ -87,14 +87,13 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
         this.name = name;
         this.router = Objects.requireNonNull(router);
         this.matcherMgr = Objects.requireNonNull(matcherMgr);
-        this.marketMgr = marketMgr;
+        this.marketMgr = Objects.requireNonNull(marketMgr);
         this.ptf = new ProcessorThreadFactory(this.name());
 
         // 队列创建
         inputQueue = DisruptorQueueFactory.createQueue(queueSize,
                                                        ptf,
                                                        new OrderProcessor());
-
     }
 
     public GenericProcessor(String name,
@@ -104,7 +103,7 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
         this.name = name;
         this.router = Objects.requireNonNull(router);
         this.matcherMgr = Objects.requireNonNull(matcherMgr);
-        this.marketMgr = marketMgr;
+        this.marketMgr = Objects.requireNonNull(marketMgr);
         this.ptf = new ProcessorThreadFactory(this.name());
 
         // 队列创建

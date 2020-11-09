@@ -43,6 +43,10 @@ public class ProcessorThreadFactory implements ThreadFactory {
         }
 
         threadMap.put(this.name, tr);
+        tr.setUncaughtExceptionHandler((thread, throwable) -> {
+            System.out.println("[MatchProcessor]: uncaught exception in thread: " + thread.getName());
+            throwable.printStackTrace();
+        });
         return tr;
     }
 }

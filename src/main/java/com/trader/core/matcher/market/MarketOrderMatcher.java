@@ -1,6 +1,7 @@
 package com.trader.core.matcher.market;
 
 import com.trader.core.Matcher;
+import com.trader.core.context.MatchingContext;
 import com.trader.core.def.OrderType;
 import com.trader.core.entity.Order;
 import com.trader.core.matcher.TradeResult;
@@ -34,13 +35,15 @@ public class MarketOrderMatcher implements Matcher {
             return false;
         }
 
+        MatchingContext ctx = this.ctx();
+
         if (order.getUid().equals(opponentOrder.getUid())) {
             return false;
         }
 
         MarketManager marketMgr = this.ctx().getMarketMgr();
         BigDecimal marketPrice = marketMgr.getMarketPrice(order);
-        this.ctx().setAttribute(order.getId(), marketPrice);
+        ctx.setAttribute(order.getId(), marketPrice);
 
         //
         // 支持以下类型的订单进行撮合

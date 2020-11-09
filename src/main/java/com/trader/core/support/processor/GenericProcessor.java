@@ -4,6 +4,7 @@ import com.trader.core.Matcher;
 import com.trader.core.OrderRouter;
 import com.trader.core.Processor;
 import com.trader.core.context.MatchingContext;
+import com.trader.core.context.ThreadLocalMatchingContext;
 import com.trader.core.def.ActivateStatus;
 import com.trader.core.def.Cmd;
 import com.trader.core.entity.Order;
@@ -14,11 +15,14 @@ import com.trader.core.matcher.MatcherManager;
 import com.trader.core.matcher.TradeResult;
 import com.trader.market.MarketManager;
 import com.trader.market.publish.msg.PriceChangeMessage;
+import com.trader.utils.ThreadLocalUtils;
 import com.trader.utils.disruptor.AbstractDisruptorConsumer;
 import com.trader.utils.disruptor.DisruptorQueue;
 import com.trader.utils.disruptor.DisruptorQueueFactory;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Objects;
 
 /**
  * 通用处理器,负责处理订单
@@ -91,9 +95,9 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
         this.ptf = new ProcessorThreadFactory(this.name());
 
         // 队列创建
-        inputQueue = DisruptorQueueFactory.createQueue(queueSize,
-                                                       ptf,
-                                                       new OrderProcessor());
+        inputQueue = DisruptorQueueFactory.createSingleQueue(queueSize,
+                ptf,
+                new OrderProcessor());
     }
 
     public GenericProcessor(String name,
@@ -260,6 +264,7 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
             }
         }
 
+
         /**
          * 订单撮合
          *
@@ -284,6 +289,9 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
             // 当前撮合的订单簿
             currentOrderBook = book;
 
+            // 构建上下文
+            buildContext();
+
             while (opponentIt.hasNext()) {
                 Order best = opponentIt.next();
 
@@ -295,8 +303,11 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
                     continue;
                 }
 
+                // 设置匹配器到上下文中
+                setMatcherOnContext();
+
                 // 当前的匹配器
-                currentMatcher = proxyMatcher(matcher);
+                currentMatcher = matcher;
 
                 //
                 // 订单结束状态补偿
@@ -378,69 +389,26 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
             }
         }
 
-        private UnsafeMatchContext CACHED_MATCH_CONTEXT;
+        private MatchingContext cachedMatchingContext;
 
-        private Matcher proxyMatcher(Matcher target) {
-            if (CACHED_MATCH_CONTEXT == null) {
-                CACHED_MATCH_CONTEXT = new UnsafeMatchContext();
+        /**
+         * 构建上下文
+         */
+        private void buildContext() {
+            ThreadLocalUtils.set(ThreadLocalMatchingContext.NAME_OF_ORDER_BOOK, currentOrderBook);
+            ThreadLocalUtils.set(ThreadLocalMatchingContext.NAME_OF_MARKET_MANAGER, marketMgr);
+
+            if (cachedMatchingContext == null) {
+                cachedMatchingContext = new ThreadLocalMatchingContext();
+                ThreadLocalUtils.set(ThreadLocalMatchingContext.NAME_OF_CONTEXT, cachedMatchingContext);
             }
-            CACHED_MATCH_CONTEXT.clearAttrs();
-
-            return new Matcher() {
-                @Override
-                public boolean isSupport(Order order, Order opponentOrder) {
-                    return target.isSupport(order, opponentOrder);
-                }
-
-                @Override
-                public TradeResult doTrade(Order order, Order opponentOrder) {
-                    return target.doTrade(order, opponentOrder);
-                }
-
-                @Override
-                public boolean isFinished(Order order) {
-                    return target.isFinished(order);
-                }
-
-                @Override
-                public MatchingContext ctx() {
-                    return CACHED_MATCH_CONTEXT;
-                }
-            };
         }
 
-        @SuppressWarnings("unchecked")
-        class UnsafeMatchContext implements MatchingContext {
-            private Map<String, Object> attr = new HashMap<>(16);
-
-            @Override
-            public MarketManager getMarketMgr() {
-                return marketMgr;
-            }
-
-            @Override
-            public OrderBook getOrderBook() {
-                return currentOrderBook;
-            }
-
-            @Override
-            public Matcher getMatcher() {
-                return currentMatcher;
-            }
-
-            @Override
-            public <T> T getAttribute(String key) {
-                return (T) attr.get(key);
-            }
-
-            @Override
-            public void setAttribute(String key, Object value) {
-                attr.put(key, value);
-            }
-
-            public void clearAttrs() {
-                attr.clear();
-            }
+        /**
+         * 设置 matcher 到上下文
+         */
+        private void setMatcherOnContext() {
+            ThreadLocalUtils.set(ThreadLocalMatchingContext.NAME_OF_MATCHER, currentMatcher);
         }
     }
 }

@@ -143,6 +143,7 @@ public class MatchEngine {
      */
     public void addOrder(Order order) {
         this.addOrderQueue.add(order);
+        this.orderMgr.addOrder(order);
     }
 
     /**

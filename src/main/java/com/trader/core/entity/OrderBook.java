@@ -257,7 +257,7 @@ public class OrderBook {
      */
     public BigDecimal updateLastTradePrice(BigDecimal newPrice) {
         BigDecimal old = this.lastTradePrice;
-        this.lastTradePrice = Objects.requireNonNull(newPrice);
+        this.lastTradePrice = Objects.requireNonNull(newPrice).setScale(8, BigDecimal.ROUND_DOWN);
         this.lastTradeTime = System.currentTimeMillis();
         return old;
     }

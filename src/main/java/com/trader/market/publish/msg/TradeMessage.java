@@ -50,7 +50,7 @@ public class TradeMessage {
         // | msg size (4byte) | msg type (1byte) | ts (8byte) |
         // | symbol.size [4byte] data[bytes] | price (8byte) | quantity (8byte) | direction (1byte) | ts (8byte)
         byte[] symbolBytes = ts.getSymbol().getBytes();
-        int msgSize = 42 + symbolBytes.length;
+        int msgSize = 38 + symbolBytes.length;
         return Buffer.buffer(msgSize)
                 .appendInt(msgSize)
                 .appendByte((byte) MessageType.TRADE_RESULT.ordinal())
@@ -63,30 +63,13 @@ public class TradeMessage {
                 .appendLong(ts.getTs());
     }
 
-    public static Message<TradeMessage> of(Buffer buf) {
+    public static TradeMessage of(Buffer buf, int readOffset,int msgSize) {
         // | msg size (4byte) | msg type (1byte) | ts (8byte) |
         // | symbol.size [4byte] data[bytes] | price (8byte) | quantity (8byte) | direction (1byte) | ts (8byte)
-        int length = buf.length();
-        if (length < 4) {
-            return null;
-        }
-        int offset = 0;
-        int msgSize = buf.getInt(offset);
-        offset += 4;
-        if (msgSize != length) {
-            return null;
-        }
-        Message<TradeMessage> rs = new Message<>();
-        MessageType msgType = MessageType.valueOf(buf.getByte(offset));
-        offset += 1;
-        if (msgType == null) {
-            return null;
-        }
-        offset += 8;
-        rs.setType(msgType);
+        int offset = readOffset;
         TradeMessage ts = new TradeMessage();
         int symbolLength = buf.getInt(offset);
-        if (symbolLength <= 0) {
+        if (symbolLength != msgSize - 38) {
             return null;
         }
         offset += 4;
@@ -100,7 +83,6 @@ public class TradeMessage {
         ts.setDirection(OrderSide.toSide(buf.getByte(offset)).toDirection());
         offset += 1;
         ts.setTs(buf.getLong(offset));
-        rs.setData(ts);
-        return rs;
+        return ts;
     }
 }

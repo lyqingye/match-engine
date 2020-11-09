@@ -47,7 +47,7 @@ public class NetTest {
         for (int i = 0; i < 10000000; i++) {
             JsonObject o = (JsonObject) Json.decodeValue(data);
             TradeMessage data1 = o.getJsonObject("data").mapTo(TradeMessage.class);
-            Message<TradeMessage> msg = TradeMessage.of(buf);
+//            Message<TradeMessage> msg = TradeMessage.of(buf,buf.getInt(0));
         }
 
         long end = System.nanoTime();

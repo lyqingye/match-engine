@@ -18,15 +18,10 @@ public class MarketDepthUtils {
     /**
      * 处理深度 (使用流)
      *
-     * @param unProcessDataList
-     *         需要处理的数据
-     * @param depth
-     *         深度
-     * @param limit
-     *         总条数
-     * @param comparator
-     *         比较器
-     *
+     * @param unProcessDataList 需要处理的数据
+     * @param depth             深度
+     * @param limit             总条数
+     * @param comparator        比较器
      * @return 深度数据
      */
     public static List<MarketDepthInfo> fastRender(List<MarketDepthInfo> unProcessDataList,
@@ -38,14 +33,14 @@ public class MarketDepthUtils {
                 .entrySet()
                 .stream()
                 .flatMap((entry) -> Stream.of(combineTrx(entry.getKey(), entry.getValue())))
-                .filter(e -> {
-                    return e.getLeaves()
-                                            .setScale(6, RoundingMode.DOWN)
-                                            .compareTo(BigDecimal.ZERO) > 0;
-                                })
-                                .limit(limit)
-                                .sorted(comparator)
-                                .collect(Collectors.toList());
+
+                // 过滤剩余量 > 0
+                .filter(e -> e.getLeaves().setScale(6, RoundingMode.DOWN).compareTo(BigDecimal.ZERO) > 0 &&
+                        // 过滤价格 > 0
+                        e.getPrice().compareTo(BigDecimal.ZERO) > 0)
+                .limit(limit)
+                .sorted(comparator)
+                .collect(Collectors.toList());
     }
 
     private static MarketDepthInfo combineTrx(BigDecimal trx, List<MarketDepthInfo> ls) {
@@ -62,9 +57,7 @@ public class MarketDepthUtils {
     /**
      * 获取小数位数
      *
-     * @param bigDecimal
-     *         decimal
-     *
+     * @param bigDecimal decimal
      * @return 小数位数
      */
     private static int getNumberOfDecimalPlaces(BigDecimal bigDecimal) {

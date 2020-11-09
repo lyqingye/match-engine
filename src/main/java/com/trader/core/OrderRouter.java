@@ -1,7 +1,7 @@
 package com.trader.core;
 
-import com.trader.entity.Order;
-import com.trader.entity.OrderBook;
+import com.trader.core.entity.Order;
+import com.trader.core.entity.OrderBook;
 
 import java.util.Collection;
 
@@ -103,4 +103,6 @@ public interface OrderRouter {
      * @return 是否推送
      */
     boolean isPublishKline(Order order, Order opponentOrder);
+
+
 }

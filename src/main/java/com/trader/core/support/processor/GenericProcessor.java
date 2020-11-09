@@ -1,19 +1,19 @@
 package com.trader.core.support.processor;
 
-import com.trader.Matcher;
-import com.trader.context.MatchingContext;
+import com.trader.core.Matcher;
 import com.trader.core.OrderRouter;
 import com.trader.core.Processor;
-import com.trader.def.ActivateStatus;
-import com.trader.def.Cmd;
-import com.trader.entity.Order;
-import com.trader.entity.OrderBook;
-import com.trader.event.MatchEventHandlerRegistry;
-import com.trader.exception.TradeException;
+import com.trader.core.context.MatchingContext;
+import com.trader.core.def.ActivateStatus;
+import com.trader.core.def.Cmd;
+import com.trader.core.entity.Order;
+import com.trader.core.entity.OrderBook;
+import com.trader.core.event.MatchEventHandlerRegistry;
+import com.trader.core.exception.TradeException;
+import com.trader.core.matcher.MatcherManager;
+import com.trader.core.matcher.TradeResult;
 import com.trader.market.MarketManager;
 import com.trader.market.publish.msg.PriceChangeMessage;
-import com.trader.matcher.MatcherManager;
-import com.trader.matcher.TradeResult;
 import com.trader.utils.disruptor.AbstractDisruptorConsumer;
 import com.trader.utils.disruptor.DisruptorQueue;
 import com.trader.utils.disruptor.DisruptorQueueFactory;
@@ -150,13 +150,13 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
                     Order bid = bidIt.next();
                     if (bid.isNotActivated()) {
                         if (bid.getTriggerPrice().compareTo(msg.getPrice()) >= 0) {
-                            System.out.println(String.format("[MatchEngine]: active stop order," +
-                                                                     " orderId: [%s] side: [%s]" +
-                                                                     "triggerPrice: [%s] latestPrice: [%s]",
-                                                             bid.getId(),
-                                                             bid.getSide().name(),
-                                                             bid.getTriggerPrice().toPlainString(),
-                                                             msg.getPrice().toPlainString()));
+                            System.out.println(String.format("[MatchProcessor]: active stop order," +
+                                            " orderId: [%s] side: [%s]" +
+                                            "triggerPrice: [%s] latestPrice: [%s]",
+                                    bid.getId(),
+                                    bid.getSide().name(),
+                                    bid.getTriggerPrice().toPlainString(),
+                                    msg.getPrice().toPlainString()));
                             bid.setCmd(Cmd.ACTIVE_ORDER);
                             bid.setActivated(ActivateStatus.ACTIVATING);
                             exec(bid);
@@ -177,13 +177,13 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
 
                     if (ask.isNotActivated()) {
                         if (ask.getTriggerPrice().compareTo(msg.getPrice()) <= 0) {
-                            System.out.println(String.format("[MatchEngine]: active stop order, " +
-                                                                     "orderId: [%s] side: [%s]" +
-                                                                     "triggerPrice: [%s] latestPrice: [%s]",
-                                                             ask.getId(),
-                                                             ask.getSide().name(),
-                                                             ask.getTriggerPrice().toPlainString(),
-                                                             msg.getPrice().toPlainString()));
+                            System.out.println(String.format("[MatchProcessor]: active stop order, " +
+                                            "orderId: [%s] side: [%s]" +
+                                            "triggerPrice: [%s] latestPrice: [%s]",
+                                    ask.getId(),
+                                    ask.getSide().name(),
+                                    ask.getTriggerPrice().toPlainString(),
+                                    msg.getPrice().toPlainString()));
                             ask.setCmd(Cmd.ACTIVE_ORDER);
                             ask.setActivated(ActivateStatus.ACTIVATING);
                             exec(ask);
@@ -291,6 +291,7 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
                 Matcher matcher = matcherMgr.lookupMatcher(order, best);
 
                 if (matcher == null) {
+                    // 这里有可能是因为买单没有足够的余额进行成交, 所以是 continue 而不是 return
                     continue;
                 }
 

@@ -1,8 +1,8 @@
 package com.trader.core.support.router;
 
 import com.trader.core.OrderRouter;
-import com.trader.entity.Order;
-import com.trader.entity.OrderBook;
+import com.trader.core.entity.Order;
+import com.trader.core.entity.OrderBook;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -119,6 +119,13 @@ public class GenericOrderRouter implements OrderRouter {
         return routeTo(order);
     }
 
+    /**
+     * 对于本次撮合是否推送K线
+     *
+     * @param order         当前订单
+     * @param opponentOrder 对手订单
+     * @return 是否推送
+     */
     @Override
     public boolean isPublishKline(Order order, Order opponentOrder) {
         return true;

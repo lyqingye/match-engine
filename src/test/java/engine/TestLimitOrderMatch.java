@@ -1,11 +1,11 @@
 package engine;
 
 import com.trader.MatchEngine;
-import com.trader.MatchHandler;
 import com.trader.config.MatchEngineConfig;
-import com.trader.entity.Order;
-import com.trader.factory.OrderFactory;
-import com.trader.matcher.TradeResult;
+import com.trader.core.MatchHandler;
+import com.trader.core.entity.Order;
+import com.trader.core.factory.OrderFactory;
+import com.trader.core.matcher.TradeResult;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,6 +27,7 @@ public class TestLimitOrderMatch  {
     @Before
     public void before () {
         MatchEngineConfig config = new MatchEngineConfig();
+        config.setWebsocketConfigClientHost("119.23.49.169");
         config.setHandler(new MatchHandler() {
             @Override
             public void onExecuteOrder(Order order, Order opponentOrder, TradeResult ts) throws Exception {
@@ -49,86 +50,20 @@ public class TestLimitOrderMatch  {
 
         final long start = System.currentTimeMillis();
         List<Order> orderList = new ArrayList<>(1000000);
-        for (int i = 0; i < 100000; i++) {
+        for (int i = 0; i < 2; i++) {
 
 
             BigDecimal price = BigDecimal.TEN;
             Order buyLimitOrder = OrderFactory.limit()
-                                              .buy("1", "BTC", "USDT")
-                                              .spent(BigDecimal.TEN.multiply(price))
-                                              .withUnitPriceOf(price)
-                                              .quantity(BigDecimal.TEN)
-                                              .GTC()
-                                              .build();
+                    .buy("1", "BTC", "USDT")
+                    .spent(BigDecimal.TEN.multiply(price))
+                    .withUnitPriceOf(price)
+                    .quantity(BigDecimal.TEN)
+                    .GTC()
+                    .build();
 
             Order sellMarketOrder = OrderFactory.limit()
                                                 .sell("2", "BTC", "USDT")
-                                                .quantity(BigDecimal.TEN)
-                                                .withUnitPriceOf(price)
-                                                .GTC()
-                                                .build();
-            orderList.add(buyLimitOrder);
-            orderList.add(sellMarketOrder);
-        }
-
-        for (int i = 0; i < 100000; i++) {
-
-
-            BigDecimal price = BigDecimal.TEN;
-            Order buyLimitOrder = OrderFactory.limit()
-                                              .buy("1", "YAC", "USDT")
-                                              .spent(BigDecimal.TEN.multiply(price))
-                                              .withUnitPriceOf(price)
-                                              .quantity(BigDecimal.TEN)
-                                              .GTC()
-                                              .build();
-
-            Order sellMarketOrder = OrderFactory.limit()
-                                                .sell("2", "YAC", "USDT")
-                                                .quantity(BigDecimal.TEN)
-                                                .withUnitPriceOf(price)
-                                                .GTC()
-                                                .build();
-            orderList.add(buyLimitOrder);
-            orderList.add(sellMarketOrder);
-        }
-
-        for (int i = 0; i < 100000; i++) {
-
-
-            BigDecimal price = BigDecimal.TEN;
-            Order buyLimitOrder = OrderFactory.limit()
-                                              .buy("1", "YSB", "USDT")
-                                              .spent(BigDecimal.TEN.multiply(price))
-                                              .withUnitPriceOf(price)
-                                              .quantity(BigDecimal.TEN)
-                                              .GTC()
-                                              .build();
-
-            Order sellMarketOrder = OrderFactory.limit()
-                                                .sell("2", "YSB", "USDT")
-                                                .quantity(BigDecimal.TEN)
-                                                .withUnitPriceOf(price)
-                                                .GTC()
-                                                .build();
-            orderList.add(buyLimitOrder);
-            orderList.add(sellMarketOrder);
-        }
-
-        for (int i = 0; i < 100000; i++) {
-
-
-            BigDecimal price = BigDecimal.TEN;
-            Order buyLimitOrder = OrderFactory.limit()
-                                              .buy("1", "YAB", "USDT")
-                                              .spent(BigDecimal.TEN.multiply(price))
-                                              .withUnitPriceOf(price)
-                                              .quantity(BigDecimal.TEN)
-                                              .GTC()
-                                              .build();
-
-            Order sellMarketOrder = OrderFactory.limit()
-                                                .sell("2", "YAB", "USDT")
                                                 .quantity(BigDecimal.TEN)
                                                 .withUnitPriceOf(price)
                                                 .GTC()
@@ -149,7 +84,6 @@ public class TestLimitOrderMatch  {
         engine.enableMatching();
 
         System.out.println("startTime:" + System.currentTimeMillis());
-
 
         try {
             Thread.sleep(1000000);

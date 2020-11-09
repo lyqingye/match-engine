@@ -1,6 +1,5 @@
 package queue;
 
-import com.trader.entity.Order;
 import com.trader.utils.disruptor.AbstractDisruptorConsumer;
 import com.trader.utils.disruptor.DisruptorQueue;
 import com.trader.utils.disruptor.DisruptorQueueFactory;

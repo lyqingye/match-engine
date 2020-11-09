@@ -1,7 +1,7 @@
 package com.trader.config;
 
-import com.trader.MatchHandler;
-import com.trader.Matcher;
+import com.trader.core.MatchHandler;
+import com.trader.core.Matcher;
 import com.trader.core.OrderRouter;
 import com.trader.core.Scheduler;
 import com.trader.market.publish.MarketPublishClient;
@@ -28,16 +28,16 @@ public class MatchEngineConfig {
     /**
      * 订单匹配规则 (可以为null)
      * 默认需要添加:
-     * {@link com.trader.matcher.market.MarketOrderMatcher}
-     * {@link com.trader.matcher.limit.LimitOrderMatcher}
+     * {@link com.trader.core.matcher.market.MarketOrderMatcher}
+     * {@link com.trader.core.matcher.limit.LimitOrderMatcher}
      */
     private Matcher[] matchers;
 
     /**
      * 撮合事件处理器数组 (可以为null)
      * 默认需要添加:
-     * {@link com.trader.matcher.limit.InMemoryLimitMatchHandler}
-     * {@link com.trader.matcher.market.InMemoryMarketMatchHandler}
+     * {@link com.trader.core.matcher.limit.InMemoryLimitMatchHandler}
+     * {@link com.trader.core.matcher.market.InMemoryMarketMatchHandler}
      */
     private MatchHandler handler;
 

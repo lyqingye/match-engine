@@ -1,7 +1,7 @@
 package com.trader.utils;
 
-import com.trader.entity.Order;
-import com.trader.helper.tuples.Tuple;
+import com.trader.core.entity.Order;
+import com.trader.utils.tuples.Tuple;
 
 /**
  * @author yjt

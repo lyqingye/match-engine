@@ -1,11 +1,10 @@
 package book;
 
-import com.trader.def.OrderSide;
-import com.trader.def.OrderType;
-import com.trader.entity.Order;
-import com.trader.entity.OrderBook;
+import com.trader.core.def.OrderSide;
+import com.trader.core.def.OrderType;
+import com.trader.core.entity.Order;
+import com.trader.core.entity.OrderBook;
 import org.junit.Test;
-import org.omg.CORBA.IDLTypeOperations;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

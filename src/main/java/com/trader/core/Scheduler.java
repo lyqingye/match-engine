@@ -1,6 +1,6 @@
 package com.trader.core;
 
-import com.trader.entity.Order;
+import com.trader.core.entity.Order;
 
 /**
  * 负责调度 {@link Processor}

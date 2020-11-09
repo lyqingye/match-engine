@@ -1,16 +1,18 @@
 package comparator;
 
-import com.trader.comprator.BidComparator;
-import com.trader.def.OrderType;
-import com.trader.entity.Order;
+import com.trader.core.comprator.BidComparator;
+import com.trader.core.def.OrderType;
+import com.trader.core.entity.Order;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.math.BigDecimal;
-import java.util.*;
-import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.TreeSet;
 
 /**
  * @author yjt

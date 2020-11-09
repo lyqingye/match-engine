@@ -1,6 +1,6 @@
 package com.trader.core;
 
-import com.trader.entity.Order;
+import com.trader.core.entity.Order;
 import com.trader.market.publish.msg.PriceChangeMessage;
 
 /**

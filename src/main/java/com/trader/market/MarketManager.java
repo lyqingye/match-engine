@@ -26,10 +26,7 @@ import io.vertx.core.json.JsonObject;
 import lombok.Getter;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ThreadFactory;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -77,6 +74,11 @@ public class MarketManager implements MatchHandler {
      * 撮合结果数据推送队列
      */
     private DisruptorQueue<TradeMessage> tradeMessageQueue;
+
+    /**
+     * 深度图对象缓存, 用户查询
+     */
+    private Map<String, MarketDepthChartSeries> latestChartCacheObjective = new HashMap<>(16);
 
     /**
      * 撮合引擎配置
@@ -176,6 +178,7 @@ public class MarketManager implements MatchHandler {
                 // 合并深度数据
                 depthChartRingBuffer.poll(dMessages);
                 for (MarketDepthChartSeries msg : dMessages) {
+                    latestChartCacheObjective.put(msg.getSymbol(), msg);
                     // 触发事件
                     this.syncExecuteHandler(h -> {
                         h.onDepthChartChange(msg);
@@ -315,19 +318,28 @@ public class MarketManager implements MatchHandler {
                     //
                     BigDecimal p = new BigDecimal(price);
                     router.routeToNeedToUpdatePriceBook(symbol)
-                          .forEach(book -> book.updateLastTradePrice(p));
+                            .forEach(book -> book.updateLastTradePrice(p));
                     System.out.println(String.format("[MarketEngine]: sync init market price [%s] : [%s]",
-                                                     symbol, price));
+                            symbol, price));
                 });
             }
         }
     }
 
     /**
+     * 获取缓存的最新买卖盘
+     *
+     * @param symbol 交易对
+     * @return 买卖盘
+     */
+    public MarketDepthChartSeries getCachedDepthChart(String symbol) {
+        return latestChartCacheObjective.get(symbol);
+    }
+
+    /**
      * 第三方市场数据
      *
-     * @param json
-     *         缓冲区
+     * @param json 缓冲区
      */
     private void onThirdMarketData(JsonObject json) {
         if (json == null) {

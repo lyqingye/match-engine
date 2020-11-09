@@ -11,12 +11,12 @@ import lombok.Getter;
 @Getter
 public enum Category {
     /**
-     * 用户下的单
+     * 用户
      */
     USER,
 
     /**
-     * 普通机器人下的单
+     * 普通机器人
      */
     GENERIC_BOT,
 

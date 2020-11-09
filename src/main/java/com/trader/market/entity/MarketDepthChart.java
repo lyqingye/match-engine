@@ -3,7 +3,7 @@ package com.trader.market.entity;
 import com.trader.market.def.DepthLevel;
 import lombok.Data;
 
-import java.util.Collection;
+import java.util.List;
 
 /**
  * @author yjt
@@ -20,10 +20,10 @@ public class MarketDepthChart {
     /**
      * 买盘
      */
-    private Collection<MarketDepthInfo> bids;
+    private List<MarketDepthInfo> bids;
 
     /**
      * 卖盘
      */
-    private Collection<MarketDepthInfo> asks;
+    private List<MarketDepthInfo> asks;
 }

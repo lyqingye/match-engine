@@ -5,7 +5,6 @@ import com.trader.market.entity.MarketDepthInfo;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -30,17 +29,17 @@ public class MarketDepthUtils {
      *
      * @return 深度数据
      */
-    public static Collection<MarketDepthInfo> fastRender(Collection<MarketDepthInfo> unProcessDataList,
-                                                         DepthLevel depth,
-                                                         int limit,
-                                                         Comparator<MarketDepthInfo> comparator) {
+    public static List<MarketDepthInfo> fastRender(List<MarketDepthInfo> unProcessDataList,
+                                                   DepthLevel depth,
+                                                   int limit,
+                                                   Comparator<MarketDepthInfo> comparator) {
         return unProcessDataList.stream()
-                                .collect(Collectors.groupingBy(d -> calcTrx(d.getPrice(), depth)))
-                                .entrySet()
-                                .stream()
-                                .flatMap((entry) -> Stream.of(combineTrx(entry.getKey(), entry.getValue())))
-                                .filter(e -> {
-                                    return e.getLeaves()
+                .collect(Collectors.groupingBy(d -> calcTrx(d.getPrice(), depth)))
+                .entrySet()
+                .stream()
+                .flatMap((entry) -> Stream.of(combineTrx(entry.getKey(), entry.getValue())))
+                .filter(e -> {
+                    return e.getLeaves()
                                             .setScale(6, RoundingMode.DOWN)
                                             .compareTo(BigDecimal.ZERO) > 0;
                                 })

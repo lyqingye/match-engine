@@ -1,11 +1,16 @@
 package netty;
 
+import com.trader.core.def.OrderSide;
 import com.trader.market.publish.MarketPublishHandler;
 import com.trader.market.publish.TcpMarketPublishClient;
 import com.trader.market.publish.config.MarketConfigHttpClient;
+import com.trader.market.publish.msg.Message;
+import com.trader.market.publish.msg.TradeMessage;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.WebSocket;
+import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.parsetools.RecordParser;
 import org.junit.Test;
 
@@ -13,6 +18,7 @@ import java.math.BigDecimal;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
 
 /**
  * @author yjt
@@ -25,14 +31,47 @@ public class NetTest {
     @Test
 
     public void test() {
-        String str = "01234567890";
-        byte[] data = str.getBytes();
-        Buffer buf = Buffer.buffer(data.length + 4);
+        TradeMessage tm = new TradeMessage();
+        tm.setDirection(OrderSide.BUY.toDirection());
+        tm.setPrice(new BigDecimal("12.321313"));
+        tm.setQuantity(new BigDecimal("12.321313"));
+        tm.setSymbol("BTC-USDT");
+        tm.setTs(System.currentTimeMillis());
 
-        buf.appendInt(data.length);
-        buf.appendBytes(data);
-        buf.appendInt(20);
-        buf.appendBytes(data);
+        Message<TradeMessage> of1 = TradeMessage.of(tm);
+        String data = Json.encode(of1);
+
+        Buffer buf = TradeMessage.toMessageBuf(tm);
+
+        long start = System.nanoTime();
+        for (int i = 0; i < 10000000; i++) {
+            JsonObject o = (JsonObject) Json.decodeValue(data);
+            TradeMessage data1 = o.getJsonObject("data").mapTo(TradeMessage.class);
+            Message<TradeMessage> msg = TradeMessage.of(buf);
+        }
+
+        long end = System.nanoTime();
+
+        System.out.println(TimeUnit.NANOSECONDS.toNanos(end - start) / 10000000);
+//
+//        Buffer buf = TradeMessage.toMeof1.ssageBuf(tm);
+//
+//        Message<TradeMessage> of = Traof1.deMessage.of(buf);
+//        System.out.println();of1.
+//
+//        System.out.println();
+
+        BigDecimal decimal = new BigDecimal("1.23324111");
+        System.out.println(decimal.doubleValue());
+
+        String str = "01234567890";
+        byte[] data2 = str.getBytes();
+        Buffer buf2 = Buffer.buffer(data2.length + 4);
+
+        buf2.appendInt(data2.length);
+        buf2.appendBytes(data2);
+        buf2.appendInt(20);
+        buf2.appendBytes(data2);
 
         RecordParser parser = RecordParser.newFixed(4);
 
@@ -49,7 +88,7 @@ public class NetTest {
             }
         });
 
-        parser.handle(buf);
+        parser.handle(buf2);
 
 //        System.out.println(buf.toString());
 

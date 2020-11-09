@@ -21,4 +21,22 @@ public enum OrderSide {
     public String toDirection() {
         return this.name().toLowerCase();
     }
+
+    public static OrderSide toSide(String name) {
+        for (OrderSide side : values()) {
+            if (side.name().equalsIgnoreCase(name)) {
+                return side;
+            }
+        }
+        return null;
+    }
+
+    public static OrderSide toSide(byte ordinal) {
+        for (OrderSide side : values()) {
+            if (side.ordinal() == ordinal) {
+                return side;
+            }
+        }
+        return null;
+    }
 }

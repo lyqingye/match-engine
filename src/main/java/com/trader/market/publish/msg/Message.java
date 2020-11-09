@@ -17,7 +17,7 @@ public class Message<T> {
     /**
      * 发送时间
      */
-    private final Long ts = System.currentTimeMillis();
+    private Long ts;
 
     /**
      * 消息内容

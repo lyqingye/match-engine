@@ -45,6 +45,7 @@ public class PriceChangeMessage {
         Message<PriceChangeMessage> msg = new Message<>();
         msg.setType(MessageType.MARKET_PRICE);
         msg.setData(data);
+        msg.setTs(System.currentTimeMillis());
         return msg;
     }
 }

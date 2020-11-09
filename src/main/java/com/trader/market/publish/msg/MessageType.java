@@ -22,4 +22,13 @@ public enum MessageType {
         }
         return null;
     }
+
+    public static MessageType valueOf(byte ordinal) {
+        for (MessageType t : values()) {
+            if (t.ordinal() == ordinal) {
+                return t;
+            }
+        }
+        return null;
+    }
 }

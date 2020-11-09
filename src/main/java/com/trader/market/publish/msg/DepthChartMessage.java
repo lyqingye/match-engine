@@ -11,6 +11,7 @@ public class DepthChartMessage {
         final Message<MarketDepthChartSeries> msg = new Message<>();
         msg.setType(MessageType.DEPTH_CHART);
         msg.setData(series);
+        msg.setTs(System.currentTimeMillis());
         return msg;
     }
 }

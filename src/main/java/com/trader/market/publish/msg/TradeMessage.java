@@ -1,5 +1,7 @@
 package com.trader.market.publish.msg;
 
+import com.trader.core.def.OrderSide;
+import io.vertx.core.buffer.Buffer;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -31,7 +33,6 @@ public class TradeMessage {
      */
     private String direction;
 
-
     /**
      * 交易时间
      */
@@ -41,6 +42,65 @@ public class TradeMessage {
         final Message<TradeMessage> msg = new Message<>();
         msg.setType(MessageType.TRADE_RESULT);
         msg.setData(ts);
+        msg.setTs(System.currentTimeMillis());
         return msg;
+    }
+
+    public static Buffer toMessageBuf(TradeMessage ts) {
+        // | msg size (4byte) | msg type (1byte) | ts (8byte) |
+        // | symbol.size [4byte] data[bytes] | price (8byte) | quantity (8byte) | direction (1byte) | ts (8byte)
+        byte[] symbolBytes = ts.getSymbol().getBytes();
+        int msgSize = 42 + symbolBytes.length;
+        return Buffer.buffer(msgSize)
+                .appendInt(msgSize)
+                .appendByte((byte) MessageType.TRADE_RESULT.ordinal())
+                .appendLong(System.currentTimeMillis())
+                .appendInt(symbolBytes.length)
+                .appendBytes(symbolBytes)
+                .appendDouble(ts.getPrice().doubleValue())
+                .appendDouble(ts.getQuantity().doubleValue())
+                .appendByte((byte) OrderSide.toSide(ts.getDirection()).ordinal())
+                .appendLong(ts.getTs());
+    }
+
+    public static Message<TradeMessage> of(Buffer buf) {
+        // | msg size (4byte) | msg type (1byte) | ts (8byte) |
+        // | symbol.size [4byte] data[bytes] | price (8byte) | quantity (8byte) | direction (1byte) | ts (8byte)
+        int length = buf.length();
+        if (length < 4) {
+            return null;
+        }
+        int offset = 0;
+        int msgSize = buf.getInt(offset);
+        offset += 4;
+        if (msgSize != length) {
+            return null;
+        }
+        Message<TradeMessage> rs = new Message<>();
+        MessageType msgType = MessageType.valueOf(buf.getByte(offset));
+        offset += 1;
+        if (msgType == null) {
+            return null;
+        }
+        offset += 8;
+        rs.setType(msgType);
+        TradeMessage ts = new TradeMessage();
+        int symbolLength = buf.getInt(offset);
+        if (symbolLength <= 0) {
+            return null;
+        }
+        offset += 4;
+        byte[] symbolBytes = buf.getBytes(offset, offset + symbolLength);
+        offset += symbolLength;
+        ts.setSymbol(new String(symbolBytes));
+        ts.setPrice(BigDecimal.valueOf(buf.getDouble(offset)));
+        offset += 8;
+        ts.setQuantity(BigDecimal.valueOf(buf.getDouble(offset)));
+        offset += 8;
+        ts.setDirection(OrderSide.toSide(buf.getByte(offset)).toDirection());
+        offset += 1;
+        ts.setTs(buf.getLong(offset));
+        rs.setData(ts);
+        return rs;
     }
 }

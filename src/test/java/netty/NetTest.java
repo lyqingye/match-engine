@@ -71,6 +71,7 @@ public class NetTest {
         new FrameParser(ar -> {
             System.out.println();
         }).handle(cmBuf);
+
         for (; ; ) {
 
         }

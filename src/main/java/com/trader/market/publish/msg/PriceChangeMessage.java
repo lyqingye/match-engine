@@ -54,7 +54,7 @@ public class PriceChangeMessage {
         // | msg size (4byte) | msg type (1byte) | ts (8byte) |
         // | symbol.size [4byte] data[bytes] | price (8byte) | third (1byte)
         byte[] symbolBytes = pc.getSymbol().getBytes();
-        int msgSize = 26 + symbolBytes.length;
+        int msgSize = 22 + symbolBytes.length;
         return Buffer.buffer(msgSize)
                 .appendInt(msgSize)
                 .appendByte((byte) MessageType.MARKET_PRICE.ordinal())
@@ -71,7 +71,7 @@ public class PriceChangeMessage {
         int offset = readOffset;
         PriceChangeMessage pc = new PriceChangeMessage();
         int symbolLength = buf.getInt(offset);
-        if (symbolLength != msgSize - 26) {
+        if (symbolLength != msgSize - 22) {
             return null;
         }
         offset += 4;

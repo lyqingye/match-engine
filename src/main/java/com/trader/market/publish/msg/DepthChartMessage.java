@@ -94,7 +94,7 @@ public class DepthChartMessage {
         if (numOfStep > DepthLevel.values().length) {
             return null;
         }
-        numOfStep += 1;
+        offset += 1;
         List<MarketDepthChart> charts = new ArrayList<>(numOfStep);
         for (byte step = 0; step < numOfStep; step++) {
             MarketDepthChart chart = new MarketDepthChart();
@@ -112,7 +112,7 @@ public class DepthChartMessage {
             if (numOfBids > 0) {
                 bids = new ArrayList<>(numOfBids);
                 for (int i = 0; i < numOfBids; i++) {
-                    buildDepth(buf, offset);
+                    bids.add(buildDepth(buf, offset));
                     offset += 32;
                 }
             }
@@ -124,7 +124,7 @@ public class DepthChartMessage {
             if (numOfAsks > 0) {
                 asks = new ArrayList<>(numOfAsks);
                 for (int i = 0; i < numOfAsks; i++) {
-                    buildDepth(buf, offset);
+                    asks.add(buildDepth(buf, offset));
                     offset += 32;
                 }
             }

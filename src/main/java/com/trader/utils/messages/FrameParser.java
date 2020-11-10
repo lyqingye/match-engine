@@ -1,14 +1,11 @@
 package com.trader.utils.messages;
 
-import com.trader.market.publish.msg.Message;
-import com.trader.market.publish.msg.MessageType;
-import com.trader.market.publish.msg.TradeMessage;
+import com.trader.market.entity.MarketDepthChartSeries;
+import com.trader.market.publish.msg.*;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.json.DecodeException;
-import io.vertx.core.json.JsonObject;
 
 /**
  * @author ex
@@ -49,7 +46,7 @@ public class FrameParser implements Handler<Buffer> {
             if (remainingBytes - 4 >= length) {
                 // we have a complete message
                 int readOffset = _offset;
-                Message<TradeMessage> rs = new Message<>();
+                Message<Object> rs = new Message<>();
                 MessageType msgType = MessageType.valueOf(_buffer.getByte(readOffset));
                 readOffset += 1;
                 if (msgType != null) {
@@ -62,6 +59,24 @@ public class FrameParser implements Handler<Buffer> {
                             TradeMessage msg = TradeMessage.of(_buffer, readOffset, length);
                             if (msg == null) {
                                 client.handle(Future.failedFuture("invalid trade symbol length"));
+                            }
+                            rs.setData(msg);
+                            client.handle(Future.succeededFuture(rs));
+                            break;
+                        }
+                        case DEPTH_CHART: {
+                            MarketDepthChartSeries msg = DepthChartMessage.of(_buffer, readOffset, length);
+                            if (msg == null) {
+                                client.handle(Future.failedFuture("invalid depth msg"));
+                            }
+                            rs.setData(msg);
+                            client.handle(Future.succeededFuture(rs));
+                            break;
+                        }
+                        case MARKET_PRICE: {
+                            PriceChangeMessage msg = PriceChangeMessage.of(_buffer, readOffset, length);
+                            if (msg == null) {
+                                client.handle(Future.failedFuture("invalid price change msg"));
                             }
                             rs.setData(msg);
                             client.handle(Future.succeededFuture(rs));

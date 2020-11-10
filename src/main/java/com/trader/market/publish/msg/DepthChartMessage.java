@@ -48,7 +48,7 @@ public class DepthChartMessage {
         Buffer buf = Buffer.buffer(msgSize)
                 // msg header
                 .appendInt(msgSize)
-                .appendByte((byte) MessageType.TRADE_RESULT.ordinal())
+                .appendByte((byte) MessageType.DEPTH_CHART.ordinal())
                 .appendLong(System.currentTimeMillis());
 
         // symbol and numOfStep

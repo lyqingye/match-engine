@@ -57,7 +57,7 @@ public class PriceChangeMessage {
         int msgSize = 26 + symbolBytes.length;
         return Buffer.buffer(msgSize)
                 .appendInt(msgSize)
-                .appendByte((byte) MessageType.TRADE_RESULT.ordinal())
+                .appendByte((byte) MessageType.MARKET_PRICE.ordinal())
                 .appendLong(System.currentTimeMillis())
                 .appendInt(symbolBytes.length)
                 .appendBytes(symbolBytes)

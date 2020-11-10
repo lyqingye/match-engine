@@ -15,5 +15,14 @@ public enum DepthLevel {
     step2,
     step3,
     step4,
-    step5
+    step5;
+
+    public static DepthLevel of(byte ordinal) {
+        for (DepthLevel lv : values()) {
+            if (lv.ordinal() == ordinal) {
+                return lv;
+            }
+        }
+        return null;
+    }
 }

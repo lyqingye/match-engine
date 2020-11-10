@@ -30,4 +30,6 @@ public class Message<T> {
         }
         return MessageType.ofName(json.getString("type"));
     }
+
+
 }

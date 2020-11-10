@@ -46,7 +46,7 @@ public class TradeMessage {
         return msg;
     }
 
-    public static Buffer toMessageBuf(TradeMessage ts) {
+    public static Buffer toBuf(TradeMessage ts) {
         // | msg size (4byte) | msg type (1byte) | ts (8byte) |
         // | symbol.size [4byte] data[bytes] | price (8byte) | quantity (8byte) | direction (1byte) | ts (8byte)
         byte[] symbolBytes = ts.getSymbol().getBytes();

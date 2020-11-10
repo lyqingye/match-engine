@@ -41,7 +41,7 @@ public class NetTest {
         Message<TradeMessage> of1 = TradeMessage.of(tm);
         String data = Json.encode(of1);
 
-        Buffer buf = TradeMessage.toMessageBuf(tm);
+        Buffer buf = TradeMessage.toBuf(tm);
 
         long start = System.nanoTime();
         for (int i = 0; i < 10000000; i++) {

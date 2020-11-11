@@ -107,6 +107,18 @@ public class KlineBotOrderRouter implements OrderRouter {
     }
 
     /**
+     * 给定一个交易对, 当市场价格变动的时候, 根据交易对
+     * 获取需要更新最新成交价的订单簿
+     *
+     * @param order 订单
+     * @return 订单簿集合
+     */
+    @Override
+    public Collection<OrderBook> routeToNeedToUpdatePriceBook(Order order) {
+        return routeToNeedToUpdatePriceBook(order.getSymbol());
+    }
+
+    /**
      * 给定一个交易对, 返回一个订单簿, 用于第三方调用者查询市场价
      *
      * @param symbolId 交易对

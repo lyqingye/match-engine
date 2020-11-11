@@ -450,10 +450,12 @@ public class MarketManager implements MatchHandler {
         // 当有最新订单成交的时候, 需要更新最后一条成交价格
         OrderBook book = router.routeToBookForSendDepthChart(order);
 
-        if (book != null) {
-            // 更新成交价价
-            book.updateLastTradePrice(ts.getExecutePrice());
+        // 更新成交价
+        for (OrderBook orderBook : router.routeToNeedToUpdatePriceBook(order)) {
+            orderBook.updateLastTradePrice(ts.getExecutePrice());
+        }
 
+        if (book != null) {
             // 深度写入到队列
             final MarketDepthChartSeries series = book.snapSeries(20);
             if (depthChartQueue != null) {

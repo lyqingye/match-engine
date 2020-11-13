@@ -48,4 +48,16 @@ public final class SymbolUtils {
     public static String makeSymbol(Order order) {
         return order.getSymbol();
     }
+
+    /**
+     * 转换为通用交易对格式
+     *
+     * @param symbol 交易对
+     * @return 通用交易对格式
+     */
+    public static String toGenericSymbol(String symbol) {
+        return symbol.replace("/", "")
+                .replace("-", "")
+                .toLowerCase();
+    }
 }

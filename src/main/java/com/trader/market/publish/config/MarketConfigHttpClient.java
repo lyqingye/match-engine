@@ -1,5 +1,6 @@
 package com.trader.market.publish.config;
 
+import com.trader.utils.SymbolUtils;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -145,13 +146,12 @@ public class MarketConfigHttpClient {
      * 添加/修改交易对映射
      *
      * @param source 来源交易对
-     * @param target 目标交易对
      */
-    public void putSymbolMappingSync(String source, String target) {
+    public void putSymbolMappingSync(String source) {
         AtomicReference<CountDownLatch> monitor = new AtomicReference<>(new CountDownLatch(1));
         JsonObject data = new JsonObject();
         data.put("source", source);
-        data.put("target", target);
+        data.put("target", SymbolUtils.toGenericSymbol(source));
         String encode = data.encode();
         client.put("/market/symbol/c2g/mapping", response -> {
             response.bodyHandler(body -> {

@@ -23,7 +23,7 @@ public enum OrderType {
     /**
      * 止盈止损
      */
-    STOP(1);
+    STOP(2);
 
     /**
      * 优先级

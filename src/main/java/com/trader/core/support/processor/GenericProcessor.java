@@ -191,6 +191,8 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
                             ask.setCmd(Cmd.ACTIVE_ORDER);
                             ask.setActivated(ActivateStatus.ACTIVATING);
                             exec(ask);
+                        }else {
+                            break;
                         }
                     } else if (ask.isActivated()) {
                         askIt.remove();

@@ -25,37 +25,37 @@ public class GenericScheduler implements Scheduler {
     /**
      * symbol -> processor
      */
-    private Map<String, GenericProcessor> processorCache;
+    private final Map<String, GenericProcessor> processorCache;
 
     /**
      * order router
      */
-    private OrderRouter router;
+    private final OrderRouter router;
 
     /**
      * 匹配器管理器
      */
-    private MatcherManager matcherMgr;
+    private final MatcherManager matcherMgr;
 
     /**
      * 市场管理器
      */
-    private MarketManager marketMgr;
+    private final MarketManager marketMgr;
 
     /**
      * 撮合结果处理器
      */
-    private MatchHandler matchHandler;
+    private final MatchHandler matchHandler;
 
     /**
      * 最大处理器个数
      */
-    private int maxNumOfProcessors;
+    private final int maxNumOfProcessors;
 
     /**
      * 处理器命令缓冲区大小
      */
-    private int sizeOfProcessorCmdBuffer;
+    private final int sizeOfProcessorCmdBuffer;
 
     /**
      * 实际的任务个数

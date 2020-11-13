@@ -213,6 +213,7 @@ public class MarketManager implements MatchHandler {
             marketPublishClient = new TcpMarketPublishClient(config.getMarketPublishClientHost(),
                                                              config.getMarketPublishClientPort());
             config.setMarketPublishClient(marketPublishClient);
+            marketPublishClient.setConsumer(this::onThirdMarketData);
             this.addHandler(new MarketPublishHandler(marketPublishClient));
         } else {
             this.addHandler(new MarketPublishHandler(config.getMarketPublishClient()));
@@ -295,10 +296,6 @@ public class MarketManager implements MatchHandler {
      *         处理器
      */
     public void addHandler(MarketEventHandler handler) {
-        if (handler instanceof MarketPublishHandler) {
-            ((MarketPublishHandler) handler).getClient()
-                                            .setConsumer(this::onThirdMarketData);
-        }
         this.handlers.add(Objects.requireNonNull(handler));
     }
 

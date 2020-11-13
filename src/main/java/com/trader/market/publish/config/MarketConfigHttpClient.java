@@ -140,4 +140,29 @@ public class MarketConfigHttpClient {
         }
         return result.get();
     }
+
+    /**
+     * 添加/修改交易对映射
+     *
+     * @param source 来源交易对
+     * @param target 目标交易对
+     */
+    public void putSymbolMappingSync(String source, String target) {
+        AtomicReference<CountDownLatch> monitor = new AtomicReference<>(new CountDownLatch(1));
+        JsonObject data = new JsonObject();
+        data.put("source", source);
+        data.put("target", target);
+        String encode = data.encode();
+        client.put("/market/symbol/c2g/mapping", response -> {
+            response.bodyHandler(body -> {
+                monitor.get().countDown();
+            });
+        }).putHeader("Content-Length", String.valueOf(encode.length()))
+                .write(encode).end();
+        try {
+            monitor.get().await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
 }

@@ -14,7 +14,7 @@ public class ThreadPoolUtils {
     private static final ExecutorService EXECUTOR_SERVICE;
 
     static {
-        EXECUTOR_SERVICE = Executors.newFixedThreadPool(1,
+        EXECUTOR_SERVICE = Executors.newFixedThreadPool(2,
                 new ThreadFactory() {
                     AtomicInteger counter = new AtomicInteger(0);
 

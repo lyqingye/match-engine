@@ -28,6 +28,8 @@ public class TestLimitOrderMatch  {
     public void before () {
         MatchEngineConfig config = new MatchEngineConfig();
         config.setWebsocketConfigClientHost("119.23.49.169");
+        config.setMarketPublishClientHost("119.23.49.169");
+
         config.setHandler(new MatchHandler() {
             @Override
             public void onExecuteOrder(Order order, Order opponentOrder, TradeResult ts) throws Exception {
@@ -36,9 +38,10 @@ public class TestLimitOrderMatch  {
         });
         engine = MatchEngine.newEngine(config);
         engine.enableMatching();
+        engine.getMarketMgr().getMarketConfigClient().putSymbolMappingSync("DOC-USDT", "docusdt");
 
         try {
-            Thread.sleep(10000);
+            Thread.sleep(1000000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

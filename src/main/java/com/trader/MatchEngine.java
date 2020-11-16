@@ -105,7 +105,8 @@ public class MatchEngine {
         // 异常处理器
         MatchExceptionHandler matchExceptionHandler = config.getMatchExceptionHandler();
         if (matchExceptionHandler == null) {
-            // TODO 默认异常处理器
+            matchExceptionHandler = MatchExceptionHandler.defaultHandler();
+            config.setMatchExceptionHandler(matchExceptionHandler);
         }
 
         // 调度器

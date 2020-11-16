@@ -42,4 +42,22 @@ public interface MatchExceptionHandler {
             }
         };
     }
+
+    static MatchExceptionHandler defaultHandler() {
+        return new MatchExceptionHandler() {
+            /**
+             * 异常处理器
+             *
+             * @param threadName  出问题的线程
+             * @param component   出问题的组件
+             * @param throwable   异常信息
+             * @param information 额外信息 (可能为空)
+             */
+            @Override
+            public void handler(String threadName, String component, Throwable throwable, String information) {
+                System.err.println(String.format("[%s][%s]\n%s", threadName, component, information));
+                throwable.printStackTrace();
+            }
+        };
+    }
 }

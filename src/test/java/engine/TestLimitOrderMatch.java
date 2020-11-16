@@ -38,7 +38,7 @@ public class TestLimitOrderMatch  {
         });
         engine = MatchEngine.newEngine(config);
         engine.enableMatching();
-        engine.getMarketMgr().getMarketConfigClient().putSymbolMappingSync("DOC-USDT", "docusdt");
+        engine.getMarketMgr().getMarketConfigClient().putSymbolMappingSync("DOC-USDT");
 
         try {
             Thread.sleep(1000000);

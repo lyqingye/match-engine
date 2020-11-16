@@ -8,6 +8,10 @@ package com.trader.core.def;
  * @since 2020/9/21 下午1:32
  */
 public enum DifferencePriceStrategy {
+    /**
+     * 驱动订单
+     */
+    DRIVER,
 
     /**
      * 买家先手

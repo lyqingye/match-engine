@@ -39,6 +39,11 @@ public class TradeUtils {
         TradeResult ts = new TradeResult();
 
         switch (order.getDifferencePriceStrategy()) {
+            case DRIVER: {
+                ts.setExecutePrice(opponentPrice);
+                ts.setOpponentExecutePrice(opponentPrice);
+                break;
+            }
             case PLATFORM: {
 
                 // 平台通吃
@@ -155,7 +160,6 @@ public class TradeUtils {
             quantity = order.getLeavesAmount()
                             .divide(executePrice, RoundingMode.DOWN)
                             .setScale(8, RoundingMode.DOWN);
-
 
             if (quantity.compareTo(opponentQuantity) <= 0) {
                 // 买单全部买完

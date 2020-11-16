@@ -4,6 +4,7 @@ import com.trader.core.MatchHandler;
 import com.trader.core.Matcher;
 import com.trader.core.OrderRouter;
 import com.trader.core.Scheduler;
+import com.trader.core.exception.MatchExceptionHandler;
 import com.trader.market.publish.MarketPublishClient;
 import lombok.Data;
 
@@ -40,6 +41,11 @@ public class MatchEngineConfig {
      * {@link com.trader.core.matcher.market.InMemoryMarketMatchHandler}
      */
     private MatchHandler handler;
+
+    /**
+     * 撮合引擎异常处理器
+     */
+    private MatchExceptionHandler matchExceptionHandler;
 
     /**
      * 全局下单队列大小 2的n次方

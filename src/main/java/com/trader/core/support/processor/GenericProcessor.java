@@ -10,7 +10,7 @@ import com.trader.core.def.Cmd;
 import com.trader.core.entity.Order;
 import com.trader.core.entity.OrderBook;
 import com.trader.core.event.MatchEventHandlerRegistry;
-import com.trader.core.exception.TradeException;
+import com.trader.core.exception.MatchExceptionHandler;
 import com.trader.core.matcher.MatcherManager;
 import com.trader.core.matcher.TradeResult;
 import com.trader.market.MarketManager;
@@ -78,6 +78,11 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
     private ProcessorThreadFactory ptf;
 
     /**
+     * 异常处理器
+     */
+    private MatchExceptionHandler matchExceptionHandler;
+
+    /**
      * hide default constructor
      */
     private GenericProcessor() {
@@ -87,17 +92,20 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
                             OrderRouter router,
                             MatcherManager matcherMgr,
                             MarketManager marketMgr,
+                            MatchExceptionHandler matchExceptionHandler,
                             int queueSize) {
         this.name = name;
         this.router = Objects.requireNonNull(router);
         this.matcherMgr = Objects.requireNonNull(matcherMgr);
         this.marketMgr = Objects.requireNonNull(marketMgr);
+        this.matchExceptionHandler = matchExceptionHandler;
         this.ptf = new ProcessorThreadFactory(this.name());
 
         // 队列创建
         inputQueue = DisruptorQueueFactory.createSingleQueue(queueSize,
                 ptf,
-                new OrderProcessor());
+                new OrderProcessor(),
+                matchExceptionHandler.toDisruptorHandler());
     }
 
     public GenericProcessor(String name,
@@ -112,8 +120,9 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
 
         // 队列创建
         inputQueue = DisruptorQueueFactory.createSingleQueue(DEFAULT_INPUT_QUEUE_SIZE,
-                                                             ptf,
-                                                             new OrderProcessor());
+                ptf,
+                new OrderProcessor(),
+                matchExceptionHandler.toDisruptorHandler());
     }
 
     @Override
@@ -225,7 +234,8 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
                     try {
                         h.onAddOrder(order);
                     } catch (Exception e) {
-                        throw new TradeException(e.getMessage());
+                        matchExceptionHandler.handler(Thread.currentThread().getName(),
+                                name(), e, String.format("AddOrder: curOrderId: %s", order.getId()));
                     }
                 });
                 matchOrder(book, order);
@@ -253,7 +263,8 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
                         order.setActivated(ActivateStatus.NO_ACTIVATED);
                         // 如果激活订单失败则将该订单从买卖盘中移除
                         book.removeOrder(order);
-                        throw new TradeException(e.getMessage());
+                        matchExceptionHandler.handler(Thread.currentThread().getName(),
+                                name(), e, String.format("ActiveStopOrder: curOrderId: %s", order.getId()));
                     }
                 });
 
@@ -274,11 +285,11 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
          *         订单
          */
         private void matchOrder(OrderBook book, Order order) {
-            //
+            order.markMatching();
+
             // 根据订单类型确定对手盘
             // 买入单: 则对手盘为卖盘
             // 卖出单: 则对手盘为买盘
-            //
             Iterator<Order> opponentIt = null;
             if (order.isBuy()) {
                 opponentIt = book.getAskOrders().iterator();
@@ -294,12 +305,14 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
 
             while (opponentIt.hasNext()) {
                 Order best = opponentIt.next();
+                best.markMatching();
 
                 // 查找订单匹配器
                 Matcher matcher = matcherMgr.lookupMatcher(order, best);
 
                 if (matcher == null) {
                     // 这里有可能是因为买单没有足够的余额进行成交, 所以是 continue 而不是 return
+                    best.unMarkMatching();
                     continue;
                 }
 
@@ -309,17 +322,16 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
                 // 当前的匹配器
                 currentMatcher = matcher;
 
-                //
                 // 订单结束状态补偿
-                //
                 if (currentMatcher.isFinished(order)) {
                     order.markFinished();
+                    order.unMarkMatching();
+                    best.unMarkMatching();
                     return;
                 }
 
                 if (currentMatcher.isFinished(best)) {
                     best.markFinished();
-
                     // 移除被标记的订单
                     opponentIt.remove();
                     if (order.isBuy()) {
@@ -327,24 +339,20 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
                     } else {
                         opponentIt = book.getBidOrders().iterator();
                     }
+                    best.unMarkMatching();
                     continue;
                 }
 
                 // 执行撮合
                 TradeResult ts = currentMatcher.doTrade(order, best);
 
-                //
                 // 事务
-                //
                 Order snap_order = order.snap();
                 Order snap_best = best.snap();
 
-                //
                 // 处理订单撮合结果
-                //
                 executeHandler((handler) -> {
                     try {
-                        //
                         // 执行事件调用链:
                         // 调用链的顶部必然是一个内存操作的 handler, 也就是必须先写入内存
                         // 可能也存在一个持久化的 handler, 所以需要在执行做事务处理
@@ -353,9 +361,11 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
                     } catch (Exception e) {
                         order.rollback(snap_order);
                         best.rollback(snap_best);
-                        e.printStackTrace();
                         order.markCanceled();
                         best.markCanceled();
+                        matchExceptionHandler.handler(Thread.currentThread().getName(),
+                                name(), e,
+                                String.format("Trading: curOrderId: %s,opponentOrderId: %s ", order.getId(), best.getId()));
                     }
                 });
 
@@ -365,7 +375,7 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
                     // 标记订单已结束
                     best.markFinished();
 
-                    // 直接使用
+                    // 直接移除
                     opponentIt.remove();
 
                     // 推送事件
@@ -376,17 +386,18 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
                     } else {
                         opponentIt = book.getBidOrders().iterator();
                     }
-                }
 
+                }
                 // 撮合结束
                 if (currentMatcher.isFinished(order)) {
                     //
                     // 标记已经结束的订单并且结束撮合
                     //
                     order.markFinished();
-                    return;
                 }
+                best.unMarkMatching();
             }
+            order.unMarkMatching();
         }
 
         private MatchingContext cachedMatchingContext;

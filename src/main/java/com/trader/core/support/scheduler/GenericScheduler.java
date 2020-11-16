@@ -4,6 +4,7 @@ import com.trader.core.MatchHandler;
 import com.trader.core.OrderRouter;
 import com.trader.core.Scheduler;
 import com.trader.core.entity.Order;
+import com.trader.core.exception.MatchExceptionHandler;
 import com.trader.core.matcher.MatcherManager;
 import com.trader.core.support.processor.GenericProcessor;
 import com.trader.market.MarketEventHandler;
@@ -58,6 +59,11 @@ public class GenericScheduler implements Scheduler {
     private int sizeOfProcessorCmdBuffer;
 
     /**
+     * 异常处理
+     */
+    private MatchExceptionHandler matchExceptionHandler;
+
+    /**
      * 实际的任务个数
      */
     private int actualNumOfTask = 0;
@@ -66,6 +72,7 @@ public class GenericScheduler implements Scheduler {
                             MatcherManager matcherMgr,
                             MarketManager marketMgr,
                             MatchHandler matchHandler,
+                            MatchExceptionHandler matchExceptionHandler,
                             int maxNumOfProcessors,
                             int sizeOfProcessorCmdBuffer) {
         this.maxNumOfProcessors = maxNumOfProcessors;
@@ -73,6 +80,7 @@ public class GenericScheduler implements Scheduler {
         this.matcherMgr = Objects.requireNonNull(matcherMgr);
         this.marketMgr = Objects.requireNonNull(marketMgr);
         this.matchHandler = Objects.requireNonNull(matchHandler);
+        this.matchExceptionHandler = Objects.requireNonNull(matchExceptionHandler);
         this.processorCache = new HashMap<>(maxNumOfProcessors);
         this.sizeOfProcessorCmdBuffer = sizeOfProcessorCmdBuffer;
 
@@ -111,10 +119,11 @@ public class GenericScheduler implements Scheduler {
             } else {
                 // 创建一个处理器
                 processor = new GenericProcessor(theProcessorName,
-                                                 router,
-                                                 matcherMgr,
-                                                 marketMgr,
-                                                 sizeOfProcessorCmdBuffer);
+                        router,
+                        matcherMgr,
+                        marketMgr,
+                        matchExceptionHandler,
+                        sizeOfProcessorCmdBuffer);
 
                 processor.regHandler(matchHandler);
             }

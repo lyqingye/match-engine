@@ -6,6 +6,7 @@ import com.trader.core.OrderRouter;
 import com.trader.core.Scheduler;
 import com.trader.core.def.Cmd;
 import com.trader.core.entity.Order;
+import com.trader.core.exception.MatchExceptionHandler;
 import com.trader.core.exception.TradeException;
 import com.trader.core.handler.CompositeMatchEventHandler;
 import com.trader.core.matcher.MatcherManager;
@@ -64,6 +65,10 @@ public class MatchEngine {
     @Getter
     private MarketManager marketMgr;
 
+    /**
+     * 异常处理器
+     */
+    private MatchExceptionHandler matchExceptionHandler;
 
     /**
      * 下单队列
@@ -97,13 +102,20 @@ public class MatchEngine {
         matcher.addMatcher(new LimitOrderMatcher());
         matcher.addMatcher(new MarketOrderMatcher());
 
+        // 异常处理器
+        MatchExceptionHandler matchExceptionHandler = config.getMatchExceptionHandler();
+        if (matchExceptionHandler == null) {
+            // TODO 默认异常处理器
+        }
+
         // 调度器
         GenericScheduler scheduler = new GenericScheduler(router,
-                                                          matcher,
-                                                          market,
-                                                          handlers,
-                                                          config.getNumberOfCores(),
-                                                          config.getSizeOfCoreCmdBuffer());
+                matcher,
+                market,
+                handlers,
+                matchExceptionHandler,
+                config.getNumberOfCores(),
+                config.getSizeOfCoreCmdBuffer());
         config.setScheduler(scheduler);
         return new MatchEngine(market, scheduler, config.getSizeOfOrderQueue());
     }
@@ -132,7 +144,7 @@ public class MatchEngine {
                 }
                 scheduler.submit(event);
             }
-        });
+        }, matchExceptionHandler.toDisruptorHandler());
     }
 
     /**
@@ -160,6 +172,9 @@ public class MatchEngine {
 
         if (order != null) {
             synchronized (order.getId()) {
+                if (order.isMatching()) {
+                    throw new TradeException("订单已经匹配到订单, 正在结算中, 请勿撤单");
+                }
                 if (order.isCanceled()) {
                     return;
                 }

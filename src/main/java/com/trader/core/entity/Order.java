@@ -149,6 +149,11 @@ public class Order {
     private volatile boolean canceled = false;
 
     /**
+     * 是否正在匹配
+     */
+    private boolean matching = false;
+
+    /**
      * 版本 (预留)
      */
     private long version;
@@ -285,6 +290,21 @@ public class Order {
         this.canceled = true;
     }
 
+    public boolean isMatching() {
+        return this.matching;
+    }
+
+    public void markMatching() {
+        if (isMatching()) {
+            System.err.println("[MatchEngine]: 订单: " + id + " 没有正确释放撮合锁!");
+        }
+        this.matching = true;
+    }
+
+    public void unMarkMatching() {
+        this.matching = false;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -337,6 +357,7 @@ public class Order {
         order.activated = activated;
         order.finished = finished;
         order.canceled = canceled;
+        order.matching = matching;
         return order;
     }
 
@@ -376,6 +397,7 @@ public class Order {
         this.activated = o.activated;
         this.finished = o.finished;
         this.canceled = o.canceled;
+        this.matching = o.matching;
     }
 
     @Override

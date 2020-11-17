@@ -11,7 +11,10 @@ import java.math.RoundingMode;
  * @since 2020/9/20 上午9:34
  */
 public class TradeUtils {
-
+    /**
+     * 最小的金额
+     */
+    public static final BigDecimal MIN_VALUE = new BigDecimal("0.00000001");
 
     /**
      * 计算成交价

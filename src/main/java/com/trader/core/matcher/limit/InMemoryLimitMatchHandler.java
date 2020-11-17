@@ -3,6 +3,7 @@ package com.trader.core.matcher.limit;
 import com.trader.core.MatchHandler;
 import com.trader.core.entity.Order;
 import com.trader.core.matcher.TradeResult;
+import com.trader.utils.TradeUtils;
 
 import java.math.BigDecimal;
 
@@ -45,6 +46,11 @@ public class InMemoryLimitMatchHandler implements MatchHandler {
 
             // 买单需要记录已经获得的数量
             order.incExecutedQuality(executeQuantity);
+
+            // 处理计算精度导致的小额问题
+            if (order.getLeavesAmount().compareTo(TradeUtils.MIN_VALUE) == 0) {
+                order.setLeavesAmount(BigDecimal.ZERO);
+            }
         } else {
             //
             // 增加成交量, 与减少剩余成交量
@@ -54,6 +60,11 @@ public class InMemoryLimitMatchHandler implements MatchHandler {
 
             // 卖单需要记录已经获得的金钱
             order.incExecutedAmount(amount);
+
+            // 处理计算精度导致的小额问题
+            if (order.getLeavesQuantity().compareTo(TradeUtils.MIN_VALUE) == 0) {
+                order.setLeavesQuantity(BigDecimal.ZERO);
+            }
         }
     }
 

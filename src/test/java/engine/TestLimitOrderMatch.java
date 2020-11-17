@@ -34,6 +34,7 @@ public class TestLimitOrderMatch  {
             @Override
             public void onExecuteOrder(Order order, Order opponentOrder, TradeResult ts) throws Exception {
                 // 持久化
+                System.out.println(ts);
             }
         });
         engine = MatchEngine.newEngine(config);
@@ -52,8 +53,8 @@ public class TestLimitOrderMatch  {
     public void addOrder () {
 
         final long start = System.currentTimeMillis();
-        List<Order> orderList = new ArrayList<>(1000000);
-        for (int i = 0; i < 2; i++) {
+        List<Order> orderList = new ArrayList<>(100);
+        for (int i = 0; i < 100; i++) {
 
 
             BigDecimal price = BigDecimal.TEN;

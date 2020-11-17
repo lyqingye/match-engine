@@ -4,6 +4,7 @@ import com.trader.config.MatchEngineConfig;
 import com.trader.core.MatchHandler;
 import com.trader.core.OrderRouter;
 import com.trader.core.Scheduler;
+import com.trader.core.def.ActivateStatus;
 import com.trader.core.def.Cmd;
 import com.trader.core.entity.Order;
 import com.trader.core.exception.MatchExceptionHandler;
@@ -76,6 +77,12 @@ public class MatchEngine {
     private DisruptorQueue<Order> addOrderQueue;
 
     public static MatchEngine newEngine(MatchEngineConfig config) {
+        // 异常处理器
+        MatchExceptionHandler matchExceptionHandler = config.getMatchExceptionHandler();
+        if (matchExceptionHandler == null) {
+            matchExceptionHandler = MatchExceptionHandler.defaultHandler();
+            config.setMatchExceptionHandler(matchExceptionHandler);
+        }
         // 订单路由
         OrderRouter router;
         if (config.getRouter() != null) {
@@ -101,13 +108,6 @@ public class MatchEngine {
         MatcherManager matcher = new MatcherManager();
         matcher.addMatcher(new LimitOrderMatcher());
         matcher.addMatcher(new MarketOrderMatcher());
-
-        // 异常处理器
-        MatchExceptionHandler matchExceptionHandler = config.getMatchExceptionHandler();
-        if (matchExceptionHandler == null) {
-            matchExceptionHandler = MatchExceptionHandler.defaultHandler();
-            config.setMatchExceptionHandler(matchExceptionHandler);
-        }
 
         // 调度器
         GenericScheduler scheduler = new GenericScheduler(router,
@@ -182,6 +182,10 @@ public class MatchEngine {
 
                 if (order.isFinished()) {
                     return;
+                }
+                
+                if (order.isStopOrder()) {
+                    order.setActivated(ActivateStatus.ACTIVATED);
                 }
 
                 // 设置订单取消标记位

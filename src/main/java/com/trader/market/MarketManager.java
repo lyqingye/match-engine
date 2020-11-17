@@ -128,12 +128,12 @@ public class MarketManager implements MatchHandler {
                                                                          return tr;
                                                                      }
                                                                  },
-                                                                 new AbstractDisruptorConsumer<PriceChangeMessage>() {
-                                                                     @Override
-                                                                     public void process(PriceChangeMessage event) {
-                                                                         priceChangeRingBuffer.offer(event.getSymbol(), event);
-                                                                     }
-                                                                 });
+                    new AbstractDisruptorConsumer<PriceChangeMessage>() {
+                        @Override
+                        public void process(PriceChangeMessage event) {
+                            priceChangeRingBuffer.offer(event.getSymbol(), event);
+                        }
+                    }, config.getMatchExceptionHandler().toDisruptorHandler());
 
             depthChartQueue = DisruptorQueueFactory.createQueue(config.getSizeOfPublishDataRingBuffer(),
                                                                 new ThreadFactory() {
@@ -144,12 +144,12 @@ public class MarketManager implements MatchHandler {
                                                                         return tr;
                                                                     }
                                                                 },
-                                                                new AbstractDisruptorConsumer<MarketDepthChartSeries>() {
-                                                                    @Override
-                                                                    public void process(MarketDepthChartSeries event) {
-                                                                        depthChartRingBuffer.offer(event.getSymbol(), event);
-                                                                    }
-                                                                });
+                    new AbstractDisruptorConsumer<MarketDepthChartSeries>() {
+                        @Override
+                        public void process(MarketDepthChartSeries event) {
+                            depthChartRingBuffer.offer(event.getSymbol(), event);
+                        }
+                    }, config.getMatchExceptionHandler().toDisruptorHandler());
         }
 
         priceChangeRingBuffer = new CoalescingRingBuffer<>(config.getSizeOfPublishDataRingBuffer());
@@ -200,14 +200,14 @@ public class MarketManager implements MatchHandler {
 
         // 创建撮合数据队列
         tradeMessageQueue = DisruptorQueueFactory.createQueue(config.getSizeOfTradeResultQueue(),
-                                                              new AbstractDisruptorConsumer<TradeMessage>() {
-                                                                  @Override
-                                                                  public void process(TradeMessage event) {
-                                                                      syncExecuteHandler(h -> {
-                                                                          h.onTrade(event);
-                                                                      });
-                                                                  }
-                                                              });
+                new AbstractDisruptorConsumer<TradeMessage>() {
+                    @Override
+                    public void process(TradeMessage event) {
+                        syncExecuteHandler(h -> {
+                            h.onTrade(event);
+                        });
+                    }
+                }, config.getMatchExceptionHandler().toDisruptorHandler());
         // 配置市场推送服务
         if (config.getMarketPublishClient() == null) {
             marketPublishClient = new TcpMarketPublishClient(config.getMarketPublishClientHost(),

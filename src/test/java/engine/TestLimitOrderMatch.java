@@ -40,11 +40,11 @@ public class TestLimitOrderMatch  {
         engine.enableMatching();
         engine.getMarketMgr().getMarketConfigClient().putSymbolMappingSync("DOC-USDT");
 
-        try {
-            Thread.sleep(1000000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            Thread.sleep(1000000);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
     }
 
     @Test

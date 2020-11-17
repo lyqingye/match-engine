@@ -118,15 +118,17 @@ public class MatchEngine {
                 config.getNumberOfCores(),
                 config.getSizeOfCoreCmdBuffer());
         config.setScheduler(scheduler);
-        return new MatchEngine(market, scheduler, config.getSizeOfOrderQueue());
+        return new MatchEngine(market, scheduler, matchExceptionHandler, config.getSizeOfOrderQueue());
     }
 
     public MatchEngine(MarketManager market,
                        Scheduler scheduler,
+                       MatchExceptionHandler matchExceptionHandler,
                        int sizeOfOrderQueue) {
         this.orderMgr = new OrderManager();
         this.scheduler = Objects.requireNonNull(scheduler);
         this.marketMgr = Objects.requireNonNull(market);
+        this.matchExceptionHandler = Objects.requireNonNull(matchExceptionHandler);
 
         // 创建下单队列
         this.addOrderQueue = DisruptorQueueFactory.createQueue(sizeOfOrderQueue, r -> {
@@ -183,7 +185,7 @@ public class MatchEngine {
                 if (order.isFinished()) {
                     return;
                 }
-                
+
                 if (order.isStopOrder()) {
                     order.setActivated(ActivateStatus.ACTIVATED);
                 }

@@ -367,7 +367,7 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
                         best.markCanceled();
                         matchExceptionHandler.handler(Thread.currentThread().getName(),
                                 name(), e,
-                                String.format("Trading: curOrderId: %s,opponentOrderId: %s ", order.getId(), best.getId()));
+                                String.format("TradeException:\n curOrder: %s\n opponentOrder: %s\n ts: %s\n", order, best, ts.toString()));
                     }
                 });
 

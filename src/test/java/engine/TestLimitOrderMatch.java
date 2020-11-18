@@ -54,22 +54,22 @@ public class TestLimitOrderMatch  {
 
         final long start = System.currentTimeMillis();
         List<Order> orderList = new ArrayList<>(100);
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 1; i++) {
 
 
             BigDecimal price = BigDecimal.TEN;
             Order buyLimitOrder = OrderFactory.limit()
                     .buy("1", "BTC", "USDT")
-                    .spent(BigDecimal.TEN.multiply(price))
-                    .withUnitPriceOf(price)
+                    .spent(new BigDecimal("1406.02801895"))
+                    .withUnitPriceOf(new BigDecimal("16369.97953393"))
                     .quantity(BigDecimal.TEN)
                     .GTC()
                     .build();
 
             Order sellMarketOrder = OrderFactory.limit()
-                                                .sell("2", "BTC", "USDT")
-                                                .quantity(BigDecimal.TEN)
-                                                .withUnitPriceOf(price)
+                    .sell("2", "BTC", "USDT")
+                    .quantity(new BigDecimal("0.08589064"))
+                    .withUnitPriceOf(new BigDecimal("16369.97953393"))
                                                 .GTC()
                                                 .build();
             orderList.add(buyLimitOrder);

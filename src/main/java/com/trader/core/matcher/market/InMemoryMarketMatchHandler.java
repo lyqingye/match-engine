@@ -4,7 +4,6 @@ import com.trader.core.MatchHandler;
 import com.trader.core.def.OrderType;
 import com.trader.core.entity.Order;
 import com.trader.core.matcher.TradeResult;
-import com.trader.utils.TradeUtils;
 
 import java.math.BigDecimal;
 
@@ -45,11 +44,6 @@ public class InMemoryMarketMatchHandler implements MatchHandler {
 
                 // 记录已经成交的数量
                 order.incExecutedQuality(executeQuantity);
-
-                // 处理计算精度导致的小额问题
-                if (order.getLeavesAmount().compareTo(TradeUtils.MIN_VALUE) == 0) {
-                    order.setLeavesAmount(BigDecimal.ZERO);
-                }
             }
 
             // 如果是卖出单则扣除成交量
@@ -59,11 +53,6 @@ public class InMemoryMarketMatchHandler implements MatchHandler {
 
                 // 记录已经获得的金额
                 order.incExecutedAmount(amount);
-
-                // 处理计算精度导致的小额问题
-                if (order.getLeavesQuantity().compareTo(TradeUtils.MIN_VALUE) == 0) {
-                    order.setLeavesQuantity(BigDecimal.ZERO);
-                }
             }
         }
     }

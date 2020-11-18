@@ -165,12 +165,16 @@ public class TradeUtils {
                             .setScale(8, RoundingMode.DOWN);
 
             if (quantity.compareTo(opponentQuantity) <= 0) {
-                // 买单全部买完
                 ts.setExecuteAmount(order.getLeavesAmount());
-                ts.setQuantity(quantity);
-
+                if (executePrice.multiply(opponentQuantity).setScale(8, BigDecimal.ROUND_DOWN).compareTo(order.getLeavesAmount()) == 0) {
+                    // 买卖单全部买完
+                    ts.setQuantity(opponentQuantity);
+                } else {
+                    // 买单全部买完
+                    ts.setQuantity(quantity);
+                }
                 // 计算对手卖单收入的计价货币 = 对手订单成交单价 * 成交数量
-                ts.setOpponentExecuteAmount(quantity.multiply(opponentExecutePrice).setScale(8, RoundingMode.DOWN));
+                ts.setOpponentExecuteAmount(ts.getQuantity().multiply(opponentExecutePrice).setScale(8, RoundingMode.DOWN));
             } else {
                 // 买单不能全部买完, 但卖单可以卖完
                 // 所以成交金额则是 卖单的数量 * 当前订单单价
@@ -192,10 +196,17 @@ public class TradeUtils {
             if (opponentQuantity.compareTo(quantity) <= 0) {
                 // 买单全部买完
                 ts.setOpponentExecuteAmount(opponentOrder.getLeavesAmount());
-                ts.setQuantity(opponentQuantity);
+
+                if (opponentExecutePrice.multiply(quantity).setScale(8, BigDecimal.ROUND_DOWN).compareTo(opponentOrder.getLeavesAmount()) == 0) {
+                    // 买卖单全部买完
+                    ts.setQuantity(quantity);
+                } else {
+                    // 买单全部买完
+                    ts.setQuantity(opponentQuantity);
+                }
 
                 // 计算当前卖单收入的计价货币 = 当前订单成交单价 * 成交数量
-                ts.setExecuteAmount(opponentQuantity.multiply(executePrice).setScale(8, RoundingMode.DOWN));
+                ts.setExecuteAmount(ts.getQuantity().multiply(executePrice).setScale(8, RoundingMode.DOWN));
             } else {
                 // 买单不能全部买完, 但卖单可以卖完
                 // 所以成交金额则是 卖单的数量 * 对手订单单价

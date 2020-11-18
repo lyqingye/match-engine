@@ -137,10 +137,17 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
     }
 
     /**
+     * 撮合核心停止工作并且剩余数据处理
+     */
+    @Override
+    public void shutdownAndWait() {
+        inputQueue.shutdown();
+    }
+
+    /**
      * 执行一个订单
      *
-     * @param order
-     *         订单
+     * @param order 订单
      */
     @Override
     public void exec(Order order) {

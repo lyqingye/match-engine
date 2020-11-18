@@ -29,9 +29,6 @@ import java.util.Objects;
 /**
  * TODO:
  * 1. 撮合引擎需要实现 LiftCycle 接口
- * 2. 撮合引擎需要实现事物功能,避免内存撮合刷库导致的双写数据一致性问题
- * 3. 委托账本得独立
- * 4. 产品和货币得独立
  *
  * @author yjt
  * @since 2020/9/1 上午10:56
@@ -244,5 +241,25 @@ public class MatchEngine {
      */
     public void disableLog() {
         this.isEnableLog = false;
+    }
+
+    /**
+     * 撮合引擎销毁
+     */
+    public void shutdown() {
+        // 首先先停止入单
+        disableMatching();
+
+        // 等待剩余订单被处理
+        addOrderQueue.shutdown();
+        System.out.println("[MatchEngine]: add order queue shutdown finished!");
+
+        // 停止调度器
+        scheduler.shutdownAndWait();
+        System.out.println("[MatchEngine]: scheduler shutdown finished!");
+
+        // 停止消息推送
+        marketMgr.shutdownAndWait();
+        System.out.println("[MatchEngine]: market manager shutdown finished!");
     }
 }

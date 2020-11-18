@@ -165,4 +165,11 @@ public class MarketConfigHttpClient {
             e.printStackTrace();
         }
     }
+
+    /**
+     * 关闭连接
+     */
+    public void close() {
+        this.client.close();
+    }
 }

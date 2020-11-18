@@ -37,6 +37,15 @@ public class DisruptorQueue<T> {
     }
 
     /**
+     * 是否为空
+     *
+     * @return 是否为空
+     */
+    public boolean isEmpty() {
+        return this.ringBuffer.remainingCapacity() == this.ringBuffer.getBufferSize();
+    }
+
+    /**
      * 销毁队列
      */
     public void shutdown() {

@@ -9,7 +9,6 @@ import com.trader.market.publish.msg.PriceChangeMessage;
  */
 public interface Processor {
 
-
     /**
      * 执行订单
      *
@@ -33,8 +32,12 @@ public interface Processor {
     /**
      * 修改处理器的名称
      *
-     * @param newName
-     *         新的名字
+     * @param newName 新的名字
      */
     void renaming(String newName);
+
+    /**
+     * 撮合核心停止工作并且剩余数据处理
+     */
+    void shutdownAndWait();
 }

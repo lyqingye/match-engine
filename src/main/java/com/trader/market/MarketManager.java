@@ -97,6 +97,11 @@ public class MarketManager implements MatchHandler {
     @Getter
     private MarketPublishClient marketPublishClient;
 
+    /**
+     * 是否正在运行
+     */
+    private volatile boolean isRunning;
+
 
     /**
      * hide default constructor
@@ -154,18 +159,17 @@ public class MarketManager implements MatchHandler {
 
         priceChangeRingBuffer = new CoalescingRingBuffer<>(config.getSizeOfPublishDataRingBuffer());
         depthChartRingBuffer = new CoalescingRingBuffer<>(config.getSizeOfPublishDataRingBuffer());
-
+        this.isRunning = true;
         // 启动数据合并线程
         ThreadPoolUtils.submit(() -> {
             List<PriceChangeMessage> pMessages = new ArrayList<>(16);
             List<MarketDepthChartSeries> dMessages = new ArrayList<>(16);
-            for (; ; ) {
+            while (isRunning || !priceChangeRingBuffer.isEmpty() || !depthChartRingBuffer.isEmpty()) {
 
                 // 合并价格数据
                 priceChangeRingBuffer.poll(pMessages);
 
                 for (PriceChangeMessage msg : pMessages) {
-
                     this.syncExecuteHandler(h -> {
                         h.onMarketPriceChange(msg);
                     });
@@ -224,6 +228,8 @@ public class MarketManager implements MatchHandler {
                                                                        config.getWebsocketConfigClientPort());
         // 同步方式获取市价
         this.tryToInitMarketPrice(marketConfigClient::getMarketPriceSync);
+
+
     }
 
     /**
@@ -535,5 +541,33 @@ public class MarketManager implements MatchHandler {
             // 进入合并队列
             depthChartRingBuffer.offer(series.getSymbol(), series);
         }
+    }
+
+    /**
+     * 市场管理停止并且等待资源处理完毕
+     */
+    public void shutdownAndWait() {
+        isRunning = false;
+        if (depthChartQueue != null) {
+            depthChartQueue.shutdown();
+        }
+        if (priceChangeQueue != null) {
+            priceChangeQueue.shutdown();
+        }
+        if (tradeMessageQueue != null) {
+            tradeMessageQueue.shutdown();
+        }
+        // 等待推送完毕
+        while (!priceChangeRingBuffer.isEmpty() || !depthChartRingBuffer.isEmpty()) {
+            try {
+                Thread.sleep(1);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        // 关闭推送客户端
+        marketPublishClient.close();
+        // 关闭配置客户端
+        marketConfigClient.close();
     }
 }

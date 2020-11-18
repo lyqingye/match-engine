@@ -68,6 +68,11 @@ public class GenericScheduler implements Scheduler {
      */
     private int actualNumOfTask = 0;
 
+    /**
+     * 是否正在运行
+     */
+    private volatile boolean isRunning = false;
+
     public GenericScheduler(OrderRouter router,
                             MatcherManager matcherMgr,
                             MarketManager marketMgr,
@@ -95,6 +100,8 @@ public class GenericScheduler implements Scheduler {
                 triggerMarketPriceChange(msg);
             }
         });
+
+        this.isRunning = true;
     }
 
     /**
@@ -105,38 +112,51 @@ public class GenericScheduler implements Scheduler {
      */
     @Override
     public void submit(Order order) {
-        GenericProcessor processor;
-        if (processorCache.containsKey(order.getSymbol())) {
-            processor = processorCache.get(order.getSymbol());
-        } else {
-            actualNumOfTask++;
-            String theProcessorName = order.getSymbol();
-            // 当前处理器已经满了，则将其映射到任意一个处理器
-            if (processorCache.size() >= maxNumOfProcessors) {
-                processor = (GenericProcessor) processorCache.values()
-                                                             .toArray()[actualNumOfTask % maxNumOfProcessors];
-                processor.renaming(processor.name() + " | " + theProcessorName);
+        if (isRunning) {
+            GenericProcessor processor;
+            if (processorCache.containsKey(order.getSymbol())) {
+                processor = processorCache.get(order.getSymbol());
             } else {
-                // 创建一个处理器
-                processor = new GenericProcessor(theProcessorName,
-                        router,
-                        matcherMgr,
-                        marketMgr,
-                        matchExceptionHandler,
-                        sizeOfProcessorCmdBuffer);
+                actualNumOfTask++;
+                String theProcessorName = order.getSymbol();
+                // 当前处理器已经满了，则将其映射到任意一个处理器
+                if (processorCache.size() >= maxNumOfProcessors) {
+                    processor = (GenericProcessor) processorCache.values()
+                            .toArray()[actualNumOfTask % maxNumOfProcessors];
+                    processor.renaming(processor.name() + " | " + theProcessorName);
+                } else {
+                    // 创建一个处理器
+                    processor = new GenericProcessor(theProcessorName,
+                            router,
+                            matcherMgr,
+                            marketMgr,
+                            matchExceptionHandler,
+                            sizeOfProcessorCmdBuffer);
 
-                processor.regHandler(matchHandler);
+                    processor.regHandler(matchHandler);
+                }
+                processorCache.put(order.getSymbol(),
+                        processor);
             }
-            processorCache.put(order.getSymbol(),
-                               processor);
+            processor.exec(order);
         }
-        processor.exec(order);
+    }
+
+    /**
+     * 调度器销毁
+     */
+    @Override
+    public void shutdownAndWait() {
+        // 停止所有处理器
+        processorCache.values().forEach(GenericProcessor::shutdownAndWait);
     }
 
     private void triggerMarketPriceChange(PriceChangeMessage msg) {
-        GenericProcessor processor = processorCache.get(msg.getSymbol());
-        if (processor != null) {
-            processor.execPriceChange(msg);
+        if (isRunning) {
+            GenericProcessor processor = processorCache.get(msg.getSymbol());
+            if (processor != null) {
+                processor.execPriceChange(msg);
+            }
         }
     }
 }

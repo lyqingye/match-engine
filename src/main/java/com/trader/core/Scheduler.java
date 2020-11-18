@@ -13,10 +13,12 @@ public interface Scheduler {
     /**
      * 提交需要调度的订单
      *
-     * @param order
-     *         订单
+     * @param order 订单
      */
     void submit(Order order);
 
-
+    /**
+     * 调度器销毁
+     */
+    void shutdownAndWait();
 }

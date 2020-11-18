@@ -90,11 +90,12 @@ public class TestLimitOrderMatch  {
         System.out.println("startTime:" + System.currentTimeMillis());
 
         try {
-            Thread.sleep(1000000);
+            Thread.sleep(5000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-
+        engine.shutdown();
+        System.out.println("shutdown");
 //
 //
 //
@@ -124,5 +125,6 @@ public class TestLimitOrderMatch  {
 
     @After
     public void after () {
+
     }
 }

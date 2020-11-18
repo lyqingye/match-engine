@@ -267,7 +267,7 @@ public class Order {
     }
 
     public boolean isActiveCmd() {
-        return Cmd.ADD_ORDER.equals(this.cmd);
+        return Cmd.ACTIVE_ORDER.equals(this.cmd);
     }
 
     public boolean isActivated() {

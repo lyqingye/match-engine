@@ -47,6 +47,11 @@ public class TcpMarketPublishClient implements MarketPublishClient {
      */
     private NetSocket client;
 
+    /**
+     * 是否正在运行
+     */
+    private volatile boolean isRunning;
+
 
     static {
         final VertxOptions options = new VertxOptions();
@@ -131,11 +136,14 @@ public class TcpMarketPublishClient implements MarketPublishClient {
                          System.out.println("[MarketPublish]: success connection to the server");
 
                          client.handler(parser);
+                         this.isRunning = true;
 
                          // 如果目标关闭则进行重连
                          client.closeHandler(close -> {
                              this.client = null;
-                             conn(host, port, consumer, connectHandler);
+                             if (this.isRunning) {
+                                 conn(host, port, consumer, connectHandler);
+                             }
                          });
                      }
                  });
@@ -188,6 +196,7 @@ public class TcpMarketPublishClient implements MarketPublishClient {
     public void close() {
         if (this.client != null) {
             this.client.close();
+            this.isRunning = false;
         }
     }
 

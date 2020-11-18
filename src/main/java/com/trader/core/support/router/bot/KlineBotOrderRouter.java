@@ -94,15 +94,17 @@ public class KlineBotOrderRouter implements OrderRouter {
     @Override
     public Collection<OrderBook> routeToNeedToUpdatePriceBook(String symbolId) {
         // 用户订单盘口和机器人订单盘口都更新市场价格
-        OrderBook user = userBookCache.get(symbolId);
-        OrderBook bot = botBookCache.get(symbolId);
         Collection<OrderBook> books = new ArrayList<>(2);
-        if (user != null) {
-            books.add(user);
-        }
-        if (bot != null) {
-            books.add(bot);
-        }
+        books.add(userBookCache.computeIfAbsent(symbolId, k -> {
+            final OrderBook newBook = new OrderBook();
+            newBook.setSymbolId(k);
+            return newBook;
+        }));
+        books.add(botBookCache.computeIfAbsent(symbolId, k -> {
+            final OrderBook newBook = new OrderBook();
+            newBook.setSymbolId(k);
+            return newBook;
+        }));
         return books;
     }
 

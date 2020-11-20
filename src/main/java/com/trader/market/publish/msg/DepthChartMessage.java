@@ -4,6 +4,7 @@ import com.trader.market.def.DepthLevel;
 import com.trader.market.entity.MarketDepthChart;
 import com.trader.market.entity.MarketDepthChartSeries;
 import com.trader.market.entity.MarketDepthInfo;
+import com.trader.utils.SymbolUtils;
 import io.vertx.core.buffer.Buffer;
 
 import java.math.BigDecimal;
@@ -29,7 +30,7 @@ public class DepthChartMessage {
         // | symbol.size [4byte] data[bytes] | numOfStep (1byte)  |
         // repeated | depth (1byte) | numOfBid (1byte) | repeated bids (32byte) |
         // | numOfAsk (1Byte) | repeated asks (32byte)
-        byte[] symbolBytes = series.getSymbol().getBytes();
+        byte[] symbolBytes = SymbolUtils.toGenericSymbol(series.getSymbol()).getBytes();
         int msgSize = symbolBytes.length;
         byte numOfStep = (byte) series.getSeries().size();
         for (MarketDepthChart chart : series.getSeries()) {

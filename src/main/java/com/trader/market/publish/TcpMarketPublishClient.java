@@ -2,10 +2,9 @@ package com.trader.market.publish;
 
 import com.trader.market.publish.config.MarketConfigHttpClient;
 import com.trader.utils.ThreadPoolUtils;
+import com.trader.utils.VertxUtils;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
-import io.vertx.core.VertxOptions;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.NetClientOptions;
@@ -38,11 +37,6 @@ public class TcpMarketPublishClient implements MarketPublishClient {
     private Consumer<JsonObject> consumer;
 
     /**
-     * vertx 实例
-     */
-    private static final Vertx vertx;
-
-    /**
      * socket
      */
     private NetSocket client;
@@ -52,12 +46,6 @@ public class TcpMarketPublishClient implements MarketPublishClient {
      */
     private volatile boolean isRunning;
 
-
-    static {
-        final VertxOptions options = new VertxOptions();
-        vertx = Vertx.vertx(options);
-
-    }
 
     /**
      * 创建市场管理器配置客户端
@@ -70,7 +58,7 @@ public class TcpMarketPublishClient implements MarketPublishClient {
      * @return client
      */
     public static MarketConfigHttpClient createConfigClient(String host, int port) {
-        return new MarketConfigHttpClient(vertx, host, port);
+        return new MarketConfigHttpClient(VertxUtils.vertx(), host, port);
     }
 
     public TcpMarketPublishClient(String host, int port) {
@@ -122,7 +110,7 @@ public class TcpMarketPublishClient implements MarketPublishClient {
                    // 保持长连接
                    .setTcpKeepAlive(true);
             // 开始创建 socket 链接
-            vertx.createNetClient(options)
+            VertxUtils.vertx().createNetClient(options)
                  .connect(port, host, ar -> {
                      if (ar.succeeded()) {
                          // 连接成功

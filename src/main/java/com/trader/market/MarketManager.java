@@ -12,7 +12,6 @@ import com.trader.market.publish.MarketPublishHandler;
 import com.trader.market.publish.TcpMarketPublishClient;
 import com.trader.market.publish.config.MarketConfigHttpClient;
 import com.trader.market.publish.msg.Message;
-import com.trader.market.publish.msg.MessageType;
 import com.trader.market.publish.msg.PriceChangeMessage;
 import com.trader.market.publish.msg.TradeMessage;
 import com.trader.utils.SymbolUtils;
@@ -22,7 +21,6 @@ import com.trader.utils.disruptor.AbstractDisruptorConsumer;
 import com.trader.utils.disruptor.DisruptorQueue;
 import com.trader.utils.disruptor.DisruptorQueueFactory;
 import com.trader.utils.tuples.Tuple;
-import io.vertx.core.json.JsonObject;
 import lombok.Getter;
 
 import java.math.BigDecimal;
@@ -30,6 +28,8 @@ import java.util.*;
 import java.util.concurrent.ThreadFactory;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+
+import static com.trader.market.publish.msg.MessageType.MARKET_PRICE;
 
 /**
  * 行情管理器
@@ -342,39 +342,35 @@ public class MarketManager implements MatchHandler {
     /**
      * 第三方市场数据
      *
-     * @param json 缓冲区
+     * @param msg 消息
      */
-    private void onThirdMarketData(JsonObject json) {
-        if (json == null) {
+    private void onThirdMarketData(Message<?> msg) {
+        if (msg == null) {
             return;
         }
-        MessageType type = Message.getTypeFromJson(json);
-        if (type == null) {
-            return;
-        }
-        json = json.getJsonObject("data");
-        switch (type) {
+
+        switch (msg.getType()) {
             //
             // 市价变动
             //
             case MARKET_PRICE: {
-                PriceChangeMessage msg = json.mapTo(PriceChangeMessage.class);
-                if (msg != null &&
-                        Boolean.TRUE.equals(msg.getThird())) {
+                PriceChangeMessage data = (PriceChangeMessage) msg.getData();
+                if (data != null &&
+                        Boolean.TRUE.equals(data.getThird())) {
                     System.out.println(String.format("[MarketEngine]: recv msg: [%s] {%s} {%s}",
-                                                     type.name(), msg.getSymbol(), msg.getPrice().toPlainString()));
+                            MARKET_PRICE.name(), data.getSymbol(), data.getPrice().toPlainString()));
                     //
                     // 更新最新市场价到订单簿
                     //
-                    router.routeToNeedToUpdatePriceBook(msg.getSymbol())
-                          .forEach(book -> book.updateLastTradePrice(msg.getPrice()));
+                    router.routeToNeedToUpdatePriceBook(data.getSymbol())
+                            .forEach(book -> book.updateLastTradePrice(data.getPrice()));
 
 
                     if (priceChangeQueue != null) {
-                        priceChangeQueue.add(msg);
+                        priceChangeQueue.add(data);
                     } else {
                         // 进入合并队列
-                        priceChangeRingBuffer.offer(msg.getSymbol(), msg);
+                        priceChangeRingBuffer.offer(data.getSymbol(), data);
                     }
                 }
                 break;

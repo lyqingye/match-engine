@@ -1,15 +1,15 @@
 package com.trader.market.publish;
 
 import com.trader.market.publish.config.MarketConfigHttpClient;
+import com.trader.market.publish.msg.Message;
 import com.trader.utils.ThreadPoolUtils;
 import com.trader.utils.VertxUtils;
+import com.trader.utils.messages.FrameParser;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.NetSocket;
-import io.vertx.core.parsetools.RecordParser;
 import lombok.Setter;
 
 import java.nio.charset.StandardCharsets;
@@ -34,7 +34,7 @@ public class TcpMarketPublishClient implements MarketPublishClient {
      * 消费者
      */
     @Setter
-    private Consumer<JsonObject> consumer;
+    private Consumer<Message<?>> consumer;
 
     /**
      * socket
@@ -46,6 +46,10 @@ public class TcpMarketPublishClient implements MarketPublishClient {
      */
     private volatile boolean isRunning;
 
+    /**
+     * 解析器
+     */
+    private FrameParser parser;
 
     /**
      * 创建市场管理器配置客户端
@@ -64,6 +68,13 @@ public class TcpMarketPublishClient implements MarketPublishClient {
     public TcpMarketPublishClient(String host, int port) {
         this.host = host;
         this.port = port;
+        this.parser = new FrameParser(ar -> {
+            if (ar.succeeded()) {
+                if (this.consumer != null) {
+                    this.consumer.accept(ar.result());
+                }
+            }
+        });
     }
 
     /**
@@ -77,28 +88,10 @@ public class TcpMarketPublishClient implements MarketPublishClient {
      *         消息消费者
      */
     @Override
-    public void conn(String host, int port, Consumer<JsonObject> consumer, Handler<AsyncResult<NetSocket>> connectHandler) {
+    public void conn(String host, int port, Consumer<Message<?>> consumer, Handler<AsyncResult<NetSocket>> connectHandler) {
         this.host = host;
         this.port = port;
         this.consumer = consumer;
-
-        //
-        // 解决黏包
-        //
-        RecordParser parser = RecordParser.newDelimited("\n", h -> {
-            JsonObject json = null;
-            try {
-                json = h.toJsonObject();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            if (json == null) {
-                return;
-            }
-            if (consumer() != null) {
-                consumer().accept(json);
-            }
-        });
 
         ThreadPoolUtils.submit(() -> {
 
@@ -218,7 +211,7 @@ public class TcpMarketPublishClient implements MarketPublishClient {
     }
 
     @Override
-    public Consumer<JsonObject> consumer() {
+    public Consumer<Message<?>> consumer() {
         return this.consumer;
     }
 }

@@ -1,9 +1,9 @@
 package com.trader.market.publish;
 
+import com.trader.market.publish.msg.Message;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.NetSocket;
 
 import java.util.function.Consumer;
@@ -16,14 +16,11 @@ public interface MarketPublishClient {
     /**
      * 链接到目标
      *
-     * @param host
-     *         域名
-     * @param port
-     *         端口
-     * @param consumer
-     *         消息消费者
+     * @param host     域名
+     * @param port     端口
+     * @param consumer 消息消费者
      */
-    void conn(String host, int port, Consumer<JsonObject> consumer, Handler<AsyncResult<NetSocket>> connectHandler);
+    void conn(String host, int port, Consumer<Message<?>> consumer, Handler<AsyncResult<NetSocket>> connectHandler);
 
     /**
      * 推送消息
@@ -76,12 +73,12 @@ public interface MarketPublishClient {
      *
      * @return 消费者
      */
-    Consumer<JsonObject> consumer();
+    Consumer<Message<?>> consumer();
 
     /**
      * 添加消费者
      *
      * @param consumer
      */
-    void setConsumer(Consumer<JsonObject> consumer);
+    void setConsumer(Consumer<Message<?>> consumer);
 }

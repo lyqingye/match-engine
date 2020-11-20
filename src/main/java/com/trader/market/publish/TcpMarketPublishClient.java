@@ -147,7 +147,10 @@ public class TcpMarketPublishClient implements MarketPublishClient {
     @Override
     public void send(String textMsg) {
         if (this.client != null) {
+            // 换行符是用于解决拆包黏包, 这里省事, 如果发送的消息是文本, 那就就以换行符当作包的终止符
             this.client.write(textMsg + "\n", StandardCharsets.UTF_8.name());
+            // 解决背压问题, 关键字 `back pressure`, 想了解的话就去了解下吧
+            // 这边是选择丢弃消息
             if (this.client.writeQueueFull()) {
                 this.client.pause();
                 this.client.drainHandler(done -> this.client.resume());
@@ -170,6 +173,22 @@ public class TcpMarketPublishClient implements MarketPublishClient {
     public void send(byte[] binMsg) {
         if (this.client != null) {
             this.client.write(Buffer.buffer(binMsg));
+            if (this.client.writeQueueFull()) {
+                this.client.pause();
+                this.client.drainHandler(done -> this.client.resume());
+            }
+        }
+    }
+
+    /**
+     * 推送消息
+     *
+     * @param bufferMsg buffer
+     */
+    @Override
+    public void send(Buffer bufferMsg) {
+        if (this.client != null) {
+            this.client.write(bufferMsg);
             if (this.client.writeQueueFull()) {
                 this.client.pause();
                 this.client.drainHandler(done -> this.client.resume());

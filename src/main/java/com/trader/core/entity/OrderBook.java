@@ -10,6 +10,7 @@ import com.trader.market.entity.MarketDepthChart;
 import com.trader.market.entity.MarketDepthChartSeries;
 import com.trader.market.entity.MarketDepthInfo;
 import com.trader.utils.MarketDepthUtils;
+import com.trader.utils.SymbolUtils;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -169,7 +170,7 @@ public class OrderBook {
     public MarketDepthChartSeries snapSeries(int limit) {
         final MarketDepthChartSeries series = new MarketDepthChartSeries();
         final DepthLevel[] levels = DepthLevel.values();
-        series.setSymbol(this.symbolId);
+        series.setSymbol(SymbolUtils.toGenericSymbol(this.symbolId));
         series.setSeries(new ArrayList<>(levels.length));
 
         // 买盘

@@ -33,10 +33,8 @@ public class DepthChartMessage {
         int msgSize = symbolBytes.length;
         byte numOfStep = (byte) series.getSeries().size();
         for (MarketDepthChart chart : series.getSeries()) {
-            msgSize += 1 + chart.getAsks().size() * 32 + chart.getBids().size();
+            msgSize += 1 + chart.getAsks().size() * 32 + chart.getBids().size() * 32;
         }
-        // store msg size
-        msgSize += 4;
         // store msg type
         msgSize += 1;
         // store msg ts
@@ -45,11 +43,15 @@ public class DepthChartMessage {
         msgSize += 1;
         // store num of bid/ask
         msgSize += numOfStep * 8;
+        // symbol size
+        msgSize += 4;
+
         Buffer buf = Buffer.buffer(msgSize)
                 // msg header
                 .appendInt(msgSize)
                 .appendByte((byte) MessageType.DEPTH_CHART.ordinal())
                 .appendLong(System.currentTimeMillis());
+
 
         // symbol and numOfStep
         buf.appendInt(symbolBytes.length)

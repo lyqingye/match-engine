@@ -28,7 +28,7 @@ public class TestLimitOrderMatch  {
     public void before () {
         MatchEngineConfig config = new MatchEngineConfig();
         config.setWebsocketConfigClientHost("119.23.49.169");
-        config.setMarketPublishClientHost("119.23.49.169");
+        config.setMarketPublishClientHost("localhost");
 
         config.setHandler(new MatchHandler() {
             @Override

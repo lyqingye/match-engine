@@ -4,7 +4,7 @@ import com.trader.market.MarketEventHandler;
 import com.trader.market.entity.MarketDepthChartSeries;
 import com.trader.market.publish.msg.DepthChartMessage;
 import com.trader.market.publish.msg.TradeMessage;
-import io.vertx.core.json.Json;
+import io.vertx.core.buffer.Buffer;
 import lombok.Getter;
 
 import java.util.HashMap;
@@ -23,7 +23,7 @@ public class MarketPublishHandler implements MarketEventHandler {
     /**
      * 深度图缓存, 用于连接到服务后推送
      */
-    private Map<String, String> latestChartCache = new HashMap<>(16);
+    private Map<String, Buffer> latestChartCache = new HashMap<>(16);
 
     /**
      * 发布客户端
@@ -51,10 +51,10 @@ public class MarketPublishHandler implements MarketEventHandler {
 
     @Override
     public void onDepthChartChange(MarketDepthChartSeries series) {
-        String obj = Json.encode(DepthChartMessage.of(series));
-        latestChartCache.put(series.getSymbol(), obj);
+        Buffer buffer = DepthChartMessage.toBuf(series);
+        latestChartCache.put(series.getSymbol(), buffer);
         if (client.isOpen()) {
-            client.send(obj);
+            client.send(buffer);
         }
     }
 
@@ -64,7 +64,7 @@ public class MarketPublishHandler implements MarketEventHandler {
     @Override
     public void onTrade(TradeMessage tm) {
         if (client.isOpen()) {
-            client.send(Json.encode(TradeMessage.of(tm)));
+            client.send(TradeMessage.toBuf(tm));
         }
     }
 }

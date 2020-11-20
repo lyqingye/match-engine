@@ -2,6 +2,7 @@ package com.trader.market.publish;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.NetSocket;
 
@@ -40,10 +41,16 @@ public interface MarketPublishClient {
     /**
      * 推送消息
      *
-     * @param binMsg
-     *         二进制消息
+     * @param binMsg 二进制消息
      */
     void send(byte[] binMsg);
+
+    /**
+     * 推送消息
+     *
+     * @param bufferMsg buffer
+     */
+    void send(Buffer bufferMsg);
 
     /**
      * 关闭链接

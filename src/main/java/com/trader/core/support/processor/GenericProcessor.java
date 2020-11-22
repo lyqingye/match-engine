@@ -9,7 +9,7 @@ import com.trader.core.def.ActivateStatus;
 import com.trader.core.def.Cmd;
 import com.trader.core.entity.Order;
 import com.trader.core.entity.OrderBook;
-import com.trader.core.event.MatchEventHandlerRegistry;
+import com.trader.core.handler.MatchEventHandlerRegistry;
 import com.trader.core.exception.MatchExceptionHandler;
 import com.trader.core.matcher.MatcherManager;
 import com.trader.core.matcher.TradeResult;

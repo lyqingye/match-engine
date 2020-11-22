@@ -2,7 +2,6 @@ package com.trader.core.handler;
 
 import com.trader.core.MatchHandler;
 import com.trader.core.entity.Order;
-import com.trader.core.event.MatchEventHandlerRegistry;
 import com.trader.core.matcher.TradeResult;
 
 /**

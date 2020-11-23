@@ -1,6 +1,7 @@
 package com.trader.market.publish.msg;
 
 import com.trader.core.def.OrderSide;
+import com.trader.utils.SymbolUtils;
 import io.vertx.core.buffer.Buffer;
 import lombok.Data;
 
@@ -49,7 +50,7 @@ public class TradeMessage {
     public static Buffer toBuf(TradeMessage ts) {
         // | msg size (4byte) | msg type (1byte) | ts (8byte) |
         // | symbol.size [4byte] data[bytes] | price (8byte) | quantity (8byte) | direction (1byte) | ts (8byte)
-        byte[] symbolBytes = ts.getSymbol().getBytes();
+        byte[] symbolBytes = SymbolUtils.toGenericSymbol(ts.getSymbol()).getBytes();
         int msgSize = 38 + symbolBytes.length;
         return Buffer.buffer(msgSize)
                 .appendInt(msgSize)

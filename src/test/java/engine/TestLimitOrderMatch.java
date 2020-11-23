@@ -54,31 +54,37 @@ public class TestLimitOrderMatch  {
 
         final long start = System.currentTimeMillis();
         List<Order> orderList = new ArrayList<>(100);
-        for (int i = 0; i < 1; i++) {
+        for (int i = 0; i < 10; i++) {
 
 
             BigDecimal price = BigDecimal.TEN;
             Order buyLimitOrder = OrderFactory.limit()
-                    .buy("1", "BTC", "USDT")
+                    .buy("1", "OEG", "USDT")
                     .spent(new BigDecimal("1406.02801895"))
-                    .withUnitPriceOf(new BigDecimal("16369.97953393"))
+                    .withUnitPriceOf(new BigDecimal("16369.97953393").add(BigDecimal.valueOf(i)))
                     .quantity(BigDecimal.TEN)
                     .GTC()
                     .build();
 
             Order sellMarketOrder = OrderFactory.limit()
-                    .sell("2", "BTC", "USDT")
+                    .sell("2", "OEG", "USDT")
                     .quantity(new BigDecimal("0.08589064"))
-                    .withUnitPriceOf(new BigDecimal("16369.97953393"))
-                                                .GTC()
-                                                .build();
-            orderList.add(buyLimitOrder);
-            orderList.add(sellMarketOrder);
+                    .withUnitPriceOf(new BigDecimal("16369.97953393").add(BigDecimal.valueOf(i)))
+                    .GTC()
+                    .build();
+            engine.addOrder(buyLimitOrder);
+            engine.addOrder(sellMarketOrder);
+
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
 //        Collections.shuffle(orderList);
-        for (Order order : orderList) {
-            engine.addOrder(order);
-        }
+//        for (Order order : orderList) {
+//            engine.addOrder(order);
+//        }
 
 
         final long end = System.currentTimeMillis();
@@ -90,7 +96,7 @@ public class TestLimitOrderMatch  {
         System.out.println("startTime:" + System.currentTimeMillis());
 
         try {
-            Thread.sleep(5000);
+            Thread.sleep(10000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

@@ -355,8 +355,7 @@ public class MarketManager implements MatchHandler {
             //
             case MARKET_PRICE: {
                 PriceChangeMessage data = (PriceChangeMessage) msg.getData();
-                if (data != null &&
-                        Boolean.TRUE.equals(data.getThird())) {
+                if (data != null) {
                     System.out.println(String.format("[MarketEngine]: recv msg: [%s] {%s} {%s}",
                             MARKET_PRICE.name(), data.getSymbol(), data.getPrice().toPlainString()));
                     //

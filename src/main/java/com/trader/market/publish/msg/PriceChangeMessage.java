@@ -25,6 +25,7 @@ public class PriceChangeMessage {
     /**
      * 是否为第三方数据
      */
+    @Deprecated
     private Boolean third;
 
     public static Message<PriceChangeMessage> ofLocal(String symbol,

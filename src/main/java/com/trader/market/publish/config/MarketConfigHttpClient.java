@@ -1,5 +1,6 @@
 package com.trader.market.publish.config;
 
+import com.trader.market.publish.config.dto.CollectorStatusDto;
 import com.trader.utils.SymbolUtils;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -7,13 +8,20 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
+import lombok.SneakyThrows;
+import lombok.Synchronized;
 
 import java.math.BigDecimal;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 /**
  * @author yjt
@@ -56,42 +64,6 @@ public class MarketConfigHttpClient {
     }
 
     /**
-     * 获取所有市场价格
-     *
-     * @return 市场价格
-     */
-    @SuppressWarnings({"unchecked", "deprecated"})
-    public void getMarketPriceAsync(Handler<AsyncResult<Map<String, String>>> handler) {
-        client.getNow("/market/price/latest", response -> {
-            response.bodyHandler(body -> {
-                handler.handle(Future.succeededFuture(body.toJsonObject().mapTo(Map.class)));
-            });
-        });
-    }
-
-    /**
-     * 更新市场价格
-     *
-     * @param symbol
-     *         交易对
-     * @param price
-     *         价格
-     * @param handler
-     *         返回值回调
-     */
-    public void updateMarketPriceAsync(String symbol, BigDecimal price,
-                                       Handler<AsyncResult<Void>> handler) {
-        JsonObject data = new JsonObject();
-        data.put("symbol", symbol);
-        data.put("price", price);
-        client.put("/market/price", response -> {
-            response.bodyHandler(body -> {
-                handler.handle(Future.succeededFuture());
-            });
-        }).write(data.encode()).end();
-    }
-
-    /**
      * 更新市场价格
      *
      * @param symbol
@@ -99,23 +71,20 @@ public class MarketConfigHttpClient {
      * @param price
      *         价格
      */
+    @SneakyThrows
     public void updateMarketPriceSync(String symbol, BigDecimal price) {
-        AtomicReference<CountDownLatch> monitor = new AtomicReference<>(new CountDownLatch(1));
+        CompletableFuture<Void> cf = new CompletableFuture<>();
         JsonObject data = new JsonObject();
         data.put("symbol", symbol);
         data.put("price", price.toPlainString());
         String encode = data.encode();
         client.put("/market/price", response -> {
             response.bodyHandler(body -> {
-                monitor.get().countDown();
+                cf.complete(null);
             });
         }).putHeader("Content-Length", String.valueOf(encode.length()))
               .write(encode).end();
-        try {
-            monitor.get().await();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        cf.get();
     }
 
     /**
@@ -124,22 +93,16 @@ public class MarketConfigHttpClient {
      * @return 市场价格
      */
 
+    @SneakyThrows
     @SuppressWarnings({"unchecked", "deprecated"})
     public Map<String, String> getMarketPriceSync() {
-        AtomicReference<CountDownLatch> monitor = new AtomicReference<>(new CountDownLatch(1));
-        AtomicReference<Map<String, String>> result = new AtomicReference<>(Collections.emptyMap());
+        CompletableFuture<Map<String, String>> cf = new CompletableFuture<>();
         client.getNow("/market/price/latest/v2", response -> {
             response.bodyHandler(body -> {
-                result.set(body.toJsonObject().mapTo(Map.class));
-                monitor.get().countDown();
+                cf.complete(body.toJsonObject().mapTo(Map.class));
             });
         });
-        try {
-            monitor.get().await();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        return result.get();
+        return cf.get();
     }
 
     /**
@@ -147,24 +110,175 @@ public class MarketConfigHttpClient {
      *
      * @param source 来源交易对
      */
+    @SneakyThrows
     public void putSymbolMappingSync(String source) {
-        AtomicReference<CountDownLatch> monitor = new AtomicReference<>(new CountDownLatch(1));
+        CompletableFuture<Void> cf = new CompletableFuture<>();
         JsonObject data = new JsonObject();
         data.put("source", source);
         data.put("target", SymbolUtils.toGenericSymbol(source));
         String encode = data.encode();
         client.put("/market/symbol/c2g/mapping", response -> {
             response.bodyHandler(body -> {
-                monitor.get().countDown();
+              cf.complete(null);
             });
         }).putHeader("Content-Length", String.valueOf(encode.length()))
                 .write(encode).end();
-        try {
-            monitor.get().await();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        cf.get();
     }
+
+
+    //
+    // 2.0 API
+    //
+
+    /**
+     * 获取所有收集器
+     *
+     * @return 收集器列表
+     */
+    @SneakyThrows
+    public List<CollectorStatusDto> listCollector() {
+        CompletableFuture<List<CollectorStatusDto>> cf = new CompletableFuture<>();
+        client.getNow("/market/collector/list", response -> {
+            response.bodyHandler(body -> {
+                cf.complete(body.toJsonObject().getJsonArray("data")
+                    .stream()
+                    .map(obj -> {
+                        JsonObject jsonObject = (JsonObject) obj;
+                        return jsonObject.mapTo(CollectorStatusDto.class);
+                    })
+                    .collect(Collectors.toList()));
+            });
+        });
+        return cf.get();
+    }
+
+    /**
+     * 部署一个收集器
+     *
+     * @param collectorName 收集器名称
+     */
+    @SneakyThrows
+    public void deployCollector(String collectorName) {
+        Objects.requireNonNull(collectorName);
+        CompletableFuture<Void> cf = new CompletableFuture<>();
+        JsonObject data = new JsonObject();
+        data.put("collectorName", collectorName);
+        String encode = data.encode();
+        client.put("/market/collector/deploy", response -> {
+            response.bodyHandler(body -> {
+                cf.complete(null);
+            });
+        }).putHeader("Content-Length", String.valueOf(encode.length()))
+              .write(encode).end();
+        cf.get();
+    }
+
+    /**
+     * 取消部署一个收集器
+     *
+     * @param collectorName 收集器名称
+     */
+    @SneakyThrows
+    public void undeployCollector(String collectorName) {
+        Objects.requireNonNull(collectorName);
+        CompletableFuture<Void> cf = new CompletableFuture<>();
+        JsonObject data = new JsonObject();
+        data.put("collectorName", collectorName);
+        String encode = data.encode();
+        client.delete("/market/collector/undeploy", response -> {
+            response.bodyHandler(body -> {
+                cf.complete(null);
+            });
+        }).putHeader("Content-Length", String.valueOf(encode.length()))
+              .write(encode).end();
+        cf.get();
+    }
+
+    /**
+     * 启动一个收集器
+     *
+     * @param collectorName 收集器名称
+     */
+    @SneakyThrows
+    public void startCollector(String collectorName) {
+        Objects.requireNonNull(collectorName);
+        CompletableFuture<Void> cf = new CompletableFuture<>();
+        JsonObject data = new JsonObject();
+        data.put("collectorName", collectorName);
+        String encode = data.encode();
+        client.put("/market/collector/start", response -> {
+            response.bodyHandler(body -> {
+                cf.complete(null);
+            });
+        }).putHeader("Content-Length", String.valueOf(encode.length()))
+              .write(encode).end();
+        cf.get();
+    }
+
+    /**
+     * 停止一个收集器
+     *
+     * @param collectorName 收集器名称
+     */
+    @SneakyThrows
+    public void stopCollector(String collectorName) {
+        Objects.requireNonNull(collectorName);
+        CompletableFuture<Void> cf = new CompletableFuture<>();
+        JsonObject data = new JsonObject();
+        data.put("collectorName", collectorName);
+        String encode = data.encode();
+        client.put("/market/collector/stop", response -> {
+            response.bodyHandler(body -> {
+                cf.complete(null);
+            });
+        }).putHeader("Content-Length", String.valueOf(encode.length()))
+              .write(encode).end();
+        cf.get();
+    }
+
+    /**
+     * 收集器订阅交易对
+     *
+     * @param collectorName 收集器名称
+     */
+    @SneakyThrows
+    public void collectorSub(String collectorName,String subSymbol) {
+        CompletableFuture<Void> cf = new CompletableFuture<>();
+        JsonObject data = new JsonObject();
+        data.put("collectorName", Objects.requireNonNull(collectorName));
+        data.put("symbol", Objects.requireNonNull(subSymbol));
+        String encode = data.encode();
+        client.put("/market/collector/subscribe", response -> {
+            response.bodyHandler(body -> {
+                cf.complete(null);
+            });
+        }).putHeader("Content-Length", String.valueOf(encode.length()))
+              .write(encode).end();
+        cf.get();
+    }
+
+    /**
+     * 收集器取消订阅交易对
+     *
+     * @param collectorName 收集器名称
+     */
+    @SneakyThrows
+    public void collectorUnSub(String collectorName,String unSubSymbol) {
+        CompletableFuture<Void> cf = new CompletableFuture<>();
+        JsonObject data = new JsonObject();
+        data.put("collectorName", Objects.requireNonNull(collectorName));
+        data.put("symbol", Objects.requireNonNull(unSubSymbol));
+        String encode = data.encode();
+        client.put("/market/collector/unsubscribe", response -> {
+            response.bodyHandler(body -> {
+                cf.complete(null);
+            });
+        }).putHeader("Content-Length", String.valueOf(encode.length()))
+              .write(encode).end();
+        cf.get();
+    }
+
 
     /**
      * 关闭连接

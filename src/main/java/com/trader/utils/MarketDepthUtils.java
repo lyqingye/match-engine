@@ -38,8 +38,8 @@ public class MarketDepthUtils {
                 .filter(e -> e.getLeaves().setScale(6, RoundingMode.DOWN).compareTo(BigDecimal.ZERO) > 0 &&
                         // 过滤价格 > 0
                         e.getPrice().compareTo(BigDecimal.ZERO) > 0)
-                .limit(limit)
                 .sorted(comparator)
+                .limit(limit)
                 .collect(Collectors.toList());
     }
 
@@ -60,7 +60,7 @@ public class MarketDepthUtils {
      * @param bigDecimal decimal
      * @return 小数位数
      */
-    private static int getNumberOfDecimalPlaces(BigDecimal bigDecimal) {
+     private static int getNumberOfDecimalPlaces(BigDecimal bigDecimal) {
         String string = bigDecimal.stripTrailingZeros().toPlainString();
         int index = string.indexOf(".");
         return index < 0 ? 0 : string.length() - index - 1;

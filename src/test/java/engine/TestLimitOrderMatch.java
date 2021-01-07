@@ -5,7 +5,7 @@ import com.trader.config.MatchEngineConfig;
 import com.trader.core.MatchHandler;
 import com.trader.core.entity.Order;
 import com.trader.core.factory.OrderFactory;
-import com.trader.core.matcher.TradeResult;
+import com.trader.core.matcher.MatchResult;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,7 +32,7 @@ public class TestLimitOrderMatch  {
 
         config.setHandler(new MatchHandler() {
             @Override
-            public void onExecuteOrder(Order order, Order opponentOrder, TradeResult ts) throws Exception {
+            public void onExecuteOrder(Order order, Order opponentOrder, MatchResult ts) throws Exception {
                 // 持久化
                 System.out.println(ts);
             }

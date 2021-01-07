@@ -4,7 +4,7 @@ import com.trader.core.Matcher;
 import com.trader.core.context.MatchingContext;
 import com.trader.core.def.OrderType;
 import com.trader.core.entity.Order;
-import com.trader.core.matcher.TradeResult;
+import com.trader.core.matcher.MatchResult;
 import com.trader.market.MarketManager;
 import com.trader.utils.TradeUtils;
 
@@ -26,22 +26,22 @@ public class MarketOrderMatcher implements Matcher {
      * @param opponentOrder
      *         对手订单
      *
+     * @param ctx
+     *         上下文
      * @return 是否支持匹配
      */
     @Override
-    public boolean isSupport(Order order, Order opponentOrder) {
+    public boolean isSupport(Order order, Order opponentOrder, MatchingContext ctx) {
         if (!(order.getType().equals(OrderType.MARKET) ||
                 opponentOrder.getType().equals(OrderType.MARKET))) {
             return false;
         }
 
-        MatchingContext ctx = this.ctx();
-
         if (order.getUid().equals(opponentOrder.getUid())) {
             return false;
         }
 
-        MarketManager marketMgr = this.ctx().getMarketMgr();
+        MarketManager marketMgr = ctx.getMarketMgr();
         BigDecimal marketPrice = marketMgr.getMarketPrice(order);
         ctx.setAttribute(order.getId(), marketPrice);
 
@@ -71,7 +71,6 @@ public class MarketOrderMatcher implements Matcher {
             return false;
         }
 
-
         //
         // 区分买卖单:
         // 买入单: 则卖盘的价格必须要 <= 买入价
@@ -95,11 +94,13 @@ public class MarketOrderMatcher implements Matcher {
      * @param opponentOrder
      *         对手订单
      *
+     * @param ctx
+     *         上下文
      * @return 交易结果
      */
     @Override
-    public TradeResult doTrade(Order order, Order opponentOrder) {
-        BigDecimal marketPrice = this.ctx().getAttribute(order.getId());
+    public MatchResult doTrade(Order order, Order opponentOrder, MatchingContext ctx) {
+        BigDecimal marketPrice = ctx.getAttribute(order.getId());
         if (marketPrice == null) {
             throw new IllegalStateException("请勿多线程撮合");
         }

@@ -7,21 +7,11 @@ package com.trader.core.def;
  * @author yjt
  * @since 2020/9/21 下午1:32
  */
-public enum DifferencePriceStrategy {
+public enum DiffPriceStrategy {
     /**
      * 驱动订单
      */
     DRIVER,
-
-    /**
-     * 买家先手
-     */
-    BUYER_FIRST,
-
-    /**
-     * 卖家先手
-     */
-    SELLER_FIRST,
 
     /**
      * 先挂单者优先

@@ -1,6 +1,7 @@
 package com.trader.core.matcher;
 
 import com.trader.core.Matcher;
+import com.trader.core.context.MatchingContext;
 import com.trader.core.entity.Order;
 
 import java.util.ArrayList;
@@ -36,11 +37,14 @@ public class MatcherManager {
      * @param opponentOrder
      *         对手订单
      *
+     * @param ctx
+     *         上下文
+     *
      * @return 匹配器
      */
-    public Matcher lookupMatcher(Order order, Order opponentOrder) {
+    public Matcher lookupMatcher(Order order, Order opponentOrder, MatchingContext ctx) {
         return this.matchers.stream()
-                            .filter(matcher -> matcher.isSupport(order, opponentOrder))
+                            .filter(matcher -> matcher.isSupport(order, opponentOrder, ctx))
                             .findFirst()
                             .orElse(null);
     }

@@ -12,7 +12,7 @@ import com.trader.core.entity.OrderBook;
 import com.trader.core.handler.MatchEventHandlerRegistry;
 import com.trader.core.exception.MatchExceptionHandler;
 import com.trader.core.matcher.MatcherManager;
-import com.trader.core.matcher.TradeResult;
+import com.trader.core.matcher.MatchResult;
 import com.trader.market.MarketManager;
 import com.trader.market.publish.msg.PriceChangeMessage;
 import com.trader.utils.ThreadLocalUtils;
@@ -164,8 +164,8 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
             return;
         }
         for (OrderBook book : books) {
-            if (!book.getBuyStopOrders().isEmpty()) {
-                Iterator<Order> bidIt = book.getBuyStopOrders().iterator();
+            if (!book.getBidStopOrders().isEmpty()) {
+                Iterator<Order> bidIt = book.getBidStopOrders().iterator();
                 while (bidIt.hasNext()) {
                     Order bid = bidIt.next();
                     if (bid.isNotActivated()) {
@@ -190,8 +190,8 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
                 continue;
             }
 
-            if (!book.getSellStopOrders().isEmpty()) {
-                Iterator<Order> askIt = book.getSellStopOrders().iterator();
+            if (!book.getAskStopOrders().isEmpty()) {
+                Iterator<Order> askIt = book.getAskStopOrders().iterator();
                 while (askIt.hasNext()) {
                     Order ask = askIt.next();
 
@@ -262,7 +262,7 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
             if (order.isActiveCmd()) {
                 // 账本激活止盈止损订单
                 // 也就是将止盈利止损订单放入撮合买卖盘
-                book.activeStopOrder(order);
+                book.addOrder(order);
 
                 // 添加订单
                 executeHandler(h -> {
@@ -301,9 +301,9 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
             // 卖出单: 则对手盘为买盘
             Iterator<Order> opponentIt = null;
             if (order.isBuy()) {
-                opponentIt = book.getAskOrders().iterator();
+                opponentIt = book.getAskLimitOrders().iterator();
             } else {
-                opponentIt = book.getBidOrders().iterator();
+                opponentIt = book.getBidLimitOrders().iterator();
             }
 
             // 当前撮合的订单簿
@@ -344,16 +344,16 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
                     // 移除被标记的订单
                     opponentIt.remove();
                     if (order.isBuy()) {
-                        opponentIt = book.getAskOrders().iterator();
+                        opponentIt = book.getAskLimitOrders().iterator();
                     } else {
-                        opponentIt = book.getBidOrders().iterator();
+                        opponentIt = book.getBidLimitOrders().iterator();
                     }
                     best.unMarkMatching();
                     continue;
                 }
 
                 // 执行撮合
-                TradeResult ts = currentMatcher.doTrade(order, best);
+                MatchResult ts = currentMatcher.doTrade(order, best, );
 
                 // 事务
                 Order snap_order = order.snap();
@@ -391,9 +391,9 @@ public class GenericProcessor extends MatchEventHandlerRegistry implements Proce
                     executeOrderCancel(best);
 
                     if (order.isBuy()) {
-                        opponentIt = book.getAskOrders().iterator();
+                        opponentIt = book.getAskLimitOrders().iterator();
                     } else {
-                        opponentIt = book.getBidOrders().iterator();
+                        opponentIt = book.getBidLimitOrders().iterator();
                     }
 
                 }

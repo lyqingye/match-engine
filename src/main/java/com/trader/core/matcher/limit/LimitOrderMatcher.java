@@ -1,8 +1,9 @@
 package com.trader.core.matcher.limit;
 
 import com.trader.core.Matcher;
+import com.trader.core.context.MatchingContext;
 import com.trader.core.entity.Order;
-import com.trader.core.matcher.TradeResult;
+import com.trader.core.matcher.MatchResult;
 import com.trader.utils.TradeUtils;
 
 import java.math.BigDecimal;
@@ -22,10 +23,12 @@ public class LimitOrderMatcher implements Matcher {
      * @param opponentOrder
      *         对手订单
      *
+     * @param ctx
+     *         上下文
      * @return 是否支持匹配
      */
     @Override
-    public boolean isSupport(Order order, Order opponentOrder) {
+    public boolean isSupport(Order order, Order opponentOrder, MatchingContext ctx) {
         //
         // 处理以下类型的订单
         //
@@ -98,10 +101,12 @@ public class LimitOrderMatcher implements Matcher {
      * @param opponentOrder
      *         对手订单
      *
+     * @param ctx
+     *         上下文
      * @return 交易结果
      */
     @Override
-    public TradeResult doTrade(Order order, Order opponentOrder) {
+    public MatchResult doTrade(Order order, Order opponentOrder, MatchingContext ctx) {
         return TradeUtils.genericTrade(order, opponentOrder, BigDecimal.ZERO);
     }
 }

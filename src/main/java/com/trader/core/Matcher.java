@@ -1,13 +1,9 @@
 package com.trader.core;
 
 import com.trader.core.context.MatchingContext;
-import com.trader.core.context.ThreadLocalMatchingContext;
 import com.trader.core.entity.Order;
-import com.trader.core.matcher.TradeResult;
-import com.trader.utils.ThreadLocalUtils;
+import com.trader.core.matcher.MatchResult;
 import com.trader.utils.TradeUtils;
-
-import java.util.Objects;
 
 /**
  * @author yjt
@@ -22,10 +18,11 @@ public interface Matcher {
      *         当前订单
      * @param opponentOrder
      *         对手订单
-     *
+     * @param ctx
+     *         上下文
      * @return 是否支持匹配
      */
-    boolean isSupport(Order order, Order opponentOrder);
+    boolean isSupport(Order order, Order opponentOrder, MatchingContext ctx);
 
     /**
      * 进行撮合交易
@@ -35,9 +32,11 @@ public interface Matcher {
      * @param opponentOrder
      *         对手订单
      *
+     * @param ctx
+     *         上下文
      * @return 交易结果
      */
-    TradeResult doTrade(Order order, Order opponentOrder);
+    MatchResult doTrade(Order order, Order opponentOrder, MatchingContext ctx);
 
     /**
      * 目标订单是否已经结束
@@ -49,15 +48,5 @@ public interface Matcher {
      */
     default boolean isFinished(Order order) {
         return TradeUtils.isFinished(order);
-    }
-
-    /**
-     * 获取上下文
-     *
-     * @return 上下文对象
-     */
-    default MatchingContext ctx() {
-        return Objects.requireNonNull(ThreadLocalUtils.get(ThreadLocalMatchingContext.NAME_OF_CONTEXT),
-                                      "无法获取上下文");
     }
 }

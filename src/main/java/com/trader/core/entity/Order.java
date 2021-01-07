@@ -6,9 +6,10 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.Date;
 import java.util.Objects;
+
+import static com.trader.utils.ArithmeticUtils.*;
 
 /**
  * 订单的定义
@@ -68,7 +69,7 @@ public class Order {
     /**
      * 差价策略
      */
-    private DifferencePriceStrategy differencePriceStrategy = DifferencePriceStrategy.BUYER_FIRST;
+    private DiffPriceStrategy diffPriceStrategy = DiffPriceStrategy.DRIVER;
 
     /**
      * 价格
@@ -151,7 +152,7 @@ public class Order {
     /**
      * 是否正在匹配
      */
-    private boolean matching = false;
+    private volatile boolean matching = false;
 
     /**
      * 版本 (预留)
@@ -196,9 +197,7 @@ public class Order {
     }
 
     /**
-     * 获取当前订单的最高买入价或最低卖出价
-     *
-     * @return
+     * @return 当前订单的最高买入价或最低卖出价
      */
     public BigDecimal getBoundPrice() {
 
@@ -212,50 +211,26 @@ public class Order {
         // 卖出订单是下限
         //
         if (this.isBuy()) {
-            return price.add(price.multiply(this.priceUpperBound))
-                        .setScale(8, RoundingMode.DOWN);
+            return add(price,mul(price,this.priceUpperBound));
         } else {
-            return price.subtract(price.multiply(this.priceLowerBound))
-                        .setScale(8, RoundingMode.DOWN);
+            return sub(price,mul(price,this.priceLowerBound));
         }
     }
 
-    /**
-     * 是否存在上界下限价格
-     *
-     * @return 是否存在上界下限价格
-     */
-    public boolean hasBoundPrice() {
-        // 市价单没有上界和下限
-        if (isMarketOrder()) {
-            throw new IllegalArgumentException("[市价]订单不存在上界下限的价格");
-        }
-
-        if (this.isBuy()) {
-            return this.priceUpperBound.compareTo(BigDecimal.ZERO) == 0;
-        } else {
-            return this.priceLowerBound.compareTo(BigDecimal.ZERO) == 0;
-        }
+    public void decLeavesQuality(BigDecimal q) {
+        this.leavesQuantity = sub(leavesQuantity,q);
     }
 
-    public BigDecimal decLeavesQuality(BigDecimal q) {
-        this.leavesQuantity = leavesQuantity.subtract(q);
-        return this.leavesQuantity;
+    public void incExecutedQuality(BigDecimal q) {
+        this.executedQuantity = add(executedQuantity,q);
     }
 
-    public BigDecimal incExecutedQuality(BigDecimal q) {
-        this.executedQuantity = executedQuantity.add(q);
-        return this.executedQuantity;
+    public void decLeavesAmount(BigDecimal q) {
+        this.leavesAmount = sub(leavesAmount,q);
     }
 
-    public BigDecimal decLeavesAmount(BigDecimal q) {
-        this.leavesAmount = leavesAmount.subtract(q);
-        return this.leavesAmount;
-    }
-
-    public BigDecimal incExecutedAmount(BigDecimal q) {
-        this.executedAmount = executedAmount.add(q);
-        return this.executedAmount;
+    public void incExecutedAmount(BigDecimal q) {
+        this.executedAmount = add(executedAmount,q);
     }
 
     public boolean isAddCmd() {
@@ -346,7 +321,7 @@ public class Order {
         order.executedQuantity = executedQuantity;
 
         order.triggerPrice = triggerPrice;
-        order.differencePriceStrategy = differencePriceStrategy;
+        order.diffPriceStrategy = diffPriceStrategy;
 
 
         order.side = side;
@@ -387,7 +362,7 @@ public class Order {
         this.leavesQuantity = o.leavesQuantity;
 
         this.triggerPrice = o.triggerPrice;
-        this.differencePriceStrategy = o.differencePriceStrategy;
+        this.diffPriceStrategy = o.diffPriceStrategy;
 
         this.side = o.side;
         this.type = o.type;
@@ -409,7 +384,7 @@ public class Order {
                 ", coinId='" + coinId + '\'' +
                 ", type=" + type +
                 ", side=" + side +
-                ", differencePriceStrategy=" + differencePriceStrategy +
+                ", differencePriceStrategy=" + diffPriceStrategy +
                 ", price=" + price +
                 ", priceUpperBound=" + priceUpperBound +
                 ", priceLowerBound=" + priceLowerBound +

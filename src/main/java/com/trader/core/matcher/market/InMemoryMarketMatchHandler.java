@@ -3,7 +3,7 @@ package com.trader.core.matcher.market;
 import com.trader.core.MatchHandler;
 import com.trader.core.def.OrderType;
 import com.trader.core.entity.Order;
-import com.trader.core.matcher.TradeResult;
+import com.trader.core.matcher.MatchResult;
 
 import java.math.BigDecimal;
 
@@ -20,7 +20,6 @@ public class InMemoryMarketMatchHandler implements MatchHandler {
      */
     @Override
     public int getPriority() {
-
         // 内存撮合优先级最高
         return Integer.MAX_VALUE;
     }
@@ -33,7 +32,7 @@ public class InMemoryMarketMatchHandler implements MatchHandler {
      * @param executeQuantity
      *         成交量
      */
-    public static void updateOrder(Order order,
+    private static void updateOrder(Order order,
                                    BigDecimal executeQuantity,
                                    BigDecimal amount) {
         // 如果买入单则扣除成交总金额
@@ -72,7 +71,7 @@ public class InMemoryMarketMatchHandler implements MatchHandler {
      */
     @Override
     public void onExecuteOrder(Order order,
-                               Order opponentOrder, TradeResult ts) throws Exception {
+                               Order opponentOrder, MatchResult ts) throws Exception {
         BigDecimal quantity = ts.getQuantity();
 
         //

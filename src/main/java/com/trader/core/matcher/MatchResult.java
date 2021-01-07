@@ -9,7 +9,7 @@ import java.math.BigDecimal;
  * @since 2020/9/18 下午2:18
  */
 @Data
-public class TradeResult {
+public class MatchResult {
     /**
      * 最终的成交价
      */
@@ -41,19 +41,4 @@ public class TradeResult {
      * 交易时间
      */
     private long timestamp;
-
-    /**
-     * 差价
-     */
-    private BigDecimal diffPrice = BigDecimal.ZERO;
-
-    /**
-     * 对手订单差价
-     */
-    private BigDecimal opponentDiffPrice = BigDecimal.ZERO;
-
-    /**
-     * 平台吃到的差价
-     */
-    private BigDecimal platformDiffPrice = BigDecimal.ZERO;
 }

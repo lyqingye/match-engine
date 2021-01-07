@@ -55,7 +55,7 @@ public class TestOrderBook {
         book.addOrder(o1);
         book.addOrder(o3);
 
-        book.getAskOrders().forEach(System.out::println);
-        book.getBidOrders().forEach(System.out::println);
+        book.getAskLimitOrders().forEach(System.out::println);
+        book.getBidLimitOrders().forEach(System.out::println);
     }
 }

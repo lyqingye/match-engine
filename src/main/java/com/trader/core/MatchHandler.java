@@ -3,7 +3,7 @@ package com.trader.core;
 import com.trader.core.context.MatchingContext;
 import com.trader.core.context.ThreadLocalMatchingContext;
 import com.trader.core.entity.Order;
-import com.trader.core.matcher.TradeResult;
+import com.trader.core.matcher.MatchResult;
 import com.trader.utils.ThreadLocalUtils;
 
 import java.util.Objects;
@@ -79,16 +79,6 @@ public interface MatchHandler {
      * @throws Exception
      *         如果发生异常
      */
-    default void onExecuteOrder(Order order, Order opponentOrder, TradeResult ts) throws Exception {
-    }
-
-    /**
-     * 获取上下文
-     *
-     * @return 上下文对象
-     */
-    default MatchingContext ctx() {
-        return Objects.requireNonNull(ThreadLocalUtils.get(ThreadLocalMatchingContext.NAME_OF_CONTEXT),
-                                      "无法获取上下文");
+    default void onExecuteOrder(Order order, Order opponentOrder, MatchResult ts) throws Exception {
     }
 }

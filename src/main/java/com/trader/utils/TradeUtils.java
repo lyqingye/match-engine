@@ -1,34 +1,27 @@
 package com.trader.utils;
 
 import com.trader.core.entity.Order;
-import com.trader.core.matcher.TradeResult;
+import com.trader.core.matcher.MatchResult;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
+
+import static com.trader.utils.ArithmeticUtils.div;
+import static com.trader.utils.ArithmeticUtils.mul;
 
 /**
  * @author yjt
  * @since 2020/9/20 上午9:34
  */
-public class TradeUtils {
-    /**
-     * 最小的金额
-     */
-    public static final BigDecimal MIN_VALUE = new BigDecimal("0.00000001");
-
+public final class TradeUtils {
     /**
      * 计算成交价
      *
-     * @param order
-     *         订单
-     * @param opponentOrder
-     *         对手订单
-     * @param marketPrice
-     *         市场价格（可以为空）
-     *
+     * @param order         订单
+     * @param opponentOrder 对手订单
+     * @param marketPrice   市场价格（可以为空）
      * @return 成交价格
      */
-    public static TradeResult calcExecutePrice(Order order,
+    public static MatchResult calcExecutePrice(Order order,
                                                Order opponentOrder,
                                                BigDecimal marketPrice) {
 
@@ -39,71 +32,31 @@ public class TradeUtils {
             throw new IllegalArgumentException("计算成交价失败, 非法价格");
         }
 
-        TradeResult ts = new TradeResult();
+        MatchResult ts = new MatchResult();
 
-        switch (order.getDifferencePriceStrategy()) {
+        switch (order.getDiffPriceStrategy()) {
+            // 驱动方吃到差价
             case DRIVER: {
                 ts.setExecutePrice(opponentPrice);
                 ts.setOpponentExecutePrice(opponentPrice);
                 break;
             }
+            // 平台通吃
             case PLATFORM: {
-
-                // 平台通吃
                 if (!order.isMarketOrder()) {
                     price = order.getBoundPrice();
                 }
-
                 if (!opponentOrder.isMarketOrder()) {
                     opponentPrice = opponentOrder.getBoundPrice();
                 }
-
                 ts.setExecutePrice(price);
                 ts.setOpponentExecutePrice(opponentPrice);
-
-                // 平台差价
-                BigDecimal platformDiffPrice = BigDecimal.ZERO;
-                if (price.compareTo(opponentPrice) > 0) {
-                    platformDiffPrice = price.subtract(opponentPrice);
-                }
-
-                if (price.compareTo(opponentPrice) < 0) {
-                    platformDiffPrice = opponentPrice.subtract(price);
-                }
-                ts.setPlatformDiffPrice(platformDiffPrice);
                 break;
             }
 
+            // 最早挂单者吃到差价
             case TIME_FIRST: {
-
-                // 最早挂单者吃到差价
                 if (order.getCreateDateTime().before(opponentOrder.getCreateDateTime())) {
-                    ts.setExecutePrice(opponentPrice);
-                    ts.setOpponentExecutePrice(opponentPrice);
-                } else {
-                    ts.setExecutePrice(price);
-                    ts.setOpponentExecutePrice(price);
-                }
-                break;
-            }
-
-            case BUYER_FIRST: {
-
-                // 买家吃到差价
-                if (order.isBuy()) {
-                    ts.setExecutePrice(opponentPrice);
-                    ts.setOpponentExecutePrice(opponentPrice);
-                } else {
-                    ts.setExecutePrice(price);
-                    ts.setOpponentExecutePrice(price);
-                }
-                break;
-            }
-
-            case SELLER_FIRST: {
-
-                // 卖家吃到差价
-                if (order.isSell()) {
                     ts.setExecutePrice(opponentPrice);
                     ts.setOpponentExecutePrice(opponentPrice);
                 } else {
@@ -116,11 +69,6 @@ public class TradeUtils {
                 throw new IllegalArgumentException("非法差价策略");
             }
         }
-
-        // 计算差价
-        ts.setDiffPrice(price.subtract(ts.getExecutePrice()));
-        ts.setOpponentDiffPrice(opponentPrice.subtract(ts.getOpponentExecutePrice()));
-
         return ts;
     }
 
@@ -132,90 +80,64 @@ public class TradeUtils {
      * <p>
      * 满足以上条件, 就可以统一成一个撮合规则
      *
-     * @param order
-     * @param opponentOrder
-     * @param marketPrice
-     *
-     * @return
+     * @param order         当前订单
+     * @param opponentOrder 对手订单
+     * @param marketPrice   市场价格
+     * @return 撮合结果
      */
-    public static TradeResult genericTrade(Order order,
+    public static MatchResult genericTrade(Order order,
                                            Order opponentOrder,
                                            BigDecimal marketPrice) {
+        if (order.isBuy()) {
+            return genericTradeInternal(order, opponentOrder, marketPrice);
+        } else {
+            return genericTradeInternal(opponentOrder, order, marketPrice);
+        }
+    }
+
+    private static MatchResult genericTradeInternal(Order buyOrder,
+                                                    Order sellOrder,
+                                                    BigDecimal marketPrice) {
         //
         // 计算成交价
         //
-        TradeResult ts = TradeUtils.calcExecutePrice(order,
-                opponentOrder,
-                marketPrice);
-        BigDecimal executePrice = ts.getExecutePrice();
-        BigDecimal opponentExecutePrice = ts.getOpponentExecutePrice();
+        MatchResult ts = TradeUtils.calcExecutePrice(buyOrder,
+                                                     sellOrder,
+                                                     marketPrice);
+        BigDecimal buyerExecPrice = ts.getExecutePrice();
+        BigDecimal sellerExecPrice = ts.getOpponentExecutePrice();
 
         //
         // 计算最终成交量
         //
-        BigDecimal quantity = order.getLeavesQuantity();
-        BigDecimal opponentQuantity = opponentOrder.getLeavesQuantity();
+        BigDecimal sellQty = sellOrder.getLeavesQuantity();
 
         //
-        // 如果是买入单, 则需要用待执行金额 / 成交价 = 待执行数量
+        // 买入单, 待执行金额 / 成交价 = 待执行数量
         //
-        if (order.isBuy()) {
-            quantity = order.getLeavesAmount()
-                            .divide(executePrice, RoundingMode.DOWN)
-                            .setScale(8, RoundingMode.DOWN);
+        BigDecimal buyQty = div(buyOrder.getLeavesAmount(), buyerExecPrice);
+        BigDecimal buyerExecAmount = mul(buyerExecPrice, sellQty);
 
-            if (quantity.compareTo(opponentQuantity) <= 0) {
-                ts.setExecuteAmount(order.getLeavesAmount());
-                if (executePrice.multiply(opponentQuantity).setScale(8, BigDecimal.ROUND_DOWN).compareTo(order.getLeavesAmount()) == 0) {
-                    // 买卖单全部买完
-                    ts.setQuantity(opponentQuantity);
-                } else {
-                    // 买单全部买完
-                    ts.setQuantity(quantity);
-                }
-                // 计算对手卖单收入的计价货币 = 对手订单成交单价 * 成交数量
-                ts.setOpponentExecuteAmount(ts.getQuantity().multiply(opponentExecutePrice).setScale(8, RoundingMode.DOWN));
+        // 买家全部成交 | 卖家全部成交或成交部分
+        if (buyQty.compareTo(sellQty) <= 0) {
+            if (buyerExecAmount.compareTo(buyOrder.getLeavesAmount()) == 0) {
+                // 买卖单全部买完
+                ts.setQuantity(sellQty);
             } else {
-                // 买单不能全部买完, 但卖单可以卖完
-                // 所以成交金额则是 卖单的数量 * 当前订单单价
-                ts.setExecuteAmount(executePrice.multiply(opponentQuantity).setScale(8, RoundingMode.DOWN));
-                ts.setQuantity(opponentQuantity);
-
-                // 计算对手卖单收入的计价货币 = 对手订单成交单价 * 成交数量
-                ts.setOpponentExecuteAmount(opponentQuantity.multiply(opponentExecutePrice).setScale(8, RoundingMode.DOWN));
-            }
-        }
-
-        //
-        // 如果当前订单为卖单, 对手单为买单
-        //
-        if (opponentOrder.isBuy()) {
-            opponentQuantity = opponentOrder.getLeavesAmount()
-                                            .divide(opponentExecutePrice, RoundingMode.DOWN)
-                                            .setScale(8, RoundingMode.DOWN);
-            if (opponentQuantity.compareTo(quantity) <= 0) {
                 // 买单全部买完
-                ts.setOpponentExecuteAmount(opponentOrder.getLeavesAmount());
-
-                if (opponentExecutePrice.multiply(quantity).setScale(8, BigDecimal.ROUND_DOWN).compareTo(opponentOrder.getLeavesAmount()) == 0) {
-                    // 买卖单全部买完
-                    ts.setQuantity(quantity);
-                } else {
-                    // 买单全部买完
-                    ts.setQuantity(opponentQuantity);
-                }
-
-                // 计算当前卖单收入的计价货币 = 当前订单成交单价 * 成交数量
-                ts.setExecuteAmount(ts.getQuantity().multiply(executePrice).setScale(8, RoundingMode.DOWN));
-            } else {
-                // 买单不能全部买完, 但卖单可以卖完
-                // 所以成交金额则是 卖单的数量 * 对手订单单价
-                ts.setOpponentExecuteAmount(opponentExecutePrice.multiply(quantity).setScale(8, RoundingMode.DOWN));
-                ts.setQuantity(quantity);
-
-                // 计算当前卖单收入的计价货币 = 当前订单成交单价 * 成交数量
-                ts.setExecuteAmount(quantity.multiply(executePrice).setScale(8, RoundingMode.DOWN));
+                ts.setQuantity(buyQty);
             }
+            ts.setExecuteAmount(buyOrder.getLeavesAmount());
+            // 计算对手卖单收入的计价货币 = 对手订单成交单价 * 成交数量
+            ts.setOpponentExecuteAmount(mul(ts.getQuantity(), sellerExecPrice));
+        } else {
+            // 买单不能全部买完, 但卖单可以卖完
+            // 所以成交金额则是 卖单的数量 * 当前订单单价
+            ts.setExecuteAmount(buyerExecAmount);
+            ts.setQuantity(sellQty);
+
+            // 计算对手卖单收入的计价货币 = 对手订单成交单价 * 成交数量
+            ts.setOpponentExecuteAmount(mul(sellQty, sellerExecPrice));
         }
         ts.setTimestamp(System.currentTimeMillis());
         return ts;
@@ -226,11 +148,8 @@ public class TradeUtils {
      * <p>
      * 参考: {@link #genericTrade}
      *
-     * @param order
-     *         订单
-     * @param unitPrice
-     *         单价
-     *
+     * @param order     订单
+     * @param unitPrice 单价
      * @return 是否能够买得起最少的数量
      */
     public static boolean isHasEnoughAmount(Order order, BigDecimal unitPrice) {
@@ -238,9 +157,7 @@ public class TradeUtils {
         // 如果买家剩余的钱连 0.00000001 都买不起那就直接无法撮合, 因为成交数量不能为空
         //
         if (order.isBuy()) {
-            if (order.getLeavesAmount().divide(unitPrice, RoundingMode.DOWN).compareTo(BigDecimal.ZERO) == 0) {
-                return false;
-            }
+            return div(order.getLeavesAmount(), unitPrice).compareTo(BigDecimal.ZERO) != 0;
         }
         return true;
     }
@@ -250,10 +167,8 @@ public class TradeUtils {
      * <p>
      * 参考: {@link #genericTrade}
      *
-     * @param order
-     *         订单
-     *
-     * @return
+     * @param order 订单
+     * @return 订单是否已经结束
      */
     public static boolean isFinished(Order order) {
 

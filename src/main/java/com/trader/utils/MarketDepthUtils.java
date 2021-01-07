@@ -51,7 +51,7 @@ public class MarketDepthUtils {
     }
 
     private static BigDecimal calcTrx(BigDecimal price, DepthLevel depth) {
-        return price.setScale(getNumberOfDecimalPlaces(price) - depth.ordinal(), BigDecimal.ROUND_DOWN);
+        return price.setScale(getNumberOfDecimalPlaces(price) - depth.ordinal(), RoundingMode.DOWN);
     }
 
     /**

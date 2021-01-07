@@ -5,7 +5,7 @@ import com.trader.core.MatchHandler;
 import com.trader.core.OrderRouter;
 import com.trader.core.entity.Order;
 import com.trader.core.entity.OrderBook;
-import com.trader.core.matcher.TradeResult;
+import com.trader.core.matcher.MatchResult;
 import com.trader.market.entity.MarketDepthChartSeries;
 import com.trader.market.publish.MarketPublishClient;
 import com.trader.market.publish.MarketPublishHandler;
@@ -444,7 +444,7 @@ public class MarketManager implements MatchHandler {
     @Override
     public void onExecuteOrder(Order order,
                                Order opponentOrder,
-                               TradeResult ts) throws Exception {
+                               MatchResult ts) throws Exception {
         // 当有最新订单成交的时候, 需要更新最后一条成交价格
         OrderBook book = router.routeToBookForSendDepthChart(order);
 

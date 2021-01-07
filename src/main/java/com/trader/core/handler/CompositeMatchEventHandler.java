@@ -2,7 +2,7 @@ package com.trader.core.handler;
 
 import com.trader.core.MatchHandler;
 import com.trader.core.entity.Order;
-import com.trader.core.matcher.TradeResult;
+import com.trader.core.matcher.MatchResult;
 
 /**
  * @author yjt
@@ -81,7 +81,7 @@ public class CompositeMatchEventHandler extends MatchEventHandlerRegistry implem
      *         如果发生异常
      */
     @Override
-    public void onExecuteOrder(Order order, Order opponentOrder, TradeResult ts) throws Exception {
+    public void onExecuteOrder(Order order, Order opponentOrder, MatchResult ts) throws Exception {
         for (MatchHandler h : super.handlers()) {
             h.onExecuteOrder(order, opponentOrder, ts);
         }

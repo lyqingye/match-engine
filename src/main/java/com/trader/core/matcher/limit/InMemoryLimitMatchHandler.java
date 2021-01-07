@@ -2,7 +2,7 @@ package com.trader.core.matcher.limit;
 
 import com.trader.core.MatchHandler;
 import com.trader.core.entity.Order;
-import com.trader.core.matcher.TradeResult;
+import com.trader.core.matcher.MatchResult;
 
 import java.math.BigDecimal;
 
@@ -34,9 +34,9 @@ public class InMemoryLimitMatchHandler implements MatchHandler {
      * @param amount
      *         成交金额
      */
-    public static void updateOrder(Order order,
-                                   BigDecimal executeQuantity,
-                                   BigDecimal amount) {
+    private static void updateOrder(Order order,
+                                    BigDecimal executeQuantity,
+                                    BigDecimal amount) {
         if (order.isBuy()) {
             // 限价买单
 
@@ -66,7 +66,7 @@ public class InMemoryLimitMatchHandler implements MatchHandler {
      * @param ts
      *         撮合结果
      */
-    public static void executeOrder(Order order, TradeResult ts, BigDecimal amount) {
+    public static void executeOrder(Order order, MatchResult ts, BigDecimal amount) {
 
         switch (order.getType()) {
             case STOP:
@@ -95,7 +95,7 @@ public class InMemoryLimitMatchHandler implements MatchHandler {
      */
     @Override
     public void onExecuteOrder(Order order,
-                               Order opponentOrder, TradeResult ts) throws Exception {
+                               Order opponentOrder, MatchResult ts) throws Exception {
         InMemoryLimitMatchHandler.executeOrder(order, ts, ts.getExecuteAmount());
         InMemoryLimitMatchHandler.executeOrder(opponentOrder, ts, ts.getOpponentExecuteAmount());
     }
